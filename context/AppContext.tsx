@@ -86,7 +86,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return;
       }
 
-      setLeaderboard(remoteLeaderboard);`r`n      setIsLoadingLeaderboard(false);`r`n    };
+      setLeaderboard(remoteLeaderboard);
+      setIsLoadingLeaderboard(false);
+    };
 
     loadLeaderboard();
 
@@ -110,7 +112,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return prev;
     });
     persistPlayerToRemote(newPlayer);
-  };
+    };
   
   const updateScore = useCallback((gameScore: number) => {
     if (!player) return;
@@ -141,16 +143,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addToast = (message: string, type: ToastType) => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
-  };
+    };
 
   const removeToast = (id: number) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
+    };
 
   const value = { player, setPlayer, leaderboard, isLoadingLeaderboard,  updateScore, currentPage, setCurrentPage, toasts, addToast, removeToast };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-};
+    };
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
@@ -158,7 +160,11 @@ export const useAppContext = (): AppContextType => {
     throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;
-};
+    };
+
+
+
+
 
 
 
