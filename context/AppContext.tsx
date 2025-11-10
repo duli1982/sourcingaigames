@@ -63,7 +63,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     let isMounted = true;
-    const loadLeaderboard = async () => {
+    const loadLeaderboard = async () => {\n      setIsLoadingLeaderboard(true);
       const remoteLeaderboard = await fetchLeaderboard();
       if (!isMounted || !remoteLeaderboard) return;
 
@@ -144,7 +144,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  const value = { player, setPlayer, leaderboard, updateScore, currentPage, setCurrentPage, toasts, addToast, removeToast };
+  const value = { player, setPlayer, leaderboard, isLoadingLeaderboard,  updateScore, currentPage, setCurrentPage, toasts, addToast, removeToast };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

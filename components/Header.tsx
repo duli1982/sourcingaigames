@@ -25,8 +25,8 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
         <header className="bg-gray-800 shadow-lg sticky top-0 z-40">
             <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">AI Sourcing League</h1>
-                    <p className="text-sm text-cyan-400">Powered by Randstad & Gemini</p>
+                    <h1 className="text-2xl font-bold text-white">AI Sourcing Quiz</h1>
+                    <p className="text-sm text-cyan-400">Powered by DG & Gemini</p>
                 </div>
                 <div className="hidden md:flex space-x-2">
                     {navItems.map(item => (
