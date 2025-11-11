@@ -4,6 +4,8 @@ import { getGeminiResponse } from '../services/geminiService';
 import { useAppContext } from '../context/AppContext';
 import { Game } from '../types';
 import { Spinner } from './Spinner';
+import { formatFeedback } from '../utils/feedbackFormatter';
+import '../styles/feedback.css';
 
 interface GameCardProps {
     game: Game;
@@ -48,12 +50,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
         e.preventDefault();
         if (!submission.trim() || !player) return;
 
-        // Practice mode: just save locally, no AI feedback
-        if (mode === 'practice') {
-            addToast('Saved to practice area!', 'success');
-            return;
-        }
-
         // Challenge mode: full AI feedback and scoring
         setIsLoading(true);
         setFeedback(null);
@@ -86,10 +82,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                 addToast(`Score updated! +${score} points`, 'success');
             }
 
-            const feedbackHtml = responseText
-                .replace(/SCORE: \d+/g, `<h3>Your Score: <strong class="text-cyan-400">${score}/100</strong></h3>`)
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br />');
+            // Use the enhanced feedback formatter
+            const feedbackHtml = formatFeedback(responseText, score);
 
             setFeedback(feedbackHtml);
             setLastSubmitTime(Date.now());
@@ -150,7 +144,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                     <ul className="text-xs text-gray-400 space-y-1">
                         <li>• This is a practice area - no AI feedback or scoring</li>
                         <li>• Use this space to draft and refine your answers</li>
-                        <li>• Your work is saved locally for reference</li>
+                        <li>• Your work stays here until you clear it or navigate away</li>
                         <li>• Play the Weekly Challenge to unlock more practice games!</li>
                     </ul>
                 </div>
@@ -209,12 +203,15 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                             )}
                         </>
                     ) : (
-                        <button
-                            type="submit"
-                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
-                        >
-                            💾 Save Draft
-                        </button>
+                        submission.trim() && (
+                            <button
+                                type="button"
+                                onClick={() => setSubmission('')}
+                                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                            >
+                                🗑️ Clear Draft
+                            </button>
+                        )
                     )}
                 </div>
                 {mode === 'challenge' && isCooldownActive && !isLoading && (
@@ -235,7 +232,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                         <>
                             {!isLoading && <h4 className="text-2xl font-bold text-cyan-400 mb-4">AI Coach Feedback</h4>}
                             <div
-                                className="bg-gray-700 p-6 rounded-lg prose prose-invert max-w-none text-gray-300"
+                                className="feedback-content bg-gray-700 p-6 rounded-lg max-w-none"
                                 dangerouslySetInnerHTML={{ __html: feedback }}
                             />
                         </>
