@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import AchievementsPanel from '../components/AchievementsPanel';
+import { formatFeedback } from '../utils/feedbackFormatter';
+import '../styles/feedback.css';
 
 const ProfilePage: React.FC = () => {
     const { player, getPlayerStats } = useAppContext();
     const [showHistory, setShowHistory] = useState(false);
+    const [expandedFeedback, setExpandedFeedback] = useState<number | null>(null);
 
     if (!player) {
         return (
@@ -94,29 +97,60 @@ const ProfilePage: React.FC = () => {
 
                     {showHistory ? (
                         <div className="space-y-4">
-                            {recentAttempts.map((attempt, index) => (
-                                <div key={index} className="bg-gray-700 rounded-lg p-4">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-white">{attempt.gameTitle}</h4>
-                                            <p className="text-xs text-gray-400">
-                                                {new Date(attempt.ts).toLocaleString()}
-                                            </p>
+                            {recentAttempts.map((attempt, index) => {
+                                const isFeedbackExpanded = expandedFeedback === index;
+                                const formattedFeedback = attempt.feedback ? formatFeedback(attempt.feedback, attempt.score) : null;
+
+                                return (
+                                    <div key={index} className="bg-gray-700 rounded-lg p-4">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-white">{attempt.gameTitle}</h4>
+                                                <p className="text-xs text-gray-400">
+                                                    {new Date(attempt.ts).toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xl font-bold text-cyan-400">{attempt.score}/100</p>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xl font-bold text-cyan-400">{attempt.score}/100</p>
+
+                                        {/* Submission */}
+                                        <div className="mt-2 p-3 bg-gray-800 rounded text-sm text-gray-300">
+                                            <p className="font-semibold text-gray-400 mb-1">Your Submission:</p>
+                                            <p className="italic">{attempt.submission}</p>
                                         </div>
+
+                                        {/* AI Feedback Section */}
+                                        {formattedFeedback && (
+                                            <div className="mt-3">
+                                                <button
+                                                    onClick={() => setExpandedFeedback(isFeedbackExpanded ? null : index)}
+                                                    className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-750 rounded transition-colors text-left"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-cyan-400 text-lg">🤖</span>
+                                                        <span className="font-semibold text-cyan-400">AI Coach Feedback</span>
+                                                    </div>
+                                                    <span className="text-gray-400 text-sm">
+                                                        {isFeedbackExpanded ? '▼ Hide' : '▶ Show'}
+                                                    </span>
+                                                </button>
+
+                                                {isFeedbackExpanded && (
+                                                    <div className="mt-3 feedback-content bg-gray-800 p-4 rounded-lg border border-gray-600">
+                                                        <div dangerouslySetInnerHTML={{ __html: formattedFeedback }} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="mt-2 p-3 bg-gray-800 rounded text-sm text-gray-300">
-                                        <p className="font-semibold text-gray-400 mb-1">Your Submission:</p>
-                                        <p className="italic">{attempt.submission}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="text-gray-400 text-sm">
-                            <p>You've made {recentAttempts.length} recent attempts. Click "Show Details" to see your submission history.</p>
+                            <p>You've made {recentAttempts.length} recent attempts. Click "Show Details" to see your submission history and AI feedback.</p>
                         </div>
                     )}
                 </div>
