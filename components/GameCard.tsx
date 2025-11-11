@@ -21,6 +21,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
     const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     // Calculate previous attempts for this specific game
     const gameAttempts = useMemo(() => {
@@ -46,9 +47,19 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
         return () => clearInterval(interval);
     }, [lastSubmitTime]);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!submission.trim() || !player) return;
+
+        // Show confirmation modal before submitting
+        setShowConfirmation(true);
+    };
+
+    const handleConfirmedSubmit = async () => {
+        if (!submission.trim() || !player) return;
+
+        // Close confirmation modal
+        setShowConfirmation(false);
 
         // Challenge mode: full AI feedback and scoring
         setIsLoading(true);
@@ -104,6 +115,10 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
 
     const isCooldownActive = cooldownRemaining > 0;
     const cooldownSeconds = Math.ceil(cooldownRemaining / 1000);
+
+    // Calculate word and character count for submission
+    const wordCount = submission.trim().split(/\s+/).filter(word => word.length > 0).length;
+    const charCount = submission.length;
 
     // Difficulty badge styling
     const difficultyConfig = {
@@ -237,6 +252,73 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                             />
                         </>
                     )}
+                </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {showConfirmation && mode === 'challenge' && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-500">
+                        <div className="p-6">
+                            {/* Header */}
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-2xl font-bold text-cyan-400">⚠️ Confirm Submission</h3>
+                                <button
+                                    onClick={() => setShowConfirmation(false)}
+                                    className="text-gray-400 hover:text-white text-2xl leading-none"
+                                    aria-label="Close confirmation"
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            {/* Info Message */}
+                            <div className="bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-md p-4 mb-4">
+                                <p className="text-yellow-200 text-sm">
+                                    ⚠️ <strong>Important:</strong> Once you submit, your answer will be evaluated and your score will be added to your total. Make sure you're happy with your submission!
+                                </p>
+                            </div>
+
+                            {/* Submission Stats */}
+                            <div className="bg-gray-900 rounded-md p-4 mb-4 border border-gray-700">
+                                <h4 className="text-sm font-bold text-cyan-400 mb-3">Submission Stats</h4>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-400">📝 Word Count:</span>
+                                        <span className="text-white font-bold">{wordCount}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-400">🔤 Character Count:</span>
+                                        <span className="text-white font-bold">{charCount}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Submission Preview */}
+                            <div className="mb-6">
+                                <h4 className="text-sm font-bold text-cyan-400 mb-2">Your Submission Preview</h4>
+                                <div className="bg-gray-900 rounded-md p-4 border border-gray-700 max-h-60 overflow-y-auto">
+                                    <p className="text-gray-300 whitespace-pre-wrap break-words">{submission}</p>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowConfirmation(false)}
+                                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-md transition duration-300"
+                                >
+                                    ← Go Back & Edit
+                                </button>
+                                <button
+                                    onClick={handleConfirmedSubmit}
+                                    className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-md transition duration-300"
+                                >
+                                    ✓ Yes, Submit Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
