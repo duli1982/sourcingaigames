@@ -1,15 +1,34 @@
 
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { validateName } from '../utils/nameValidator';
 
 const NameModal: React.FC = () => {
   const [name, setName] = useState('');
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const { setPlayer, addToast } = useAppContext();
 
   const checkAvailability = async (candidate: string) => {
-    if (!candidate.trim()) { setAvailable(null); return; }
+    if (!candidate.trim()) {
+      setAvailable(null);
+      setValidationError(null);
+      return;
+    }
+
+    // First validate the name format
+    const validation = validateName(candidate);
+    if (!validation.isValid) {
+      setValidationError(validation.error || 'Invalid name');
+      setAvailable(null);
+      return;
+    }
+
+    // Clear validation error if name is valid
+    setValidationError(null);
+
+    // Then check availability
     setChecking(true);
     try {
       const taken = await (await import('../services/supabaseService')).isNameTaken(candidate.trim());
@@ -24,6 +43,8 @@ const NameModal: React.FC = () => {
   let debounceTimer: number | undefined;
   const onNameChange = (v: string) => {
     setName(v);
+    setAvailable(null); // Reset availability when typing
+    setValidationError(null); // Reset validation error when typing
     if (debounceTimer) window.clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(() => checkAvailability(v), 350);
   };
@@ -32,20 +53,34 @@ const NameModal: React.FC = () => {
     e.preventDefault();
     const trimmedName = name.trim();
 
+    // Check if name is empty
     if (!trimmedName) {
       addToast('Please enter your name', 'error');
       return;
     }
-    if (trimmedName.length < 2) {
-      addToast('Name must be at least 2 characters', 'error');
+
+    // Validate name format (length, characters, profanity)
+    const validation = validateName(trimmedName);
+    if (!validation.isValid) {
+      addToast(validation.error || 'Invalid name', 'error');
       return;
     }
-    if (trimmedName.length > 50) {
-      addToast('Name must be less than 50 characters', 'error');
-      return;
-    }
+
+    // Check if name is already taken
     if (available === false) {
-      addToast('This name is already taken. Please choose another.', 'error');
+      addToast('This name is already taken (case-insensitive). Please choose another.', 'error');
+      return;
+    }
+
+    // Check if availability check is still in progress
+    if (checking) {
+      addToast('Please wait while we check name availability', 'error');
+      return;
+    }
+
+    // Check if we haven't validated availability yet
+    if (available === null) {
+      addToast('Please wait for name validation to complete', 'error');
       return;
     }
 
@@ -66,6 +101,7 @@ const NameModal: React.FC = () => {
               onChange={(e) => onNameChange(e.target.value)}
               placeholder="Your Name"
               className={`w-full bg-gray-700 border rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 ${
+                validationError ? 'border-red-500 focus:ring-red-500' :
                 available === true ? 'border-green-500 focus:ring-green-500' :
                 available === false ? 'border-red-500 focus:ring-red-500' :
                 'border-gray-600 focus:ring-cyan-500'
@@ -77,16 +113,25 @@ const NameModal: React.FC = () => {
             {checking && (
               <span className="absolute right-3 top-3 text-gray-400 text-sm">Checking...</span>
             )}
-            {!checking && available === true && (
+            {!checking && validationError && (
+              <span className="absolute right-3 top-3 text-red-400 text-sm">✗ Invalid</span>
+            )}
+            {!checking && !validationError && available === true && (
               <span className="absolute right-3 top-3 text-green-400 text-sm">✓ Available</span>
             )}
-            {!checking && available === false && (
+            {!checking && !validationError && available === false && (
               <span className="absolute right-3 top-3 text-red-400 text-sm">✗ Taken</span>
             )}
           </div>
+          {validationError && (
+            <p className="text-red-400 text-sm mt-2">⚠️ {validationError}</p>
+          )}
+          {!validationError && name.length === 0 && (
+            <p className="text-gray-400 text-xs mt-2">💡 Use only letters, spaces, hyphens, and apostrophes (2-50 characters)</p>
+          )}
           <button
             type="submit"
-            disabled={available === false || checking}
+            disabled={available === false || checking || validationError !== null || available === null}
             className="w-full mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed"
           >
             Start Sourcing!

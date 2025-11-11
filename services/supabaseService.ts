@@ -38,10 +38,11 @@ export const isNameTaken = async (name: string): Promise<boolean> => {
   if (!ensureConfig() || !supabaseClient) {
     return false;
   }
+  // Use ilike for case-insensitive comparison
   const { data, error } = await supabaseClient
     .from('players')
     .select('name')
-    .eq('name', name)
+    .ilike('name', name)
     .maybeSingle();
   if (error && error.code !== 'PGRST116') {
     console.error('Failed to check name availability:', error);

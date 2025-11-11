@@ -22,6 +22,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
     const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
     const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [showRubric, setShowRubric] = useState(false);
 
     // Calculate previous attempts for this specific game
     const gameAttempts = useMemo(() => {
@@ -128,6 +129,30 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
     };
     const difficulty = difficultyConfig[game.difficulty];
 
+    // Scoring rubric based on difficulty
+    const rubricByDifficulty = {
+        easy: [
+            { criteria: 'Relevant Keywords', points: 30, description: 'Includes key terms related to the role/skill' },
+            { criteria: 'Basic Boolean Operators', points: 25, description: 'Uses AND, OR to combine search terms' },
+            { criteria: 'Search Syntax', points: 25, description: 'Proper use of quotes, parentheses, or platform syntax' },
+            { criteria: 'Completeness', points: 20, description: 'Addresses all requirements in the task description' }
+        ],
+        medium: [
+            { criteria: 'Advanced Keywords', points: 25, description: 'Includes synonyms, variations, and related terms' },
+            { criteria: 'Complex Boolean Logic', points: 30, description: 'Uses AND, OR, NOT with proper grouping/nesting' },
+            { criteria: 'Platform-Specific Features', points: 25, description: 'Leverages advanced search operators (site:, intitle:, etc.)' },
+            { criteria: 'Optimization & Precision', points: 20, description: 'Balanced between broad and specific, avoids noise' }
+        ],
+        hard: [
+            { criteria: 'Expert Keyword Strategy', points: 25, description: 'Comprehensive terms including industry jargon, certifications' },
+            { criteria: 'Sophisticated Boolean Logic', points: 30, description: 'Multi-level nesting, excludes false positives effectively' },
+            { criteria: 'Advanced Search Techniques', points: 25, description: 'Uses proximity operators, wildcards, regex where applicable' },
+            { criteria: 'Strategic Optimization', points: 20, description: 'Highly targeted, considers edge cases, minimal false positives' }
+        ]
+    };
+
+    const currentRubric = rubricByDifficulty[game.difficulty];
+
     return (
         <div className="bg-gray-800 rounded-lg p-8 shadow-xl">
             <div className="flex items-start justify-between mb-2">
@@ -185,7 +210,57 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
             {game.context && (
                  <div className="text-sm bg-gray-700 p-4 rounded-md mb-4 border-l-4 border-cyan-500" dangerouslySetInnerHTML={{ __html: game.context }}></div>
             )}
-            <p className="text-gray-300 mb-6 font-semibold">{game.task}</p>
+            <p className="text-gray-300 mb-4 font-semibold">{game.task}</p>
+
+            {/* Scoring Rubric - Collapsible */}
+            {mode === 'challenge' && (
+                <div className="mb-6">
+                    <button
+                        type="button"
+                        onClick={() => setShowRubric(!showRubric)}
+                        className="w-full flex items-center justify-between bg-gray-900 hover:bg-gray-700 p-4 rounded-md border border-cyan-900 transition duration-300"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl">📋</span>
+                            <div className="text-left">
+                                <h4 className="text-sm font-bold text-cyan-400">Scoring Rubric</h4>
+                                <p className="text-xs text-gray-400">Click to see how you'll be evaluated (0-100 points)</p>
+                            </div>
+                        </div>
+                        <span className="text-cyan-400 text-xl">{showRubric ? '▼' : '▶'}</span>
+                    </button>
+
+                    {showRubric && (
+                        <div className="mt-3 bg-gray-900 rounded-md p-5 border border-cyan-900">
+                            <div className="space-y-4">
+                                {currentRubric.map((item, index) => (
+                                    <div key={index} className="border-l-4 border-cyan-600 pl-4">
+                                        <div className="flex items-start justify-between mb-1">
+                                            <h5 className="text-sm font-bold text-white">{item.criteria}</h5>
+                                            <span className="text-cyan-400 font-bold text-sm ml-2">{item.points} pts</span>
+                                        </div>
+                                        <p className="text-xs text-gray-400">{item.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-gray-700">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-white">Total Possible Score:</span>
+                                    <span className="text-cyan-400 font-bold text-lg">100 points</span>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 bg-gray-800 rounded p-3 border border-gray-700">
+                                <p className="text-xs text-gray-300 leading-relaxed">
+                                    <strong className="text-cyan-400">💡 Tip:</strong> Review this rubric before submitting!
+                                    Make sure your answer addresses each criterion to maximize your score.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit}>
                 <textarea
