@@ -11,6 +11,7 @@ const navItems: { page: Page; label: string }[] = [
     { page: 'home', label: 'Home' },
     { page: 'games', label: 'The Games' },
     { page: 'leaderboard', label: 'Leaderboard' },
+    { page: 'profile', label: 'Profile' },
 ];
 
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {

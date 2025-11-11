@@ -3,14 +3,10 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 
 const NameModal: React.FC = () => {
-  const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
-  const { setPlayer, addToast } = useAppContext() as any;
-
-  const handleInfoContinue = () => setStep(2);
+  const { setPlayer, addToast } = useAppContext();
 
   const checkAvailability = async (candidate: string) => {
     if (!candidate.trim()) { setAvailable(null); return; }
@@ -35,21 +31,26 @@ const NameModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmedName = name.trim();
-    if (trimmedName && (available !== false)) {
-      setPlayer({ name: trimmedName, score: 0 });
-      addToast('Welcome! You can set up secure sign-in later in Profile.', 'info');
-    }
-  };
 
-  const handleMagicLink = async () => {
-    try {
-      if (!email.trim()) return;
-      const { signInWithMagicLink } = await import('../services/authService');
-      await signInWithMagicLink(email.trim());
-      addToast('Magic link sent. Check your email to sign in.', 'success');
-    } catch (err) {
-      addToast('Failed to send magic link. Please try again.', 'error');
+    if (!trimmedName) {
+      addToast('Please enter your name', 'error');
+      return;
     }
+    if (trimmedName.length < 2) {
+      addToast('Name must be at least 2 characters', 'error');
+      return;
+    }
+    if (trimmedName.length > 50) {
+      addToast('Name must be less than 50 characters', 'error');
+      return;
+    }
+    if (available === false) {
+      addToast('This name is already taken. Please choose another.', 'error');
+      return;
+    }
+
+    setPlayer({ name: trimmedName, score: 0, attempts: [] });
+    addToast(`Welcome, ${trimmedName}! Ready to test your sourcing skills?`, 'success');
   };
 
   return (
@@ -58,15 +59,36 @@ const NameModal: React.FC = () => {
         <h2 className="text-2xl font-bold mb-4 text-cyan-400">Welcome to the AI Sourcing Quiz!</h2>
         <p className="text-gray-300 mb-6">Please enter your full name to join the competition.</p>
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your Name"
-            className="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            required
-          />
-          <button type="submit" className="w-full mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">
+          <div className="relative">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="Your Name"
+              className={`w-full bg-gray-700 border rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 ${
+                available === true ? 'border-green-500 focus:ring-green-500' :
+                available === false ? 'border-red-500 focus:ring-red-500' :
+                'border-gray-600 focus:ring-cyan-500'
+              }`}
+              required
+              minLength={2}
+              maxLength={50}
+            />
+            {checking && (
+              <span className="absolute right-3 top-3 text-gray-400 text-sm">Checking...</span>
+            )}
+            {!checking && available === true && (
+              <span className="absolute right-3 top-3 text-green-400 text-sm">✓ Available</span>
+            )}
+            {!checking && available === false && (
+              <span className="absolute right-3 top-3 text-red-400 text-sm">✗ Taken</span>
+            )}
+          </div>
+          <button
+            type="submit"
+            disabled={available === false || checking}
+            className="w-full mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed"
+          >
             Start Sourcing!
           </button>
         </form>

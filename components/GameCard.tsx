@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getGeminiResponse } from '../services/geminiService';
 import { useAppContext } from '../context/AppContext';
 import { Game } from '../types';
@@ -9,11 +9,41 @@ interface GameCardProps {
     game: Game;
 }
 
+const COOLDOWN_MS = 30000; // 30 seconds
+
 const GameCard: React.FC<GameCardProps> = ({ game }) => {
-    const { player, updateScore, addToast } = useAppContext();
+    const { player, updateScore, addToast, addAttempt } = useAppContext();
     const [submission, setSubmission] = useState('');
     const [feedback, setFeedback] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
+    const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+    const [currentScore, setCurrentScore] = useState<number | null>(null);
+    const [showExample, setShowExample] = useState(false);
+
+    // Calculate previous attempts for this specific game
+    const gameAttempts = useMemo(() => {
+        if (!player?.attempts) return [];
+        return player.attempts.filter(a => a.gameId === game.id).sort((a, b) =>
+            new Date(b.ts).getTime() - new Date(a.ts).getTime()
+        );
+    }, [player?.attempts, game.id]);
+
+    const bestAttempt = useMemo(() => {
+        if (gameAttempts.length === 0) return null;
+        return gameAttempts.reduce((best, curr) => curr.score > best.score ? curr : best);
+    }, [gameAttempts]);
+
+    // Cooldown timer effect
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            const remaining = Math.max(0, COOLDOWN_MS - (now - lastSubmitTime));
+            setCooldownRemaining(remaining);
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [lastSubmitTime]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -21,6 +51,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
         setIsLoading(true);
         setFeedback(null);
+        setCurrentScore(null);
 
         try {
             const prompt = game.promptGenerator(submission);
@@ -34,16 +65,30 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
             let score = 0;
             if (scoreMatch) {
                 score = parseInt(scoreMatch[1], 10);
+                setCurrentScore(score);
                 updateScore(score);
+
+                // Save attempt to history
+                addAttempt({
+                    gameId: game.id,
+                    gameTitle: game.title,
+                    submission: submission,
+                    score: score,
+                    skill: game.skillCategory,
+                    ts: new Date().toISOString(),
+                    feedback: responseText
+                });
+
                 addToast(`Score updated! +${score} points`, 'success');
             }
-            
+
             const feedbackHtml = responseText
                 .replace(/SCORE: \d+/g, `<h3>Your Score: <strong class="text-cyan-400">${score}/100</strong></h3>`)
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\n/g, '<br />');
 
             setFeedback(feedbackHtml);
+            setLastSubmitTime(Date.now());
 
         } catch (error) {
             const message = error instanceof Error ? error.message : "An unknown error occurred.";
@@ -54,15 +99,67 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
         }
     };
 
+    const handleRetry = () => {
+        setSubmission('');
+        setFeedback(null);
+        setCurrentScore(null);
+    };
+
+    const isCooldownActive = cooldownRemaining > 0;
+    const cooldownSeconds = Math.ceil(cooldownRemaining / 1000);
+
+    // Difficulty badge styling
+    const difficultyConfig = {
+        easy: { color: 'bg-green-600', text: 'Easy', icon: '⭐' },
+        medium: { color: 'bg-yellow-600', text: 'Medium', icon: '⭐⭐' },
+        hard: { color: 'bg-red-600', text: 'Hard', icon: '⭐⭐⭐' }
+    };
+    const difficulty = difficultyConfig[game.difficulty];
+
     return (
         <div className="bg-gray-800 rounded-lg p-8 shadow-xl">
-            <h3 className="text-xl font-bold mb-2">{game.title}</h3>
+            <div className="flex items-start justify-between mb-2">
+                <h3 className="text-xl font-bold flex-1">{game.title}</h3>
+                <span className={`${difficulty.color} text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1`}>
+                    <span>{difficulty.icon}</span>
+                    <span>{difficulty.text}</span>
+                </span>
+            </div>
             <p className="text-gray-400 mb-4">{game.description}</p>
+
+            {/* Scoring Rules */}
+            <div className="mb-4 p-4 bg-gray-900 rounded-md border border-gray-700">
+                <h4 className="text-sm font-bold text-cyan-400 mb-2">Scoring Rules</h4>
+                <ul className="text-xs text-gray-400 space-y-1">
+                    <li>• You'll receive a score from 0-100 based on the quality of your submission</li>
+                    <li>• Each submission adds to your total score on the leaderboard</li>
+                    <li>• You can retry as many times as you want to improve your skills</li>
+                    <li>• There's a 30-second cooldown between submissions</li>
+                </ul>
+            </div>
+
+            {/* Previous Attempts Stats */}
+            {gameAttempts.length > 0 && (
+                <div className="mb-4 p-4 bg-gray-900 rounded-md border border-cyan-900">
+                    <h4 className="text-sm font-bold text-cyan-400 mb-2">Your Progress on This Game</h4>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <span className="text-gray-400">Total Attempts:</span>
+                            <span className="ml-2 text-white font-bold">{gameAttempts.length}</span>
+                        </div>
+                        <div>
+                            <span className="text-gray-400">Best Score:</span>
+                            <span className="ml-2 text-cyan-400 font-bold">{bestAttempt?.score}/100</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {game.context && (
                  <div className="text-sm bg-gray-700 p-4 rounded-md mb-4 border-l-4 border-cyan-500" dangerouslySetInnerHTML={{ __html: game.context }}></div>
             )}
             <p className="text-gray-300 mb-6 font-semibold">{game.task}</p>
-            
+
             <form onSubmit={handleSubmit}>
                 <textarea
                     rows={4}
@@ -72,14 +169,28 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
                     placeholder={game.placeholder}
                     aria-label={`Submission for ${game.title}`}
                 ></textarea>
-                <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center"
-                    aria-live="polite"
-                >
-                    {isLoading ? 'Getting Feedback...' : 'Submit & Get Feedback'}
-                </button>
+                <div className="flex gap-3 mt-4">
+                    <button
+                        type="submit"
+                        disabled={isLoading || isCooldownActive}
+                        className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center justify-center"
+                        aria-live="polite"
+                    >
+                        {isLoading ? 'Getting Feedback...' : isCooldownActive ? `Wait ${cooldownSeconds}s` : 'Submit & Get Feedback'}
+                    </button>
+                    {feedback && !isLoading && (
+                        <button
+                            type="button"
+                            onClick={handleRetry}
+                            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                        >
+                            Try Again
+                        </button>
+                    )}
+                </div>
+                {isCooldownActive && !isLoading && (
+                    <p className="text-xs text-gray-400 mt-2">⏱️ Cooldown active. Please wait {cooldownSeconds} seconds before submitting again.</p>
+                )}
             </form>
 
             <div className="mt-6" aria-live="polite" aria-busy={isLoading}>
@@ -99,6 +210,38 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
                     </>
                 )}
             </div>
+
+            {/* Example Solution Section */}
+            {game.exampleSolution && (
+                <div className="mt-6 border-t border-gray-700 pt-6">
+                    <button
+                        onClick={() => setShowExample(!showExample)}
+                        className="flex items-center justify-between w-full text-left p-4 bg-gray-700 hover:bg-gray-650 rounded-lg transition-colors"
+                    >
+                        <div className="flex items-center gap-2">
+                            <span className="text-yellow-400 text-xl">💡</span>
+                            <span className="font-semibold text-white">View Example Solution</span>
+                        </div>
+                        <span className="text-gray-400 text-sm">
+                            {showExample ? '▼ Hide' : '▶ Show'}
+                        </span>
+                    </button>
+
+                    {showExample && (
+                        <div className="mt-4 p-4 bg-gray-900 rounded-lg border border-yellow-400/30">
+                            <div className="flex items-start gap-2 mb-3">
+                                <span className="text-xs font-bold text-yellow-400 uppercase tracking-wide">Example Answer</span>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed italic">
+                                "{game.exampleSolution}"
+                            </p>
+                            <p className="text-xs text-gray-500 mt-3">
+                                Note: This is just one possible approach. Your unique solution might be equally valid or even better!
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

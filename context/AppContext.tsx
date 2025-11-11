@@ -1,7 +1,8 @@
 
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
-import { Player, Page, Toast, ToastType } from '../types';
+import { Player, Page, Toast, ToastType, Attempt, PlayerStats, Achievement } from '../types';
 import { fetchLeaderboard, syncPlayerRecord } from '../services/supabaseService';
+import { checkNewAchievements } from '../data/achievements';
 
 interface AppContextType {
   player: Player | null;
@@ -14,6 +15,9 @@ interface AppContextType {
   toasts: Toast[];
   addToast: (message: string, type: ToastType) => void;
   removeToast: (id: number) => void;
+  addAttempt: (attempt: Attempt) => void;
+  getPlayerStats: () => PlayerStats;
+  unlockAchievement: (achievementId: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -149,7 +153,113 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setToasts(prev => prev.filter(toast => toast.id !== id));
     };
 
-  const value = { player, setPlayer, leaderboard, isLoadingLeaderboard,  updateScore, currentPage, setCurrentPage, toasts, addToast, removeToast };
+  const unlockAchievement = useCallback((achievementId: string) => {
+    setPlayerState(prevPlayer => {
+      if (!prevPlayer) return null;
+
+      // Check if achievement is already unlocked
+      if (prevPlayer.achievements?.some(a => a.id === achievementId)) {
+        return prevPlayer;
+      }
+
+      // Find the achievement definition
+      const achievementDef = checkNewAchievements(prevPlayer).find(a => a.id === achievementId);
+      if (!achievementDef) return prevPlayer;
+
+      const newAchievement: Achievement = {
+        id: achievementDef.id,
+        name: achievementDef.name,
+        description: achievementDef.description,
+        icon: achievementDef.icon,
+        category: achievementDef.category,
+        unlockedAt: new Date().toISOString(),
+      };
+
+      const updatedAchievements = [...(prevPlayer.achievements || []), newAchievement];
+      const updatedPlayer = { ...prevPlayer, achievements: updatedAchievements };
+
+      persistPlayerToRemote(updatedPlayer, {
+        achievements: updatedAchievements,
+        achievementUnlockedAt: new Date().toISOString(),
+      });
+
+      return updatedPlayer;
+    });
+  }, [persistPlayerToRemote]);
+
+  const addAttempt = useCallback((attempt: Attempt) => {
+    setPlayerState(prevPlayer => {
+      if (!prevPlayer) return null;
+      const updatedAttempts = [...(prevPlayer.attempts || []), attempt];
+      const updatedPlayer = { ...prevPlayer, attempts: updatedAttempts };
+
+      // Check for new achievements
+      const newAchievements = checkNewAchievements(updatedPlayer);
+      if (newAchievements.length > 0) {
+        newAchievements.forEach(achievement => {
+          addToast(`🎉 Achievement Unlocked: ${achievement.name}!`, 'success');
+
+          // Unlock the achievement
+          setTimeout(() => {
+            unlockAchievement(achievement.id);
+          }, 100);
+        });
+      }
+
+      persistPlayerToRemote(updatedPlayer, {
+        attempts: updatedAttempts,
+        lastAttemptAt: new Date().toISOString(),
+      });
+      return updatedPlayer;
+    });
+  }, [persistPlayerToRemote, unlockAchievement, addToast]);
+
+  const getPlayerStats = useCallback((): PlayerStats => {
+    if (!player || !player.attempts || player.attempts.length === 0) {
+      return {
+        totalGamesPlayed: 0,
+        averageScore: 0,
+        bestScore: 0,
+        totalPoints: player?.score || 0,
+        gameBreakdown: [],
+      };
+    }
+
+    const attempts = player.attempts;
+    const totalGamesPlayed = attempts.length;
+    const totalScoreFromAttempts = attempts.reduce((sum, a) => sum + a.score, 0);
+    const averageScore = Math.round(totalScoreFromAttempts / totalGamesPlayed);
+    const bestScore = Math.max(...attempts.map(a => a.score));
+
+    const gameMap = new Map<string, { gameId: string; gameTitle: string; attempts: number; bestScore: number }>();
+
+    attempts.forEach(attempt => {
+      const existing = gameMap.get(attempt.gameId);
+      if (existing) {
+        existing.attempts += 1;
+        existing.bestScore = Math.max(existing.bestScore, attempt.score);
+      } else {
+        gameMap.set(attempt.gameId, {
+          gameId: attempt.gameId,
+          gameTitle: attempt.gameTitle,
+          attempts: 1,
+          bestScore: attempt.score,
+        });
+      }
+    });
+
+    const gameBreakdown = Array.from(gameMap.values());
+
+    return {
+      totalGamesPlayed,
+      averageScore,
+      bestScore,
+      totalPoints: player.score,
+      gameBreakdown,
+    };
+  }, [player]);
+
+  const value = { player, setPlayer, leaderboard, isLoadingLeaderboard,  updateScore, currentPage, setCurrentPage, toasts, addToast, removeToast, addAttempt, getPlayerStats, unlockAchievement };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
     };

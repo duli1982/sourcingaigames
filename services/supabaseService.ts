@@ -64,6 +64,7 @@ export const renamePlayer = async (
   oldName: string,
   newName: string,
   score: number,
+  playerId?: string,
   progress?: Record<string, unknown>
 ): Promise<boolean> => {
   if (!ensureConfig() || !supabaseClient) {
@@ -73,7 +74,7 @@ export const renamePlayer = async (
     const taken = await isNameTaken(newName);
     if (taken) return false;
     // create new record first
-    const { error: upsertError } = await supabaseClient.from('players').upsert({ id: (player as any).id, name: player.name, score: player.score, progress, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    const { error: upsertError } = await supabaseClient.from('players').upsert({ id: playerId, name: newName, score: score, progress, updated_at: new Date().toISOString() }, { onConflict: 'id' });
     if (upsertError) throw upsertError;
     // delete the old record
     const { error: delError } = await supabaseClient.from('players').delete().eq('name', oldName);

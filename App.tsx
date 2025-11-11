@@ -6,6 +6,7 @@ import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import GamesPage from './pages/GamesPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import ProfilePage from './pages/ProfilePage';
 import Toast from './components/Toast';
 import { Page } from './types';
 
@@ -29,6 +30,7 @@ const App: React.FC = () => {
           <div className={`page ${currentPage === 'home' ? 'active' : ''}`}><HomePage /></div>
           <div className={`page ${currentPage === 'games' ? 'active' : ''}`}><GamesPage /></div>
           <div className={`page ${currentPage === 'leaderboard' ? 'active' : ''}`}><LeaderboardPage /></div>
+          <div className={`page ${currentPage === 'profile' ? 'active' : ''}`}><ProfilePage /></div>
         </div>
       </main>
       <div className="fixed top-5 right-5 z-50 space-y-2">

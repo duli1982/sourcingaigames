@@ -5,15 +5,19 @@ export interface Player {
   name: string; // display name
   score: number;
   email?: string;
+  attempts?: Attempt[]; // Player's game attempts history
+  achievements?: Achievement[]; // Unlocked achievements
 }
 
-export type Page = 'home' | 'games' | 'leaderboard';
+export type Page = 'home' | 'games' | 'leaderboard' | 'profile';
 
 export interface ChatMessage {
   sender: 'user' | 'coach';
   text: string;
   isTyping?: boolean;
 }
+
+export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface Game {
     id: string;
@@ -23,6 +27,9 @@ export interface Game {
     context?: string;
     placeholder: string;
     promptGenerator: (submission: string) => string;
+    exampleSolution?: string;
+    difficulty: Difficulty;
+    skillCategory: SkillCategory;
 }
 
 export type ToastType = 'success' | 'error' | 'info';
@@ -33,14 +40,56 @@ export interface Toast {
     type: ToastType;
 }
 
+export interface PlayerStats {
+    totalGamesPlayed: number;
+    averageScore: number;
+    bestScore: number;
+    totalPoints: number;
+    gameBreakdown: {
+        gameId: string;
+        gameTitle: string;
+        attempts: number;
+        bestScore: number;
+    }[];
+}
 
-export type SkillCategory = 'boolean' | 'xray' | 'enrichment';
+export type SkillCategory =
+  | 'boolean'           // Boolean search strings
+  | 'xray'             // Google X-ray searches
+  | 'persona'          // Candidate profiling
+  | 'outreach'         // Candidate messaging
+  | 'linkedin'         // LinkedIn-specific sourcing
+  | 'diversity'        // Diversity & inclusion sourcing
+  | 'ats'              // ATS/CRM usage
+  | 'screening'        // Resume/profile screening
+  | 'job-description'; // Writing effective JDs
+
+export type TimeFilter = 'all-time' | 'weekly' | 'monthly';
 
 export interface Attempt {
   gameId: string;
+  gameTitle: string;
   submission: string;
   score: number;
   skill?: SkillCategory;
   ts: string; // ISO timestamp
   feedback?: string;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string; // Emoji or icon identifier
+  category: 'score' | 'games' | 'streak' | 'skill' | 'special';
+  unlockedAt?: string; // ISO timestamp
+}
+
+export interface AchievementDefinition {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'score' | 'games' | 'streak' | 'skill' | 'special';
+  checkUnlock: (player: Player) => boolean; // Function to check if achievement is unlocked
 }
