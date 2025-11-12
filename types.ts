@@ -5,6 +5,7 @@ export interface Player {
   name: string; // display name
   score: number;
   email?: string;
+  sessionToken?: string; // Persistent session token for authentication
   attempts?: Attempt[]; // Player's game attempts history
   achievements?: Achievement[]; // Unlocked achievements
 }

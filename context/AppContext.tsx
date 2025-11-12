@@ -1,8 +1,9 @@
 
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
 import { Player, Page, Toast, ToastType, Attempt, PlayerStats, Achievement } from '../types';
-import { fetchLeaderboard, fetchPlayerById, createPlayer, updatePlayer } from '../services/supabaseService';
+import { fetchLeaderboard, fetchPlayerById, fetchPlayerBySessionToken, createPlayer, updatePlayer } from '../services/supabaseService';
 import { checkNewAchievements } from '../data/achievements';
+import { getCookie, setCookie, generateSessionToken } from '../utils/cookieUtils';
 
 interface AppContextType {
   player: Player | null;
@@ -61,7 +62,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [leaderboard]);
 
-  // Load player from Supabase on mount (Hybrid: Supabase primary, localStorage cache)
+  // Load player from Supabase on mount (Session Token Primary, ID fallback, localStorage cache)
   useEffect(() => {
     let isMounted = true;
 
@@ -69,34 +70,64 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setIsLoadingPlayer(true);
 
       try {
-        // 1. Try to get stored player ID from localStorage
-        const storedPlayerId = window.localStorage.getItem('playerId');
+        // 1. Try to get session token from cookie (most persistent) or localStorage
+        let sessionToken = getCookie('sessionToken');
+        if (!sessionToken) {
+          sessionToken = window.localStorage.getItem('sessionToken');
+        }
 
+        if (sessionToken) {
+          // 2. Fetch player from Supabase by session token (source of truth)
+          const playerData = await fetchPlayerBySessionToken(sessionToken);
+
+          if (isMounted && playerData) {
+            setPlayerState(playerData);
+            // Update both storages
+            window.localStorage.setItem('sessionToken', sessionToken);
+            window.localStorage.setItem('playerId', playerData.id!);
+            window.localStorage.setItem('player', JSON.stringify(playerData));
+            setCookie('sessionToken', sessionToken, 365); // 1 year expiry
+            return; // Exit early on success
+          } else if (isMounted && !playerData) {
+            // Session token invalid, clear all session data
+            window.localStorage.removeItem('sessionToken');
+            window.localStorage.removeItem('playerId');
+            window.localStorage.removeItem('player');
+            setCookie('sessionToken', '', -1); // Delete cookie
+          }
+        }
+
+        // 3. Fallback to playerId (legacy support)
+        const storedPlayerId = window.localStorage.getItem('playerId');
         if (storedPlayerId) {
-          // 2. Fetch player from Supabase by ID (source of truth)
           const playerData = await fetchPlayerById(storedPlayerId);
 
           if (isMounted && playerData) {
             setPlayerState(playerData);
-            // Update localStorage cache
+            // Update cache and save session token if it exists
             window.localStorage.setItem('player', JSON.stringify(playerData));
+            if (playerData.sessionToken) {
+              window.localStorage.setItem('sessionToken', playerData.sessionToken);
+              setCookie('sessionToken', playerData.sessionToken, 365);
+            }
+            return; // Exit early on success
           } else if (isMounted && !playerData) {
             // Player not found in DB, clear localStorage
             window.localStorage.removeItem('playerId');
             window.localStorage.removeItem('player');
           }
-        } else {
-          // 3. Fallback to localStorage cache only (for offline use)
-          try {
-            const cachedPlayer = window.localStorage.getItem('player');
-            if (cachedPlayer && isMounted) {
-              const parsedPlayer = JSON.parse(cachedPlayer);
-              setPlayerState(parsedPlayer);
-              console.warn('Loaded player from cache (offline mode)');
-            }
-          } catch (error) {
-            console.error('Failed to parse cached player:', error);
+        }
+
+        // 4. Final fallback to localStorage cache only (for offline use)
+        try {
+          const cachedPlayer = window.localStorage.getItem('player');
+          if (cachedPlayer && isMounted) {
+            const parsedPlayer = JSON.parse(cachedPlayer);
+            setPlayerState(parsedPlayer);
+            console.warn('Loaded player from cache (offline mode)');
           }
+        } catch (error) {
+          console.error('Failed to parse cached player:', error);
         }
       } catch (error) {
         console.error('Error loading player:', error);
@@ -148,28 +179,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   }, []);
 
-  // Async setPlayer: Creates player in Supabase first, with optimistic updates
+  // Async setPlayer: Creates player in Supabase first, with session token and optimistic updates
   const setPlayer = useCallback(async (newPlayer: Player) => {
+    // Generate session token if not present
+    const sessionToken = newPlayer.sessionToken || generateSessionToken();
+    const playerWithToken = { ...newPlayer, sessionToken };
+
     // Optimistic update (update UI immediately)
-    setPlayerState(newPlayer);
-    window.localStorage.setItem('player', JSON.stringify(newPlayer));
+    setPlayerState(playerWithToken);
+    window.localStorage.setItem('player', JSON.stringify(playerWithToken));
 
     try {
       let savedPlayer: Player | null;
 
-      if (newPlayer.id) {
+      if (playerWithToken.id) {
         // Update existing player in Supabase
-        savedPlayer = await updatePlayer(newPlayer);
+        savedPlayer = await updatePlayer(playerWithToken);
       } else {
-        // Create new player in Supabase
-        savedPlayer = await createPlayer(newPlayer.name);
+        // Create new player in Supabase with session token
+        savedPlayer = await createPlayer(playerWithToken.name, sessionToken);
       }
 
       if (savedPlayer) {
-        // Update with server response (includes DB-generated ID)
+        // Update with server response (includes DB-generated ID and session token)
         setPlayerState(savedPlayer);
         window.localStorage.setItem('playerId', savedPlayer.id!);
+        window.localStorage.setItem('sessionToken', savedPlayer.sessionToken!);
         window.localStorage.setItem('player', JSON.stringify(savedPlayer));
+
+        // Store session token in cookie for persistence across browser sessions
+        setCookie('sessionToken', savedPlayer.sessionToken!, 365); // 1 year expiry
 
         // Update leaderboard
         setLeaderboard(prev => {

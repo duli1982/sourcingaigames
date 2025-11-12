@@ -131,6 +131,7 @@ export const fetchPlayerById = async (id: string): Promise<Player | null> => {
       id: data.id,
       name: data.name,
       score: data.score ?? 0,
+      sessionToken: data.session_token,
       attempts: data.progress?.attempts || [],
       achievements: data.progress?.achievements || []
     };
@@ -141,10 +142,88 @@ export const fetchPlayerById = async (id: string): Promise<Player | null> => {
 };
 
 /**
- * Create new player in Supabase
- * Returns player with DB-generated UUID
+ * Fetch player by session token
+ * Returns player if valid session token exists
  */
-export const createPlayer = async (name: string): Promise<Player | null> => {
+export const fetchPlayerBySessionToken = async (sessionToken: string): Promise<Player | null> => {
+  if (!ensureConfig() || !supabaseClient) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('players')
+      .select('*')
+      .eq('session_token', sessionToken)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Not found
+        return null;
+      }
+      console.error('Failed to fetch player by session token:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      score: data.score ?? 0,
+      sessionToken: data.session_token,
+      attempts: data.progress?.attempts || [],
+      achievements: data.progress?.achievements || []
+    };
+  } catch (error) {
+    console.error('Error fetching player by session token:', error);
+    return null;
+  }
+};
+
+/**
+ * Fetch player by name (case-insensitive)
+ * Used for returning users who lost their session
+ */
+export const fetchPlayerByName = async (name: string): Promise<Player | null> => {
+  if (!ensureConfig() || !supabaseClient) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('players')
+      .select('*')
+      .ilike('name', name)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Not found
+        return null;
+      }
+      console.error('Failed to fetch player by name:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      score: data.score ?? 0,
+      sessionToken: data.session_token,
+      attempts: data.progress?.attempts || [],
+      achievements: data.progress?.achievements || []
+    };
+  } catch (error) {
+    console.error('Error fetching player by name:', error);
+    return null;
+  }
+};
+
+/**
+ * Create new player in Supabase with session token
+ * Returns player with DB-generated UUID and session token
+ */
+export const createPlayer = async (name: string, sessionToken: string): Promise<Player | null> => {
   if (!ensureConfig() || !supabaseClient) {
     return null;
   }
@@ -155,6 +234,7 @@ export const createPlayer = async (name: string): Promise<Player | null> => {
       .insert({
         name,
         score: 0,
+        session_token: sessionToken,
         progress: { attempts: [], achievements: [] },
         updated_at: new Date().toISOString()
       })
@@ -170,6 +250,7 @@ export const createPlayer = async (name: string): Promise<Player | null> => {
       id: data.id,
       name: data.name,
       score: data.score ?? 0,
+      sessionToken: data.session_token,
       attempts: [],
       achievements: []
     };
@@ -194,6 +275,7 @@ export const updatePlayer = async (player: Player): Promise<Player | null> => {
       .update({
         name: player.name,
         score: player.score,
+        session_token: player.sessionToken,
         progress: {
           attempts: player.attempts,
           achievements: player.achievements
@@ -213,11 +295,51 @@ export const updatePlayer = async (player: Player): Promise<Player | null> => {
       id: data.id,
       name: data.name,
       score: data.score ?? 0,
+      sessionToken: data.session_token,
       attempts: data.progress?.attempts || [],
       achievements: data.progress?.achievements || []
     };
   } catch (error) {
     console.error('Error updating player:', error);
+    return null;
+  }
+};
+
+/**
+ * Update session token for existing player
+ * Used when returning user logs back in
+ */
+export const updatePlayerSessionToken = async (playerId: string, sessionToken: string): Promise<Player | null> => {
+  if (!ensureConfig() || !supabaseClient) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('players')
+      .update({
+        session_token: sessionToken,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', playerId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Failed to update session token:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      score: data.score ?? 0,
+      sessionToken: data.session_token,
+      attempts: data.progress?.attempts || [],
+      achievements: data.progress?.achievements || []
+    };
+  } catch (error) {
+    console.error('Error updating session token:', error);
     return null;
   }
 };

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { validateName } from '../utils/nameValidator';
+import { generateSessionToken } from '../utils/cookieUtils';
 
 const NameModal: React.FC = () => {
   const [name, setName] = useState('');
@@ -67,9 +68,9 @@ const NameModal: React.FC = () => {
       return;
     }
 
-    // Check if name is already taken
+    // Check if name is already taken - returning user flow is separate
     if (available === false) {
-      addToast('This name is already taken (case-insensitive). Please choose another.', 'error');
+      addToast('This name is already taken. If this is you, click "Returning User" below.', 'error');
       return;
     }
 
@@ -93,6 +94,45 @@ const NameModal: React.FC = () => {
     } catch (error) {
       console.error('Failed to create player:', error);
       addToast('Failed to create account. Please try again.', 'error');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleReturningUser = async () => {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      addToast('Please enter your name', 'error');
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      // Fetch existing player by name
+      const { fetchPlayerByName, updatePlayerSessionToken } = await import('../services/supabaseService');
+      const existingPlayer = await fetchPlayerByName(trimmedName);
+
+      if (existingPlayer) {
+        // Generate new session token for this session
+        const newSessionToken = generateSessionToken();
+
+        // Update session token in database
+        const updatedPlayer = await updatePlayerSessionToken(existingPlayer.id!, newSessionToken);
+
+        if (updatedPlayer) {
+          // Load player with new session token
+          await setPlayer(updatedPlayer);
+          addToast(`Welcome back, ${trimmedName}! 🎉`, 'success');
+        } else {
+          addToast('Failed to reconnect. Please try again.', 'error');
+        }
+      } else {
+        addToast('Account not found. Please create a new account.', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to load returning user:', error);
+      addToast('Failed to reconnect. Please try again.', 'error');
     } finally {
       setIsCreating(false);
     }
@@ -139,6 +179,22 @@ const NameModal: React.FC = () => {
           {!validationError && name.length === 0 && (
             <p className="text-gray-400 text-xs mt-2">💡 Use only letters, spaces, hyphens, and apostrophes (2-50 characters)</p>
           )}
+
+          {/* Show returning user option when name is taken */}
+          {!validationError && available === false && (
+            <div className="mt-3 p-3 bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-md">
+              <p className="text-yellow-200 text-sm mb-2">⚠️ This name already exists. Is this you?</p>
+              <button
+                type="button"
+                onClick={handleReturningUser}
+                disabled={isCreating}
+                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed"
+              >
+                {isCreating ? 'Reconnecting...' : '🔄 Yes, I\'m a Returning User'}
+              </button>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={available === false || checking || validationError !== null || available === null || isCreating}
