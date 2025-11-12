@@ -78,7 +78,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
             let score = 0;
             if (scoreMatch) {
                 score = parseInt(scoreMatch[1], 10);
-                updateScore(score);
+                await updateScore(score);
 
                 // Save attempt to history
                 addAttempt({
