@@ -10,7 +10,7 @@ const getNextFriday = (): Date => {
     const daysUntilFriday = (5 - dayOfWeek + 7) % 7;
     const nextFriday = new Date(today);
     nextFriday.setDate(today.getDate() + (daysUntilFriday === 0 ? 7 : daysUntilFriday));
-    nextFriday.setHours(9, 0, 0, 0); // Set to 9 AM for clarity
+    nextFriday.setUTCHours(13, 0, 0, 0); // 13:00 UTC = 9 AM ET / 3 PM CET (examples)
     return nextFriday;
 };
 
@@ -28,12 +28,32 @@ const GamesPage: React.FC = () => {
     const gameIndex = weeksPassed % games.length;
     const currentGame = games[gameIndex];
 
-    const nextFriday = getNextFriday();
-    const nextChallengeDate = nextFriday.toLocaleDateString('en-US', {
+    const nextFridayUtc = getNextFriday();
+
+    const userLocale = typeof navigator !== 'undefined' && navigator.language
+        ? navigator.language
+        : 'en-US';
+
+    const nextChallengeDate = nextFridayUtc.toLocaleDateString(userLocale, {
         weekday: 'long',
         month: 'long',
         day: 'numeric'
     });
+
+    const formatInTimezone = (date: Date, timeZone: string, label: string) => {
+        const timeFormatter = new Intl.DateTimeFormat(userLocale, {
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZone,
+            hour12: false
+        });
+        return `${timeFormatter.format(date)} ${label}`;
+    };
+
+    const timezoneDisplay = [
+        formatInTimezone(nextFridayUtc, 'Europe/Berlin', 'CET'),
+        formatInTimezone(nextFridayUtc, 'America/New_York', 'ET')
+    ];
 
     // Determine which games are unlocked (played in Challenge mode)
     const unlockedGameIds = useMemo(() => {
@@ -87,7 +107,13 @@ const GamesPage: React.FC = () => {
                 <div>
                     <div className="mb-6 border-b border-gray-700 pb-4">
                         <h2 className="text-3xl font-bold text-cyan-400">This Week's Challenge</h2>
-                        <p className="text-gray-400 mt-1">A new sourcing game unlocks every Friday. Good luck!</p>
+                        <p className="text-gray-400 mt-1">
+                            A new sourcing game unlocks every Friday. Next drop: <span className="font-semibold text-white">{nextChallengeDate}</span>
+                            <br />
+                            <span className="text-sm text-gray-500">
+                                {timezoneDisplay.join(' / ')}
+                            </span>
+                        </p>
                     </div>
                     <div className="space-y-8">
                         <GameCard key={currentGame.id} game={currentGame} mode="challenge" />

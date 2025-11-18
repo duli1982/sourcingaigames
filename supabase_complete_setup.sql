@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS players (
   -- Session token for persistent authentication
   session_token TEXT UNIQUE,
 
+  -- Supabase Auth ownership (required for RLS policies)
+  owner_id UUID NOT NULL REFERENCES auth.users(id),
+
   -- Game progress stored as JSONB
   progress JSONB DEFAULT '{
     "attempts": [],
@@ -70,27 +73,25 @@ FOR SELECT
 TO public
 USING (true);
 
--- Allow public player creation
-CREATE POLICY "Public insert for new players"
+-- Allow only authenticated owners to insert/update/delete their own rows
+CREATE POLICY "Players insert (owner only)"
 ON players
 FOR INSERT
-TO public
-WITH CHECK (true);
+TO authenticated
+WITH CHECK (auth.uid() = owner_id);
 
--- Allow public updates (since we use session tokens, not auth)
-CREATE POLICY "Public update access"
+CREATE POLICY "Players update (owner only)"
 ON players
 FOR UPDATE
-TO public
-USING (true)
-WITH CHECK (true);
+TO authenticated
+USING (auth.uid() = owner_id)
+WITH CHECK (auth.uid() = owner_id);
 
--- Allow public delete (for account management)
-CREATE POLICY "Public delete access"
+CREATE POLICY "Players delete (owner only)"
 ON players
 FOR DELETE
-TO public
-USING (true);
+TO authenticated
+USING (auth.uid() = owner_id);
 
 -- =====================================================
 -- Step 7: Verify setup

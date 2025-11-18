@@ -16,6 +16,16 @@ const ensureConfig = () => {
   return Boolean(supabaseClient);
 };
 
+const mapPlayer = (row: any): Player => ({
+  id: row.id,
+  name: row.name,
+  score: row.score ?? 0,
+  sessionToken: row.session_token,
+  attempts: row.progress?.attempts || [],
+  achievements: row.progress?.achievements || [],
+  pinHash: row.progress?.pinHash || undefined,
+});
+
 export const fetchLeaderboard = async (): Promise<Player[]> => {
   if (!ensureConfig() || !supabaseClient) {
     return [];
@@ -23,7 +33,7 @@ export const fetchLeaderboard = async (): Promise<Player[]> => {
 
   const { data, error } = await supabaseClient
     .from('players')
-    .select('id, name, score')
+    .select('id, name, score, progress')
     .order('score', { ascending: false });
 
   if (error) {
@@ -31,7 +41,13 @@ export const fetchLeaderboard = async (): Promise<Player[]> => {
     return [];
   }
 
-  return data?.map((row: any) => ({ id: row.id, name: row.name, score: row.score ?? 0 })) ?? [];
+  return data?.map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    score: row.score ?? 0,
+    attempts: row.progress?.attempts || [],
+    achievements: row.progress?.achievements || [],
+  })) ?? [];
 };
 
 export const isNameTaken = async (name: string): Promise<boolean> => {
@@ -96,7 +112,7 @@ export const syncPlayerRecord = async (
   }
 
   try {
-    await supabaseClient.from('players').upsert({ id: (player as any).id, name: player.name, score: player.score, progress, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    await supabaseClient.from('players').upsert({ id: (player as any).id, name: player.name, score: player.score, progress: { ...(progress || {}), pinHash: player.pinHash || null }, updated_at: new Date().toISOString() }, { onConflict: 'id' });
   } catch (error) {
     console.error('Failed to sync player record to Supabase:', error);
   }
@@ -127,14 +143,7 @@ export const fetchPlayerById = async (id: string): Promise<Player | null> => {
       return null;
     }
 
-    return {
-      id: data.id,
-      name: data.name,
-      score: data.score ?? 0,
-      sessionToken: data.session_token,
-      attempts: data.progress?.attempts || [],
-      achievements: data.progress?.achievements || []
-    };
+    return mapPlayer(data);
   } catch (error) {
     console.error('Error fetching player:', error);
     return null;
@@ -166,14 +175,7 @@ export const fetchPlayerBySessionToken = async (sessionToken: string): Promise<P
       return null;
     }
 
-    return {
-      id: data.id,
-      name: data.name,
-      score: data.score ?? 0,
-      sessionToken: data.session_token,
-      attempts: data.progress?.attempts || [],
-      achievements: data.progress?.achievements || []
-    };
+    return mapPlayer(data);
   } catch (error) {
     console.error('Error fetching player by session token:', error);
     return null;
@@ -205,14 +207,7 @@ export const fetchPlayerByName = async (name: string): Promise<Player | null> =>
       return null;
     }
 
-    return {
-      id: data.id,
-      name: data.name,
-      score: data.score ?? 0,
-      sessionToken: data.session_token,
-      attempts: data.progress?.attempts || [],
-      achievements: data.progress?.achievements || []
-    };
+    return mapPlayer(data);
   } catch (error) {
     console.error('Error fetching player by name:', error);
     return null;
@@ -223,7 +218,7 @@ export const fetchPlayerByName = async (name: string): Promise<Player | null> =>
  * Create new player in Supabase with session token
  * Returns player with DB-generated UUID and session token
  */
-export const createPlayer = async (name: string, sessionToken: string): Promise<Player | null> => {
+export const createPlayer = async (name: string, sessionToken: string, pinHash?: string | null): Promise<Player | null> => {
   if (!ensureConfig() || !supabaseClient) {
     return null;
   }
@@ -235,7 +230,7 @@ export const createPlayer = async (name: string, sessionToken: string): Promise<
         name,
         score: 0,
         session_token: sessionToken,
-        progress: { attempts: [], achievements: [] },
+        progress: { attempts: [], achievements: [], pinHash: pinHash || null },
         updated_at: new Date().toISOString()
       })
       .select()
@@ -246,14 +241,7 @@ export const createPlayer = async (name: string, sessionToken: string): Promise<
       return null;
     }
 
-    return {
-      id: data.id,
-      name: data.name,
-      score: data.score ?? 0,
-      sessionToken: data.session_token,
-      attempts: [],
-      achievements: []
-    };
+    return mapPlayer(data);
   } catch (error) {
     console.error('Error creating player:', error);
     return null;
@@ -278,7 +266,8 @@ export const updatePlayer = async (player: Player): Promise<Player | null> => {
         session_token: player.sessionToken,
         progress: {
           attempts: player.attempts,
-          achievements: player.achievements
+          achievements: player.achievements,
+          pinHash: player.pinHash || null
         },
         updated_at: new Date().toISOString()
       })
@@ -291,14 +280,7 @@ export const updatePlayer = async (player: Player): Promise<Player | null> => {
       return null;
     }
 
-    return {
-      id: data.id,
-      name: data.name,
-      score: data.score ?? 0,
-      sessionToken: data.session_token,
-      attempts: data.progress?.attempts || [],
-      achievements: data.progress?.achievements || []
-    };
+    return mapPlayer(data);
   } catch (error) {
     console.error('Error updating player:', error);
     return null;
@@ -330,14 +312,7 @@ export const updatePlayerSessionToken = async (playerId: string, sessionToken: s
       return null;
     }
 
-    return {
-      id: data.id,
-      name: data.name,
-      score: data.score ?? 0,
-      sessionToken: data.session_token,
-      attempts: data.progress?.attempts || [],
-      achievements: data.progress?.achievements || []
-    };
+    return mapPlayer(data);
   } catch (error) {
     console.error('Error updating session token:', error);
     return null;

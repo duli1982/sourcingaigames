@@ -1,12 +1,31 @@
 /**
  * Formats AI feedback text into structured HTML with proper styling
  * Handles code blocks, section headers, bullet points, and visual separators
+ * while stripping any model-provided HTML.
  */
 
 export function formatFeedback(feedbackText: string, score: number): string {
-    let html = feedbackText;
+    const codeBlocks: string[] = [];
+    const inlineCodes: string[] = [];
 
-    // 1. Replace SCORE with styled header
+    // Capture fenced code blocks before escaping
+    let html = feedbackText.replace(/```([\s\S]*?)```/g, (_, block) => {
+        const index = codeBlocks.length;
+        codeBlocks.push(block);
+        return `__CODE_BLOCK_${index}__`;
+    });
+
+    // Capture inline code segments before escaping
+    html = html.replace(/`([^`]+)`/g, (_, snippet) => {
+        const index = inlineCodes.length;
+        inlineCodes.push(snippet);
+        return `__INLINE_CODE_${index}__`;
+    });
+
+    // Escape everything else up-front to neutralize arbitrary HTML
+    html = escapeHtml(html);
+
+    // Replace SCORE with styled header
     html = html.replace(
         /\*\*SCORE:\s*(\d+)\*\*/gi,
         `<div class="score-section">
@@ -26,34 +45,18 @@ export function formatFeedback(feedbackText: string, score: number): string {
         </div>`
     );
 
-    // 2. Handle code blocks with triple backticks
-    html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-        const trimmedCode = code.trim();
-        return `<div class="code-block-wrapper">
-            <div class="code-block-header">
-                <span class="code-icon">💻</span>
-                <span class="code-label">Code Example</span>
-            </div>
-            <pre class="code-block"><code>${escapeHtml(trimmedCode)}</code></pre>
-        </div>`;
-    });
-
-    // 3. Handle inline code with single backticks
-    html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-
-    // 4. Section headers with icons
+    // Section headers with icons
     const sectionIcons: { [key: string]: string } = {
-        'Analysis': '🔍',
-        'Strengths': '✅',
-        'Areas for Improvement': '💡',
-        'Improved Search String': '✨',
-        'Why This Works Better': '🎯',
-        'Test plan': '🧪',
-        'Summary': '📋'
+        'Analysis': 'dY"?',
+        'Strengths': '�o.',
+        'Areas for Improvement': 'dY'�',
+        'Improved Search String': '�o"',
+        'Why This Works Better': 'dYZ_',
+        'Test plan': 'dY�',
+        'Summary': 'dY"<'
     };
 
     for (const [section, icon] of Object.entries(sectionIcons)) {
-        // Match **Section:** or **Section**
         const regex = new RegExp(`\\*\\*${section}:?\\*\\*`, 'gi');
         html = html.replace(regex,
             `<div class="section-header">
@@ -63,25 +66,43 @@ export function formatFeedback(feedbackText: string, score: number): string {
         );
     }
 
-    // 5. Handle bold text (remaining ** patterns)
+    // Handle bold text (remaining ** patterns)
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-cyan-300">$1</strong>');
 
-    // 6. Convert bullet points with proper indentation
-    // Match lines starting with - or • or numbers like 1., 2.
-    html = html.replace(/^[\-•]\s+(.+)$/gm, '<li class="bullet-item">$1</li>');
+    // Convert bullet points with proper indentation
+    html = html.replace(/^[\-�?�]\s+(.+)$/gm, '<li class="bullet-item">$1</li>');
     html = html.replace(/^\d+\.\s+(.+)$/gm, '<li class="numbered-item">$1</li>');
 
-    // 7. Wrap consecutive <li> elements in <ul> tags
+    // Wrap consecutive <li> elements in lists
     html = html.replace(/(<li class="bullet-item">.*?<\/li>(?:\s*<li class="bullet-item">.*?<\/li>)*)/gs,
         '<ul class="bullet-list">$1</ul>');
     html = html.replace(/(<li class="numbered-item">.*?<\/li>(?:\s*<li class="numbered-item">.*?<\/li>)*)/gs,
         '<ol class="numbered-list">$1</ol>');
 
-    // 8. Convert newlines to breaks (but not inside pre/code blocks)
+    // Convert newlines to breaks (but not inside pre/code blocks)
     html = html.replace(/\n/g, '<br />');
 
-    // 9. Add visual separators between major sections
+    // Add visual separators between major sections
     html = html.replace(/(<\/div>)(<div class="section-header">)/g, '$1<hr class="section-divider" />$2');
+
+    // Restore sanitized inline code snippets
+    inlineCodes.forEach((snippet, index) => {
+        const token = new RegExp(`__INLINE_CODE_${index}__`, 'g');
+        html = html.replace(token, `<code class="inline-code">${escapeHtml(snippet)}</code>`);
+    });
+
+    // Restore sanitized code blocks
+    codeBlocks.forEach((block, index) => {
+        const token = new RegExp(`__CODE_BLOCK_${index}__`, 'g');
+        const trimmedCode = block.trim();
+        html = html.replace(token, `<div class="code-block-wrapper">
+            <div class="code-block-header">
+                <span class="code-icon">dY'�</span>
+                <span class="code-label">Code Example</span>
+            </div>
+            <pre class="code-block"><code>${escapeHtml(trimmedCode)}</code></pre>
+        </div>`);
+    });
 
     return html;
 }

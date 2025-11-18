@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { getGeminiResponse } from '../services/geminiService';
 import { useAppContext } from '../context/AppContext';
-import { Game } from '../types';
+import { Game, Player } from '../types';
 import { Spinner } from './Spinner';
 import { formatFeedback } from '../utils/feedbackFormatter';
 import '../styles/feedback.css';
@@ -15,7 +14,7 @@ interface GameCardProps {
 const COOLDOWN_MS = 30000; // 30 seconds
 
 const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
-    const { player, updateScore, addToast, addAttempt } = useAppContext();
+    const { player, addToast, refreshPlayer } = useAppContext();
     const [submission, setSubmission] = useState('');
     const [feedback, setFeedback] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +57,10 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
 
     const handleConfirmedSubmit = async () => {
         if (!submission.trim() || !player) return;
+        if (!player.sessionToken) {
+            addToast('Session expired. Please refresh the page.', 'error');
+            return;
+        }
 
         // Close confirmation modal
         setShowConfirmation(false);
@@ -67,36 +70,32 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
         setFeedback(null);
 
         try {
-            const prompt = game.promptGenerator(submission);
-            const responseText = await getGeminiResponse(prompt);
-
-            if(responseText.startsWith("Error:")) {
-                throw new Error(responseText);
-            }
-
-            const scoreMatch = responseText.match(/SCORE: (\d+)/);
-            let score = 0;
-            if (scoreMatch) {
-                score = parseInt(scoreMatch[1], 10);
-                await updateScore(score);
-
-                // Save attempt to history
-                addAttempt({
+            const response = await fetch('/api/submitAttempt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionToken: player.sessionToken,
                     gameId: game.id,
-                    gameTitle: game.title,
-                    submission: submission,
-                    score: score,
-                    skill: game.skillCategory,
-                    ts: new Date().toISOString(),
-                    feedback: responseText
-                });
+                    submission
+                })
+            });
 
-                addToast(`Score updated! +${score} points`, 'success');
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Request failed with ${response.status}`);
             }
 
-            // Use the enhanced feedback formatter
-            const feedbackHtml = formatFeedback(responseText, score);
+            const data: { score: number; feedback: string; player: Player } = await response.json();
 
+            if (data.player) {
+                refreshPlayer(data.player);
+            }
+
+            if (typeof data.score === 'number') {
+                addToast(`Score updated! +${data.score} points`, 'success');
+            }
+
+            const feedbackHtml = formatFeedback(data.feedback, data.score ?? 0);
             setFeedback(feedbackHtml);
             setLastSubmitTime(Date.now());
 
@@ -401,5 +400,3 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
 };
 
 export default GameCard;
-
-

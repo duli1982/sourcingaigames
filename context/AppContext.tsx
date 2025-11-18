@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, ReactNode, useCallback, use
 import { Player, Page, Toast, ToastType, Attempt, PlayerStats, Achievement } from '../types';
 import { fetchLeaderboard, fetchPlayerById, fetchPlayerBySessionToken, createPlayer, updatePlayer } from '../services/supabaseService';
 import { checkNewAchievements } from '../data/achievements';
-import { getCookie, setCookie, generateSessionToken } from '../utils/cookieUtils';
+import { requestSessionToken } from '../utils/sessionUtils';
 
 interface AppContextType {
   player: Player | null;
@@ -20,6 +20,7 @@ interface AppContextType {
   addAttempt: (attempt: Attempt) => void;
   getPlayerStats: () => PlayerStats;
   unlockAchievement: (achievementId: string) => void;
+  refreshPlayer: (player: Player) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -70,11 +71,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setIsLoadingPlayer(true);
 
       try {
-        // 1. Try to get session token from cookie (most persistent) or localStorage
-        let sessionToken = getCookie('sessionToken');
-        if (!sessionToken) {
-          sessionToken = window.localStorage.getItem('sessionToken');
-        }
+        // 1. Try to get session token from localStorage (persistent between sessions)
+        const sessionToken = window.localStorage.getItem('sessionToken');
 
         if (sessionToken) {
           // 2. Fetch player from Supabase by session token (source of truth)
@@ -86,14 +84,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             window.localStorage.setItem('sessionToken', sessionToken);
             window.localStorage.setItem('playerId', playerData.id!);
             window.localStorage.setItem('player', JSON.stringify(playerData));
-            setCookie('sessionToken', sessionToken, 365); // 1 year expiry
             return; // Exit early on success
           } else if (isMounted && !playerData) {
             // Session token invalid, clear all session data
             window.localStorage.removeItem('sessionToken');
             window.localStorage.removeItem('playerId');
             window.localStorage.removeItem('player');
-            setCookie('sessionToken', '', -1); // Delete cookie
           }
         }
 
@@ -108,7 +104,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             window.localStorage.setItem('player', JSON.stringify(playerData));
             if (playerData.sessionToken) {
               window.localStorage.setItem('sessionToken', playerData.sessionToken);
-              setCookie('sessionToken', playerData.sessionToken, 365);
             }
             return; // Exit early on success
           } else if (isMounted && !playerData) {
@@ -182,7 +177,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Async setPlayer: Creates player in Supabase first, with session token and optimistic updates
   const setPlayer = useCallback(async (newPlayer: Player) => {
     // Generate session token if not present
-    const sessionToken = newPlayer.sessionToken || generateSessionToken();
+    const sessionToken = newPlayer.sessionToken || await requestSessionToken();
     const playerWithToken = { ...newPlayer, sessionToken };
 
     // Optimistic update (update UI immediately)
@@ -197,7 +192,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         savedPlayer = await updatePlayer(playerWithToken);
       } else {
         // Create new player in Supabase with session token
-        savedPlayer = await createPlayer(playerWithToken.name, sessionToken);
+        savedPlayer = await createPlayer(playerWithToken.name, sessionToken, playerWithToken.pinHash || null);
       }
 
       if (savedPlayer) {
@@ -206,9 +201,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         window.localStorage.setItem('playerId', savedPlayer.id!);
         window.localStorage.setItem('sessionToken', savedPlayer.sessionToken!);
         window.localStorage.setItem('player', JSON.stringify(savedPlayer));
-
-        // Store session token in cookie for persistence across browser sessions
-        setCookie('sessionToken', savedPlayer.sessionToken!, 365); // 1 year expiry
 
         // Update leaderboard
         setLeaderboard(prev => {
@@ -425,7 +417,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   }, [player]);
 
-  const value = { player, setPlayer, isLoadingPlayer, leaderboard, isLoadingLeaderboard, updateScore, currentPage, setCurrentPage, toasts, addToast, removeToast, addAttempt, getPlayerStats, unlockAchievement };
+  const refreshPlayer = useCallback((updatedPlayer: Player) => {
+    setPlayerState(updatedPlayer);
+    window.localStorage.setItem('player', JSON.stringify(updatedPlayer));
+
+    if (updatedPlayer.id) {
+      setLeaderboard(prev => {
+        const index = prev.findIndex(p => p.id === updatedPlayer.id);
+        if (index === -1) {
+          return [...prev, updatedPlayer].sort((a, b) => b.score - a.score);
+        }
+        const copy = [...prev];
+        copy[index] = { ...copy[index], ...updatedPlayer };
+        return copy.sort((a, b) => b.score - a.score);
+      });
+    }
+  }, []);
+
+  const value = { player, setPlayer, isLoadingPlayer, leaderboard, isLoadingLeaderboard, updateScore, currentPage, setCurrentPage, toasts, addToast, removeToast, addAttempt, getPlayerStats, unlockAchievement, refreshPlayer };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
     };

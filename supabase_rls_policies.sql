@@ -18,36 +18,32 @@ TO public
 USING (true);
 
 -- =====================================================
--- 2. INSERT Policy - Allow public player creation
+-- 2. INSERT Policy - Only allow authenticated owner inserts
 -- =====================================================
--- Anyone can create a new player account
-CREATE POLICY "Public insert for new players"
+CREATE POLICY "Players insert (owner only)"
 ON players
 FOR INSERT
-TO public
-WITH CHECK (true);
+TO authenticated
+WITH CHECK (auth.uid() = owner_id);
 
 -- =====================================================
--- 3. UPDATE Policy - Allow anyone to update any player
+-- 3. UPDATE Policy - Only allow authenticated owners to modify themselves
 -- =====================================================
--- Since we don't have user authentication, allow public updates
--- In a production app, you'd restrict this to session_token matching
-CREATE POLICY "Public update access"
+CREATE POLICY "Players update (owner only)"
 ON players
 FOR UPDATE
-TO public
-USING (true)
-WITH CHECK (true);
+TO authenticated
+USING (auth.uid() = owner_id)
+WITH CHECK (auth.uid() = owner_id);
 
 -- =====================================================
--- 4. DELETE Policy - Allow public delete
+-- 4. DELETE Policy - Only allow authenticated owners to delete themselves
 -- =====================================================
--- Allow deletion for account management
-CREATE POLICY "Public delete access"
+CREATE POLICY "Players delete (owner only)"
 ON players
 FOR DELETE
-TO public
-USING (true);
+TO authenticated
+USING (auth.uid() = owner_id);
 
 -- =====================================================
 -- Verify policies are active

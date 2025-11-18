@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { validateName } from '../utils/nameValidator';
-import { generateSessionToken } from '../utils/cookieUtils';
+import { requestSessionToken } from '../utils/sessionUtils';
+import { hashPin, isValidPin, PIN_LENGTH } from '../utils/pinUtils';
 
 const NameModal: React.FC = () => {
   const [name, setName] = useState('');
@@ -10,6 +10,9 @@ const NameModal: React.FC = () => {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [returningPin, setReturningPin] = useState('');
   const { setPlayer, addToast } = useAppContext();
 
   const checkAvailability = async (candidate: string) => {
@@ -19,7 +22,6 @@ const NameModal: React.FC = () => {
       return;
     }
 
-    // First validate the name format
     const validation = validateName(candidate);
     if (!validation.isValid) {
       setValidationError(validation.error || 'Invalid name');
@@ -27,10 +29,8 @@ const NameModal: React.FC = () => {
       return;
     }
 
-    // Clear validation error if name is valid
     setValidationError(null);
 
-    // Then check availability
     setChecking(true);
     try {
       const taken = await (await import('../services/supabaseService')).isNameTaken(candidate.trim());
@@ -42,55 +42,63 @@ const NameModal: React.FC = () => {
     }
   };
 
-  let debounceTimer: number | undefined;
+  const debounceRef = React.useRef<number>();
   const onNameChange = (v: string) => {
     setName(v);
-    setAvailable(null); // Reset availability when typing
-    setValidationError(null); // Reset validation error when typing
-    if (debounceTimer) window.clearTimeout(debounceTimer);
-    debounceTimer = window.setTimeout(() => checkAvailability(v), 350);
+    setAvailable(null);
+    setValidationError(null);
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(() => checkAvailability(v), 350);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmedName = name.trim();
 
-    // Check if name is empty
     if (!trimmedName) {
       addToast('Please enter your name', 'error');
       return;
     }
 
-    // Validate name format (length, characters, profanity)
     const validation = validateName(trimmedName);
     if (!validation.isValid) {
       addToast(validation.error || 'Invalid name', 'error');
       return;
     }
 
-    // Check if name is already taken - returning user flow is separate
     if (available === false) {
       addToast('This name is already taken. If this is you, click "Returning User" below.', 'error');
       return;
     }
 
-    // Check if availability check is still in progress
     if (checking) {
       addToast('Please wait while we check name availability', 'error');
       return;
     }
 
-    // Check if we haven't validated availability yet
     if (available === null) {
       addToast('Please wait for name validation to complete', 'error');
       return;
     }
 
-    // Create player in Supabase
+    if (!isValidPin(pin)) {
+      addToast(`Create a ${PIN_LENGTH}-digit security PIN.`, 'error');
+      return;
+    }
+
+    if (pin !== confirmPin) {
+      addToast('PINs do not match', 'error');
+      return;
+    }
+
+    const pinHash = await hashPin(pin);
+
     setIsCreating(true);
     try {
-      await setPlayer({ name: trimmedName, score: 0, attempts: [] });
+      await setPlayer({ name: trimmedName, score: 0, attempts: [], pinHash });
       addToast(`Welcome, ${trimmedName}! Ready to test your sourcing skills?`, 'success');
+      setPin('');
+      setConfirmPin('');
     } catch (error) {
       console.error('Failed to create player:', error);
       addToast('Failed to create account. Please try again.', 'error');
@@ -107,23 +115,37 @@ const NameModal: React.FC = () => {
       return;
     }
 
+    if (!isValidPin(returningPin)) {
+      addToast(`Enter your ${PIN_LENGTH}-digit security PIN.`, 'error');
+      return;
+    }
+
     setIsCreating(true);
     try {
-      // Fetch existing player by name
       const { fetchPlayerByName, updatePlayerSessionToken } = await import('../services/supabaseService');
       const existingPlayer = await fetchPlayerByName(trimmedName);
 
       if (existingPlayer) {
-        // Generate new session token for this session
-        const newSessionToken = generateSessionToken();
+        if (!existingPlayer.pinHash) {
+          addToast('This profile has not been secured with a PIN yet. Please contact an admin to restore access.', 'error');
+          setIsCreating(false);
+          return;
+        }
 
-        // Update session token in database
+        const hashedPin = await hashPin(returningPin);
+        if (hashedPin !== existingPlayer.pinHash) {
+          addToast('Incorrect security PIN. Please try again.', 'error');
+          setIsCreating(false);
+          return;
+        }
+
+        const newSessionToken = await requestSessionToken();
         const updatedPlayer = await updatePlayerSessionToken(existingPlayer.id!, newSessionToken);
 
         if (updatedPlayer) {
-          // Load player with new session token
           await setPlayer(updatedPlayer);
-          addToast(`Welcome back, ${trimmedName}! 🎉`, 'success');
+          addToast(`Welcome back, ${trimmedName}! dYZ%`, 'success');
+          setReturningPin('');
         } else {
           addToast('Failed to reconnect. Please try again.', 'error');
         }
@@ -164,33 +186,69 @@ const NameModal: React.FC = () => {
               <span className="absolute right-3 top-3 text-gray-400 text-sm">Checking...</span>
             )}
             {!checking && validationError && (
-              <span className="absolute right-3 top-3 text-red-400 text-sm">✗ Invalid</span>
+              <span className="absolute right-3 top-3 text-red-400 text-sm">�o- Invalid</span>
             )}
             {!checking && !validationError && available === true && (
-              <span className="absolute right-3 top-3 text-green-400 text-sm">✓ Available</span>
+              <span className="absolute right-3 top-3 text-green-400 text-sm">�o" Available</span>
             )}
             {!checking && !validationError && available === false && (
-              <span className="absolute right-3 top-3 text-red-400 text-sm">✗ Taken</span>
+              <span className="absolute right-3 top-3 text-red-400 text-sm">�o- Taken</span>
             )}
           </div>
           {validationError && (
-            <p className="text-red-400 text-sm mt-2">⚠️ {validationError}</p>
+            <p className="text-red-400 text-sm mt-2">�s��,? {validationError}</p>
           )}
           {!validationError && name.length === 0 && (
-            <p className="text-gray-400 text-xs mt-2">💡 Use only letters, spaces, hyphens, and apostrophes (2-50 characters)</p>
+            <p className="text-gray-400 text-xs mt-2">dY'� Use only letters, spaces, hyphens, and apostrophes (2-50 characters)</p>
           )}
 
-          {/* Show returning user option when name is taken */}
+          <div className="mt-4">
+            <label className="text-sm font-semibold text-gray-300 block mb-1">Create a {PIN_LENGTH}-digit Security PIN</label>
+            <input
+              type="password"
+              inputMode="numeric"
+              pattern="\d*"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              placeholder="Enter PIN"
+              className="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+          <div className="mt-3">
+            <label className="text-sm font-semibold text-gray-300 block mb-1">Confirm PIN</label>
+            <input
+              type="password"
+              inputMode="numeric"
+              pattern="\d*"
+              value={confirmPin}
+              onChange={(e) => setConfirmPin(e.target.value)}
+              placeholder="Re-enter PIN"
+              className="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            This PIN secures your account. You’ll need it to return on a new device or browser.
+          </p>
+
           {!validationError && available === false && (
             <div className="mt-3 p-3 bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-md">
-              <p className="text-yellow-200 text-sm mb-2">⚠️ This name already exists. Is this you?</p>
+              <p className="text-yellow-200 text-sm mb-2">�s��,? This name already exists. Is this you?</p>
+              <input
+                type="password"
+                inputMode="numeric"
+                pattern="\d*"
+                value={returningPin}
+                onChange={(e) => setReturningPin(e.target.value)}
+                placeholder={`Enter your ${PIN_LENGTH}-digit PIN`}
+                className="w-full bg-gray-800 border border-yellow-600 rounded-md px-3 py-2 text-white text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              />
               <button
                 type="button"
                 onClick={handleReturningUser}
                 disabled={isCreating}
                 className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed"
               >
-                {isCreating ? 'Reconnecting...' : '🔄 Yes, I\'m a Returning User'}
+                {isCreating ? 'Reconnecting...' : 'dY", Yes, I\'m a Returning User'}
               </button>
             </div>
           )}
@@ -198,9 +256,9 @@ const NameModal: React.FC = () => {
           <button
             type="submit"
             disabled={available === false || checking || validationError !== null || available === null || isCreating}
-            className="w-full mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed"
+            className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-md transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
-            {isCreating ? 'Creating Account...' : 'Start Sourcing!'}
+            {isCreating ? 'Creating...' : 'Join the League'}
           </button>
         </form>
       </div>
@@ -209,5 +267,3 @@ const NameModal: React.FC = () => {
 };
 
 export default NameModal;
-
-

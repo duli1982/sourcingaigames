@@ -8,6 +8,7 @@ export interface Player {
   sessionToken?: string; // Persistent session token for authentication
   attempts?: Attempt[]; // Player's game attempts history
   achievements?: Achievement[]; // Unlocked achievements
+  pinHash?: string; // Secure PIN hash for account recovery
 }
 
 export type Page = 'home' | 'games' | 'leaderboard' | 'profile';

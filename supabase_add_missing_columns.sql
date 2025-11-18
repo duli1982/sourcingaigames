@@ -112,6 +112,18 @@ BEGIN
   END IF;
 END $$;
 
+-- Add owner_id column if missing
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'players' AND column_name = 'owner_id'
+  ) THEN
+    ALTER TABLE players ADD COLUMN owner_id UUID REFERENCES auth.users(id);
+    RAISE NOTICE 'Added owner_id column to players table (remember to backfill and enforce NOT NULL)';
+  END IF;
+END $$;
+
 -- Add created_at column if missing
 DO $$
 BEGIN
