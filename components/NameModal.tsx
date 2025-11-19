@@ -186,20 +186,20 @@ const NameModal: React.FC = () => {
               <span className="absolute right-3 top-3 text-gray-400 text-sm">Checking...</span>
             )}
             {!checking && validationError && (
-              <span className="absolute right-3 top-3 text-red-400 text-sm">�o- Invalid</span>
+              <span className="absolute right-3 top-3 text-red-400 text-sm">⚠ Invalid</span>
             )}
             {!checking && !validationError && available === true && (
-              <span className="absolute right-3 top-3 text-green-400 text-sm">�o" Available</span>
+              <span className="absolute right-3 top-3 text-green-400 text-sm">✅ Available</span>
             )}
             {!checking && !validationError && available === false && (
-              <span className="absolute right-3 top-3 text-red-400 text-sm">�o- Taken</span>
+              <span className="absolute right-3 top-3 text-red-400 text-sm">⚠ Taken</span>
             )}
           </div>
           {validationError && (
             <p className="text-red-400 text-sm mt-2">�s��,? {validationError}</p>
           )}
           {!validationError && name.length === 0 && (
-            <p className="text-gray-400 text-xs mt-2">dY'� Use only letters, spaces, hyphens, and apostrophes (2-50 characters)</p>
+            <p className="text-gray-400 text-xs mt-2">ℹ Use only letters, spaces, hyphens, and apostrophes (2-50 characters)</p>
           )}
 
           <div className="mt-4">
