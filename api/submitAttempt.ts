@@ -83,21 +83,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const prompt = game.promptGenerator(submission);
     const trimmedPrompt = prompt.slice(0, GEMINI_PROMPT_CHAR_LIMIT);
 
-    // Use the correct SDK structure with proper typing
+    // Use the Gemini SDK - try simple text input
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: [{ role: 'user', parts: [{ text: trimmedPrompt }] }],
-      config: {
-        temperature: 0.35,
-        maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
-        candidateCount: 1,
-      },
+      contents: trimmedPrompt,
     } as any);
 
-    const feedbackText = response.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log('Gemini full response:', JSON.stringify(response, null, 2));
+
+    // Try multiple ways to extract the text
+    let feedbackText = response.text
+      || response.candidates?.[0]?.content?.parts?.[0]?.text
+      || response.candidates?.[0]?.text
+      || response.response?.text;
+
     if (!feedbackText) {
       console.error('Gemini response structure:', JSON.stringify(response, null, 2));
-      return res.status(500).json({ error: 'Gemini did not return feedback' });
+      return res.status(500).json({
+        error: 'Gemini did not return feedback',
+        responseKeys: Object.keys(response)
+      });
     }
 
     const score = parseScore(feedbackText);
