@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
-import { games } from '../data/games';
-import { Attempt, Player } from '../types';
-import { checkNewAchievements } from '../data/achievements';
+import { games } from './_lib/data/games';
+import { Attempt, Player } from './_lib/types';
+import { checkNewAchievements } from './_lib/data/achievements';
 
 const GEMINI_MAX_OUTPUT_TOKENS = 120;
 const GEMINI_PROMPT_CHAR_LIMIT = 2800;
