@@ -232,7 +232,7 @@ const NameModal: React.FC = () => {
 
           {!validationError && available === false && (
             <div className="mt-3 p-3 bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-md">
-              <p className="text-yellow-200 text-sm mb-2">�s��,? This name already exists. Is this you?</p>
+              <p className="text-yellow-200 text-sm mb-2">⚠ This name already exists. Is this you?</p>
               <input
                 type="password"
                 inputMode="numeric"
@@ -248,7 +248,7 @@ const NameModal: React.FC = () => {
                 disabled={isCreating}
                 className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed"
               >
-                {isCreating ? 'Reconnecting...' : 'dY", Yes, I\'m a Returning User'}
+                {isCreating ? 'Reconnecting...' : 'Yes, I\'m a Returning User'}
               </button>
             </div>
           )}
