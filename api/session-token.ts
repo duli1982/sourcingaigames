@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { randomUUID, randomBytes } from 'node:crypto';
+import { randomUUID, randomBytes } from 'crypto';
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
