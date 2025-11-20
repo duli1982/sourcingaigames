@@ -25,12 +25,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: trimmedPrompt,
+      // Cast to any to appease differing SDK type versions
       generationConfig: {
         temperature: 0.35,
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
         candidateCount: 1,
       },
-    });
+    } as any);
 
     return res.status(200).json({ text: response.text });
   } catch (error: any) {
