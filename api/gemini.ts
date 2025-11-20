@@ -24,22 +24,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: trimmedPrompt,
-      // Cast to any to appease differing SDK type versions
-      generationConfig: {
+      contents: [{ role: 'user', parts: [{ text: trimmedPrompt }] }],
+      config: {
         temperature: 0.35,
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
         candidateCount: 1,
       },
     } as any);
 
-    return res.status(200).json({ text: response.text });
+    const responseText = response.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!responseText) {
+      console.error('Gemini response structure:', JSON.stringify(response, null, 2));
+      return res.status(500).json({ error: 'Gemini did not return a response' });
+    }
+
+    return res.status(200).json({ text: responseText });
   } catch (error: any) {
     console.error('Gemini API proxy error:', error);
+    console.error('Error stack:', error?.stack);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     const message = error?.message || 'Unknown error';
     if (typeof message === 'string' && message.includes('API key not valid')) {
       return res.status(401).json({ error: 'Invalid Gemini API key' });
     }
-    return res.status(500).json({ error: 'Failed to fetch AI coach response' });
+    return res.status(500).json({
+      error: 'Failed to fetch AI coach response',
+      details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    });
   }
 }

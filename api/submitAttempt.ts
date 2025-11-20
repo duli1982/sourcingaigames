@@ -82,19 +82,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const ai = new GoogleGenAI({ apiKey });
     const prompt = game.promptGenerator(submission);
     const trimmedPrompt = prompt.slice(0, GEMINI_PROMPT_CHAR_LIMIT);
+
+    // Use the correct SDK structure with proper typing
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: trimmedPrompt,
-      // Cast to any to keep compatibility across SDK typings
-      generationConfig: {
+      contents: [{ role: 'user', parts: [{ text: trimmedPrompt }] }],
+      config: {
         temperature: 0.35,
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
         candidateCount: 1,
       },
     } as any);
 
-    const feedbackText = response.text;
+    const feedbackText = response.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!feedbackText) {
+      console.error('Gemini response structure:', JSON.stringify(response, null, 2));
       return res.status(500).json({ error: 'Gemini did not return feedback' });
     }
 
@@ -164,7 +166,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     console.error('submitAttempt error:', error);
+    console.error('Error stack:', error?.stack);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     const message = error?.message ?? 'Unknown error';
-    return res.status(500).json({ error: message });
+    return res.status(500).json({
+      error: message,
+      details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    });
   }
 }
