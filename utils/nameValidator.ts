@@ -18,12 +18,25 @@ const PROFANITY_LIST = [
  * @returns true if profanity is detected, false otherwise
  */
 export function containsProfanity(name: string): boolean {
-  const lowerName = name.toLowerCase();
+  const lowerName = name.toLowerCase().replace(/[áàäâãåāăąæ]/g, 'a')
+    .replace(/[éèëêēėęě]/g, 'e')
+    .replace(/[íìïîīįı]/g, 'i')
+    .replace(/[óòöôõōőø]/g, 'o')
+    .replace(/[úùüûūůű]/g, 'u')
+    .replace(/[çćč]/g, 'c')
+    .replace(/[ñńň]/g, 'n')
+    .replace(/[śšş]/g, 's')
+    .replace(/[žźż]/g, 'z')
+    .replace(/[ł]/g, 'l')
+    .replace(/[đď]/g, 'd')
+    .replace(/[ř]/g, 'r')
+    .replace(/[ť]/g, 't')
+    .replace(/ß/g, 'ss');
 
-  // Check for exact matches and partial matches
+  // Only check for whole word matches to avoid false positives with international names
   return PROFANITY_LIST.some(word => {
-    // Check for word boundaries to avoid false positives
-    const regex = new RegExp(`\\b${word}\\b|${word}`, 'i');
+    // Strict word boundary matching - must be surrounded by spaces or start/end of string
+    const regex = new RegExp(`(^|\\s)${word}(\\s|$)`, 'i');
     return regex.test(lowerName);
   });
 }
