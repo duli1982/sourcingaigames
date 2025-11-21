@@ -36,6 +36,39 @@ const mapPlayer = (row: any): Player => ({
   pinHash: row.progress?.pinHash || undefined,
 });
 
+/**
+ * Enhances feedback for high-scoring submissions (85%+)
+ * Adds celebration and social sharing encouragement
+ */
+const enhanceFeedbackForHighScores = (feedback: string, score: number, gameTitle: string): string => {
+  if (score >= 85) {
+    const tweetText = encodeURIComponent(`I just scored ${score}/100 on "${gameTitle}" in the AI Sourcing League! 🚀 #TechRecruiting #Sourcing #AICoach`);
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+
+    const celebration = `
+
+---
+
+## 🎉 OUTSTANDING WORK! 🎉
+
+You've achieved an **expert-level score** (${score}/100)! This is professional-grade sourcing that demonstrates mastery of the fundamentals and advanced techniques.
+
+### 💡 Share Your Success:
+
+Your achievement deserves recognition! Share your success with the recruiting community:
+
+**Tweet:** "I just scored ${score}/100 on '${gameTitle}' in the AI Sourcing League! 🚀"
+
+[Click here to tweet your result](${tweetUrl})
+
+Keep up the exceptional work! 🌟`;
+
+    return feedback + celebration;
+  }
+
+  return feedback;
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -110,6 +143,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Failed to parse score from AI response' });
     }
 
+    // Enhance feedback for high scores (85%+)
+    const enhancedFeedback = enhanceFeedbackForHighScores(feedbackText, score, game.title);
+
     const currentPlayer = mapPlayer(playerRow);
     const attempt: Attempt = {
       gameId: game.id,
@@ -118,7 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       score,
       skill: game.skillCategory,
       ts: new Date().toISOString(),
-      feedback: feedbackText,
+      feedback: enhancedFeedback,
     };
 
     const updatedAttempts = [...(currentPlayer.attempts || []), attempt];
@@ -166,7 +202,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({
       score,
-      feedback: feedbackText,
+      feedback: enhancedFeedback,
       player: mapPlayer(savedPlayer),
     });
   } catch (error: any) {
