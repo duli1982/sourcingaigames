@@ -38,30 +38,19 @@ const mapPlayer = (row: any): Player => ({
 
 /**
  * Enhances feedback for high-scoring submissions (85%+)
- * Adds celebration and social sharing encouragement
+ * Adds celebration message
  */
 const enhanceFeedbackForHighScores = (feedback: string, score: number, gameTitle: string): string => {
   if (score >= 85) {
-    const tweetText = encodeURIComponent(`I just scored ${score}/100 on "${gameTitle}" in the AI Sourcing League! 🚀 #TechRecruiting #Sourcing #AICoach`);
-    const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
-
     const celebration = `
 
 ---
 
 ## 🎉 OUTSTANDING WORK! 🎉
 
-You've achieved an **expert-level score** (${score}/100)! This is professional-grade sourcing that demonstrates mastery of the fundamentals and advanced techniques.
+You've achieved an **expert-level score** (${score}/100)! This is professional-grade sourcing that shows you really know your stuff.
 
-### 💡 Share Your Success:
-
-Your achievement deserves recognition! Share your success with the recruiting community:
-
-**Tweet:** "I just scored ${score}/100 on '${gameTitle}' in the AI Sourcing League! 🚀"
-
-[Click here to tweet your result](${tweetUrl})
-
-Keep up the exceptional work! 🌟`;
+Keep crushing it! 🌟`;
 
     return feedback + celebration;
   }
