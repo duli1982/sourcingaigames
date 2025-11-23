@@ -22,7 +22,7 @@ const GamesPage: React.FC = () => {
 
     // Determine which game to show based on the week number
     // This creates a stable rotation that changes each week
-    const startDate = new Date('2024-01-05T00:00:00Z'); // A known past Friday
+    const startDate = new Date('2025-01-03T00:00:00Z'); // First Friday of 2025
     const now = new Date();
     const weeksPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
     const gameIndex = weeksPassed % games.length;
@@ -79,11 +79,10 @@ const GamesPage: React.FC = () => {
             <div className="mb-6 flex gap-2">
                 <button
                     onClick={() => setMode('challenge')}
-                    className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all ${
-                        mode === 'challenge'
-                            ? 'bg-cyan-600 text-white shadow-lg'
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
-                    }`}
+                    className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all ${mode === 'challenge'
+                        ? 'bg-cyan-600 text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
+                        }`}
                 >
                     🏆 Weekly Challenge
                 </button>
@@ -92,11 +91,10 @@ const GamesPage: React.FC = () => {
                         setMode('practice');
                         setSelectedGame(null);
                     }}
-                    className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all ${
-                        mode === 'practice'
-                            ? 'bg-cyan-600 text-white shadow-lg'
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
-                    }`}
+                    className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all ${mode === 'practice'
+                        ? 'bg-cyan-600 text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
+                        }`}
                 >
                     🎯 Practice Mode
                 </button>
@@ -138,11 +136,10 @@ const GamesPage: React.FC = () => {
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setSelectedCategory('all')}
-                                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                                    selectedCategory === 'all'
-                                        ? 'bg-cyan-600 text-white'
-                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
-                                }`}
+                                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedCategory === 'all'
+                                    ? 'bg-cyan-600 text-white'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
+                                    }`}
                             >
                                 All ({games.length})
                             </button>
@@ -152,11 +149,10 @@ const GamesPage: React.FC = () => {
                                     <button
                                         key={category}
                                         onClick={() => setSelectedCategory(category)}
-                                        className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                                            selectedCategory === category
-                                                ? 'bg-cyan-600 text-white'
-                                                : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
-                                        }`}
+                                        className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedCategory === category
+                                            ? 'bg-cyan-600 text-white'
+                                            : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
+                                            }`}
                                     >
                                         {category.charAt(0).toUpperCase() + category.slice(1)} ({count})
                                     </button>
