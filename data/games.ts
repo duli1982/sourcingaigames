@@ -16,79 +16,31 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Senior Backend Engineer" OR "Backend Developer" OR "Software Engineer") AND (Go OR Golang) AND (Kubernetes OR K8s OR "container orchestration") AND (Vienna OR Wien) AND ("open source" OR "open-source" OR GitHub OR "contributor")',
-        promptGenerator: (submission) => `You are an expert Technical Sourcing Coach with 15+ years of experience training recruiters on Boolean search techniques. You provide structured, actionable feedback with specific examples.
+        promptGenerator: (submission) => `
+            You are a Technical Sourcing Coach. A participant has written a Boolean search string.
 
-## CANDIDATE SUBMISSION
-"${submission}"
+            Goal: Find Senior Backend Engineers in Vienna with Go + Kubernetes + Open Source contributions.
+            Submission: "${submission}"
 
-## JOB REQUIREMENTS
-- Role: Senior Backend Engineer
-- Location: Vienna, Austria
-- Required Skills: Go (Golang), Kubernetes
-- Preferred: Open-source contributions
-- Platform: Professional networking sites (LinkedIn, etc.)
+            Evaluate:
+            1. Did they include core role titles (Backend/Software Engineer)?
+            2. Did they include required skills (Go/Golang AND Kubernetes)?
+            3. Did they target the location correctly (Vienna/Austria)?
+            4. Did they include a signal for open source (GitHub, contributor)?
+            5. Would this search reasonably fill a first shortlist?
 
-## EVALUATION RUBRIC
-Evaluate the Boolean search string across these dimensions:
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
 
-**1. Core Terms (25 points)**
-- Job title variations covered (Backend Engineer, Software Engineer, etc.)
-- Synonym coverage and alternative phrasing
-- Appropriate use of OR operators for alternatives
-
-**2. Technical Skills (25 points)**
-- Primary language: Go/Golang with common variations
-- Container orchestration: Kubernetes/K8s coverage
-- Technology-specific terms accuracy
-
-**3. Geographic Targeting (15 points)**
-- Vienna spelled correctly with local variations (Wien)
-- Geographic scope appropriate (city vs country)
-
-**4. Differentiators (20 points)**
-- Open-source indicators (GitHub, contributor, OSS)
-- Quality signals that distinguish candidates
-
-**5. Boolean Logic & Syntax (15 points)**
-- Correct use of AND/OR/NOT operators
-- Proper grouping with parentheses
-- Quotation marks for exact phrases
-- No syntax errors
-
-**Total: /100 points**
-
-## REQUIRED OUTPUT FORMAT
-
-**Analysis:**
-[First, analyze the submission against each rubric criterion. Be specific about what's present and what's missing.]
-
-**SCORE: [X]**
-[Single line with numeric score only]
-
-**Strengths:**
-- [List 2-3 specific things done well]
-
-**Areas for Improvement:**
-1. [Specific actionable tip with example]
-2. [Specific actionable tip with example]
-3. [Specific actionable tip with example]
-
-**Improved Search String:**
-\`\`\`
-[Provide optimized version here]
-\`\`\`
-
-**Why This Works Better:**
-[2-3 sentences explaining the key improvements]
-
-## SCORING GUIDELINES
-- 90-100: Excellent - Comprehensive coverage, perfect syntax, includes advanced techniques
-- 75-89: Good - Covers requirements well, minor gaps in synonyms or logic
-- 60-74: Adequate - Basic requirements met, missing key variations or has syntax issues
-- 40-59: Needs Work - Significant gaps in coverage or major logic errors
-- 0-39: Poor - Missing core requirements or fundamentally flawed approach
-
-Now evaluate the submission following this exact structure.`
+            Tips:
+            1. Use OR for synonyms (e.g., "Go" OR "Golang").
+            2. Group concepts with parentheses.
+            3. Use "site:github.com" or "contributor" to find open source work.
+        `
     },
     {
         id: 'game2',
@@ -100,72 +52,31 @@ Now evaluate the submission following this exact structure.`
         difficulty: 'easy' as const,
         skillCategory: 'persona' as const,
         exampleSolution: 'A seasoned UX leader with 7-10 years in B2B SaaS environments who thrives on mentoring junior designers and building design systems. Expert in Figma and translating complex business requirements into clean user experiences. Passionate about data-driven design decisions and has experience with analytics dashboards or data visualization. Values collaborative, user-centered cultures and has managed small design teams while maintaining hands-on involvement.',
-        promptGenerator: (submission) => `You are a Senior Talent Strategy Consultant specializing in persona development for executive search. You train recruiters to create actionable, multi-dimensional candidate personas.
+        promptGenerator: (submission) => `
+            You are a Talent Strategy Consultant. A participant has created a candidate persona.
 
-## CANDIDATE SUBMISSION
-"${submission}"
+            Role: Lead UX Designer (B2B SaaS, 7+ yrs, Figma, Data Viz).
+            Submission: "${submission}"
 
-## JOB DESCRIPTION
-"We're seeking a Lead UX Designer to own the user experience for our flagship B2B SaaS product. You'll guide a team of 3 designers, work with product managers to translate complex requirements into intuitive workflows, and champion a user-centered design culture. Must have 7+ years of experience, a portfolio showcasing complex problem-solving, and proficiency in Figma. Experience with data visualization is a huge plus."
+            Evaluate:
+            1. Did they capture the experience level (7+ years/Lead)?
+            2. Did they include the specific technical skills (Figma, Data Viz)?
+            3. Did they identify motivations (Mentoring, User-Centered Culture)?
+            4. Did they suggest *where* to find them (e.g., Dribbble, Behance)?
+            5. Did they hint at how this persona influences the outreach pitch?
 
-## EVALUATION RUBRIC
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
 
-**1. Experience & Background (25 points)**
-- Years of experience specified and justified
-- Industry context (B2B SaaS mentioned)
-- Career trajectory implications
-- Team size/leadership experience
-
-**2. Technical Skills (20 points)**
-- Core tools identified (Figma)
-- Complementary skills (data visualization)
-- Depth vs. breadth balance
-
-**3. Soft Skills & Leadership (20 points)**
-- Management style insights
-- Cross-functional collaboration
-- Mentorship/team building capabilities
-
-**4. Motivations & Values (20 points)**
-- Career motivators identified
-- Cultural fit indicators
-- Growth aspirations
-- What attracts them to new opportunities
-
-**5. Sourcing Intel (15 points)**
-- Where to find these candidates
-- Community involvement
-- Career stage considerations
-- Competitor/company examples
-
-**Total: /100 points**
-
-## REQUIRED OUTPUT FORMAT
-
-**Analysis:**
-[Evaluate persona completeness across all rubric dimensions]
-
-**SCORE: [X]**
-
-**What Works Well:**
-- [2-3 specific strengths]
-
-**Enhancement Suggestions:**
-1. [Specific way to deepen the persona with example]
-2. [Specific way to add actionability with example]
-3. [Optional third suggestion if needed]
-
-**Enhanced Persona Example:**
-"[Provide a richer, more detailed version that demonstrates the improvements]"
-
-## SCORING GUIDELINES
-- 90-100: Excellent - Rich, multi-dimensional persona with clear sourcing strategy
-- 75-89: Good - Solid coverage of key aspects, minor gaps in depth or sourcing intel
-- 60-74: Adequate - Basic persona, missing motivations or sourcing strategy
-- 40-59: Needs Work - Superficial, missing multiple key dimensions
-- 0-39: Poor - Vague descriptions without actionable insights
-
-Evaluate the submission now.`
+            Tips:
+            1. Personas should be 3-dimensional (Skills, Traits, Motivations).
+            2. Focus on "what they want" not just "what they do".
+            3. Connect the persona to the sourcing channel strategy.
+        `
     },
     {
         id: 'game3',
@@ -176,84 +87,30 @@ Evaluate the submission now.`
         difficulty: 'medium' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Hi Sarah, I came across your presentation on "Scaling CI/CD Pipelines" at DevOps Summit—really insightful approach to infrastructure automation. I\'m reaching out because we\'re building out the platform engineering team at TechCorp and looking for someone with deep CI/CD expertise like yours. The role involves architecting deployment pipelines for our microservices platform. I\'d love to share more about the technical challenges and team. Would you be open to a brief call this week? No pressure—just exploring if there\'s mutual interest.',
-        promptGenerator: (submission) => `You are a Senior Executive Recruiter specializing in passive candidate engagement. You've successfully placed 200+ passive candidates and train recruiters on high-response outreach strategies.
+        promptGenerator: (submission) => `
+            You are a Candidate Engagement Specialist. A participant has written an outreach message.
 
-## CANDIDATE SUBMISSION
-"${submission}"
+            Candidate: Senior DevOps Engineer, 5 yrs tenure, Conference Speaker.
+            Submission: "${submission}"
 
-## CANDIDATE PROFILE
-- Role: Senior DevOps Engineer
-- Tenure: 5 years at current company (potential satisfaction or loyalty)
-- Public Activity: Conference speaker on "Scaling CI/CD Pipelines"
-- Status: Passive (not actively looking)
-- Word Limit: Under 100 words
+            Evaluate:
+            1. Did they mention the specific conference talk ("Scaling CI/CD")?
+            2. Is the message under 100 words?
+            3. Is the Call to Action low friction (e.g., "chat" vs "interview")?
+            4. Is the tone respectful, specific, and not pushy?
 
-## EVALUATION RUBRIC
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
 
-**1. Personalization (25 points)**
-- Specific reference to their conference talk
-- Demonstrates research beyond surface level
-- Shows genuine interest in their expertise
-- Avoids generic recruiter language
-
-**2. Value Proposition (25 points)**
-- Clear reason for reaching out
-- Compelling opportunity hint without overpromising
-- Technical relevance to their expertise
-- Career growth angle
-
-**3. Tone & Professionalism (20 points)**
-- Respectful of their time and current role
-- Conversational but professional
-- No pushy or salesy language
-- Builds credibility
-
-**4. Call-to-Action (15 points)**
-- Low-friction ask (brief call, not full interview)
-- Specific timeframe or flexibility
-- Easy to say yes or no
-- No pressure tactics
-
-**5. Technical Execution (15 points)**
-- Under 100 words
-- No spelling/grammar errors
-- Proper structure (greeting, body, CTA, sign-off)
-- Scannable formatting
-
-**Total: /100 points**
-
-## REQUIRED OUTPUT FORMAT
-
-**First Impression:**
-[Your immediate reaction reading this as a busy passive candidate]
-
-**SCORE: [X]**
-
-**What Lands Well:**
-- [2-3 specific strengths]
-
-**What Needs Work:**
-1. [Specific fix with before/after example]
-2. [Specific fix with before/after example]
-3. [Specific fix with before/after example]
-
-**Improved Version:**
-\`\`\`
-[Rewritten message under 100 words]
-\`\`\`
-**Word Count: [X]/100**
-
-**Why This Converts Better:**
-[2-3 sentences on psychological/tactical improvements]
-
-## SCORING GUIDELINES
-- 90-100: Excellent - Highly personalized, compelling value prop, perfect tone
-- 75-89: Good - Good personalization, clear value, minor tone tweaks needed
-- 60-74: Adequate - Some personalization, generic value prop or weak CTA
-- 40-59: Needs Work - Minimal personalization, unclear value, or pushy tone
-- 0-39: Poor - Generic spray-and-pray message, no personalization
-
-Evaluate now.`
+            Tips:
+            1. Reference specific content (blogs, talks) to prove you're not a bot.
+            2. Keep it short. Mobile screens are small.
+            3. Avoid generic recruiter clichés ("I came across your profile").
+        `
     },
     {
         id: 'game4',
@@ -264,92 +121,30 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:github.com (Python OR Django) AND Berlin AND ("repositories" OR "projects") -site:github.com/topics -site:github.com/explore',
-        promptGenerator: (submission) => `You are a Technical Sourcing Specialist with expertise in X-ray search techniques. You've trained 500+ recruiters on advanced Google search operators and platform-specific sourcing.
+        promptGenerator: (submission) => `
+            You are a Google X-Ray Search Expert. A participant has written a search for GitHub profiles.
 
-## CANDIDATE SUBMISSION
-"${submission}"
+            Goal: Python + Django developers in Berlin.
+            Submission: "${submission}"
 
-## SEARCH OBJECTIVE
-- Target: Python developers with Django experience
-- Location: Berlin, Germany
-- Platform: GitHub user profiles
-- Goal: Find active developers with public contributions
+            Evaluate:
+            1. Did they use "site:github.com"?
+            2. Did they filter for profiles (e.g., -site:github.com/topics)?
+            3. Did they include the location (Berlin)?
+            4. Did they include both Python **and** Django?
 
-## EVALUATION RUBRIC
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
 
-**1. Site Operator Precision (20 points)**
-- Correct use of site:github.com
-- Targeting user profiles specifically
-- Avoiding non-profile pages (repos, topics, explore, etc.)
-- Proper path specificity
-
-**2. Keyword Strategy (25 points)**
-- Python and Django covered with variations
-- Technology synonyms (Py, Python3, etc.)
-- Framework-specific terms
-- Appropriate use of OR operators
-
-**3. Geographic Targeting (20 points)**
-- Berlin specified correctly
-- German variations considered (Deutschland)
-- Location field understanding for GitHub
-- Avoiding false positives
-
-**4. Exclusion Operators (15 points)**
-- Removing noise (organization pages, repos, topics)
-- Using minus (-) operator effectively
-- Excluding common false positives
-- Maintaining search breadth while filtering
-
-**5. Search Syntax & Structure (20 points)**
-- No syntax errors
-- Logical operator precedence
-- Quotation marks for exact matches where appropriate
-- Parentheses grouping for complex logic
-- Space and operator formatting
-
-**Total: /100 points**
-
-## GITHUB PROFILE STRUCTURE CONTEXT
-- User profiles: github.com/username or github.com/users/username
-- NOT: github.com/org, github.com/topics, github.com/explore, github.com/trending
-- Location often in bio/profile, not always accurate
-- Language/tech in repositories and contributions
-
-## REQUIRED OUTPUT FORMAT
-
-**Syntax Check:**
-[First, validate if the search string would actually execute without errors]
-
-**SCORE: [X]**
-
-**Effective Elements:**
-- [What's working well in the search]
-
-**Critical Issues:**
-1. [Specific problem + why it matters + fix]
-2. [Specific problem + why it matters + fix]
-3. [Specific problem + why it matters + fix]
-
-**Optimized X-Ray Search:**
-\`\`\`
-[Improved search string]
-\`\`\`
-
-**Expected Results Improvement:**
-[Explain what types of profiles this will surface vs. the original]
-
-**Pro Tip:**
-[One advanced technique they could layer on]
-
-## SCORING GUIDELINES
-- 90-100: Excellent - Perfect syntax, comprehensive coverage, smart exclusions
-- 75-89: Good - Solid structure, minor gaps in variations or exclusions
-- 60-74: Adequate - Basic X-ray working, missing key exclusions or syntax issues
-- 40-59: Needs Work - Significant syntax errors or targeting wrong pages
-- 0-39: Poor - Fundamentally broken or will return mostly irrelevant results
-
-Evaluate now.`
+            Tips:
+            1. Use "site:github.com" to target the domain.
+            2. Exclude non-profile pages with "-tab" or "-topics".
+            3. Look for "joined on" or "contributions" to validate active users.
+        `
     },
     // NEW GAMES - Expanded Library
     {
@@ -362,16 +157,29 @@ Evaluate now.`
         skillCategory: 'linkedin' as const,
         exampleSolution: 'title:(Marketing Director OR Head of Marketing OR VP Marketing) AND ("product launch" OR "go-to-market" OR "GTM") AND location:"San Francisco Bay Area" AND company_size:(11-50 OR 51-200) AND past_company:(funded startup OR Series A OR Series B)',
         promptGenerator: (submission) => `
-            You are an expert LinkedIn sourcing coach. A participant has written a LinkedIn search query to find Marketing Directors at early-stage startups in SF with product launch experience.
+            You are a LinkedIn Recruiter Coach. A participant has written a search query.
 
+            Goal: Marketing Directors, Series A/B Startups, SF Bay Area, Product Launch exp.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the search for effective use of LinkedIn filters, keywords, and targeting.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for improving the LinkedIn search.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they use the "Title" filter correctly (Current vs Past)?
+            2. Did they use "Company Size" or keywords for startups?
+            3. Did they include "Product Launch" keywords?
+            4. Did they include the location (SF Bay Area)?
+            5. Will this query likely give a focused but not over-narrow pool?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Use "Current Title" vs "Past Title" carefully.
+            2. "Series A" isn't a filter; search it in keywords or company lists.
+            3. Use OR to cover title variations (Director OR Head OR VP).
         `
     },
     {
@@ -384,15 +192,29 @@ Evaluate now.`
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Partner with organizations like Code2040, Women Who Code, and Black Girls Code to tap into diverse talent pools. 2) Source from HBCUs, women\'s colleges, and universities with strong diversity programs. 3) Use inclusive language in job descriptions and avoid gendered/biased terms. 4) Search for candidates who participate in diversity-focused tech communities, conferences (Grace Hopper, AfroTech), and ERGs.',
         promptGenerator: (submission) => `
-            You are a diversity recruitment expert. A participant has outlined strategies for building diverse candidate pipelines without using discriminatory search practices.
+            You are a DE&I Recruitment Strategist. A participant has proposed sourcing strategies.
 
+            Goal: Diverse pipeline for Senior Software Engineer (Ethical & Compliant).
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the strategies for effectiveness, ethics, and compliance with EEOC guidelines.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for improving the diversity sourcing approach.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they suggest specific partnerships (e.g., distinct orgs)?
+            2. Did they mention sourcing from diverse institutions (HBCUs, etc.)?
+            3. Did they focus on "Inclusion" (Job description language)?
+            4. Did they avoid illegal filtering (e.g., "search only for women")?
+            5. Does the strategy ensure compliance with protected characteristics?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Focus on *expanding* the pool, not filtering *out* candidates.
+            2. Partner with communities (Black Girls Code, Techqueria).
+            3. Check job descriptions for gendered language (e.g., "Ninja").
         `
     },
     {
@@ -405,18 +227,29 @@ Evaluate now.`
         skillCategory: 'screening' as const,
         exampleSolution: 'This candidate has strong technical fundamentals with a PhD in Statistics and relevant tools (Python/R/SQL), but falls short of the 5+ years industry experience requirement with only 3 years in consulting. The consulting background likely provided exposure to A/B testing and modeling, but there\'s no evidence of ML deployment or production systems experience. Recommend a phone screen to assess if their consulting work involved tech companies and to probe for any ML deployment experience not listed on the resume. If deployment experience is minimal, they may be better suited for a mid-level rather than senior role.',
         promptGenerator: (submission) => `
-            You are an expert recruiter screening coach. A participant has assessed whether a Data Scientist candidate should move forward based on their resume vs. job requirements.
+            You are a Technical Recruiter. A participant has screened a candidate.
 
-            Job Requirements: 5+ years in tech company, ML deployment experience
-            Candidate: PhD Statistics, 3 years consulting, Python/R/SQL, predictive modeling, A/B testing
-
+            Role: Data Scientist (5+ yrs exp, ML Deployment).
+            Candidate: PhD, 3 yrs Consulting, Python/R/SQL, No Deployment.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the screening decision for thoroughness, fairness, and accuracy.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for better resume screening.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they identify the gap in industry experience (3 vs 5 years)?
+            2. Did they spot the missing "ML Deployment" skill?
+            3. Did they suggest a "Phone Screen" to probe (rather than flat reject)?
+            4. Did they differentiate "nice to have" vs "must have"?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. PhDs often count as years of experience; don't discount them.
+            2. "Consulting" can be vague; always probe for hands-on work.
+            3. Calibrate with the hiring manager on "potential" vs "experience".
         `
     },
     {
@@ -429,18 +262,28 @@ Evaluate now.`
         skillCategory: 'job-description' as const,
         exampleSolution: 'As our Customer Success Manager, you\'ll be the trusted advisor to our mid-market clients, ensuring they achieve maximum value from our platform. You\'ll own the full customer lifecycle post-sale, from onboarding through renewal and expansion. Working closely with Sales, Product, and Support teams, you\'ll advocate for customer needs while driving adoption and identifying growth opportunities. This role requires a consultative mindset, analytical skills to track health metrics, and the ability to build strong relationships with C-level stakeholders. You\'ll directly impact our 90%+ retention rate and help shape our customer success playbook as we scale. If you thrive on solving complex problems, love turning customers into advocates, and want to make a measurable impact in a fast-growing SaaS company, this role is for you.',
         promptGenerator: (submission) => `
-            You are a job description expert. A participant has written an "About the Role" section for a Customer Success Manager at a B2B SaaS company.
+            You are a Talent Brand Expert. A participant has written an "About the Role" section.
 
-            Requirements to cover: 3-5 years experience, customer retention ownership, cross-functional collaboration
-
+            Role: Customer Success Manager (B2B SaaS).
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the JD for clarity, appeal to candidates, completeness, and inclusive language.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for improving the job description.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Is the tone engaging and candidate-centric ("You will...")?
+            2. Did they cover the key requirements (Retention, Cross-functional)?
+            3. Is it concise (100-150 words)?
+            4. Did they use inclusive language (no hype/bro culture terms)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Use "You" more than "We".
+            2. Focus on *impact* (what they will achieve), not just tasks.
+            3. Avoid laundry-list requirements; prioritize what really matters.
         `
     },
     {
@@ -453,15 +296,28 @@ Evaluate now.`
         skillCategory: 'ats' as const,
         exampleSolution: '1) Years of PM experience: Must have 3+ years in a product management role, not just "project" management. 2) B2B SaaS experience: Strong preference for candidates from similar industries/business models. 3) Technical background: Look for engineering degrees, CS minors, or demonstrated ability to work with engineering teams. 4) Ownership of product launches: Evidence of taking products from 0-1 or managing a full product lifecycle. 5) Analytical skills: Mentions of data-driven decision making, A/B testing, or metrics ownership. Filter order: Hard requirements first (years exp), then industry match, then differentiators (technical background, ownership). Review top 15-20 manually to account for non-traditional backgrounds.',
         promptGenerator: (submission) => `
-            You are an ATS and recruiting operations expert. A participant has outlined their filtering strategy to narrow 50 Product Manager candidates to the top 10.
+            You are a Recruiting Ops Manager. A participant has created an ATS filtering strategy.
 
+            Goal: Filter 50 PM candidates to top 10.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the filtering criteria for effectiveness, fairness, and practicality.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for optimizing ATS filtering.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they prioritize "Hard Requirements" (e.g., Years of Exp)?
+            2. Did they look for "Differentiators" (B2B SaaS, Technical background)?
+            3. Is the process efficient (e.g., Knockout questions)?
+            4. Do they balance automation vs manual review (not 100% filter-driven)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Use "Knockout Questions" to auto-reject unqualified applicants.
+            2. Structure criteria in order of application (first filter, second, etc.).
+            3. Review "Silver Medalists" (almost hired) first.
         `
     },
     {
@@ -474,16 +330,28 @@ Evaluate now.`
         skillCategory: 'boolean' as const,
         exampleSolution: '("Machine Learning Engineer" OR "ML Engineer" OR "Applied Scientist") AND (TensorFlow OR PyTorch OR "deep learning framework") AND (Google OR Amazon OR Microsoft OR FAANG) AND (Seattle OR "Seattle area" OR Bellevue OR Redmond) AND ("published research" OR "research paper" OR "conference paper" OR arxiv OR "peer reviewed")',
         promptGenerator: (submission) => `
-            You are an advanced Boolean search expert. A participant has written a complex Boolean string to find ML Engineers in Seattle with framework experience, Big Tech background, and research publications.
+            You are a Boolean Logic Master. A participant has written a complex search string.
 
+            Goal: ML Engineers in Seattle, (TensorFlow OR PyTorch), (Google/Amazon/MSFT), Published Research.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the string for correct Boolean logic, comprehensiveness, and efficiency.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 advanced tips for improvement.
-            4. Provide an optimized version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they use nested parentheses correctly for the OR groups?
+            2. Did they include all 3 constraints (Tech, Company, Research)?
+            3. Did they target the location (Seattle)?
+            4. Did they cover role title variations (ML Eng, Applied Scientist)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Always wrap OR statements in parentheses: (A OR B).
+            2. Use "AND" to combine different categories of requirements.
+            3. Consider synonyms for research (publications, journals, conferences).
         `
     },
     {
@@ -496,16 +364,28 @@ Evaluate now.`
         skillCategory: 'xray' as const,
         exampleSolution: 'site:stackoverflow.com/users (Swift OR SwiftUI OR "Swift UI") AND (iOS OR iPhone) AND ("reputation" OR "top user" OR "answers") -site:stackoverflow.com/questions',
         promptGenerator: (submission) => `
-            You are a technical sourcing expert specializing in X-ray searches. A participant has written an X-ray search to find iOS/Swift developers on Stack Overflow.
+            You are a Technical Sourcing Expert. A participant has written an X-ray search for Stack Overflow.
 
+            Goal: iOS/Swift developers, Stack Overflow profiles.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the X-ray search for correctness and effectiveness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips to improve the X-ray search.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they target "site:stackoverflow.com/users"?
+            2. Did they include the skills (Swift/iOS)?
+            3. Did they exclude non-profile pages (e.g., -questions)?
+            4. Is the query likely to exclude noise (e.g. tags, jobs, companies)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Targeting "/users" is the key to finding profiles.
+            2. Look for "reputation" or "answers" to find active contributors.
+            3. Don't over-constrain; SO profiles often have sparse bios.
         `
     },
     {
@@ -518,18 +398,28 @@ Evaluate now.`
         skillCategory: 'outreach' as const,
         exampleSolution: 'Hi Jennifer, I wanted to follow up on my message from last week about the Senior Data Engineer role at DataCorp. I know you\'re likely busy, but wanted to make sure it didn\'t get lost in your inbox. If the timing isn\'t right or you\'re not interested, no worries at all—just let me know and I won\'t bother you again. Thanks!',
         promptGenerator: (submission) => `
-            You are an outreach and candidate engagement expert. A participant has written a follow-up message for a non-responsive candidate.
+            You are a Candidate Engagement Specialist. A participant has written a follow-up email.
 
-            Context: First email sent 5 days ago, no response yet, this is the first follow-up
-
+            Context: 5 days no response, first follow-up.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for professionalism, brevity, and effectiveness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for better follow-ups.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Is it brief (under 75 words)?
+            2. Is the tone professional yet polite (not "just checking in")?
+            3. Is there a clear "out" (e.g., "let me know if not interested")?
+            4. Does it reference the previous email without re-pitching everything?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. The "strip-line" technique (giving them an out) often triggers a response.
+            2. Don't re-pitch the whole role; just bump the thread.
+            3. Avoid guilt-tripping ("I was surprised you didn't answer").
         `
     },
     {
@@ -542,16 +432,28 @@ Evaluate now.`
         skillCategory: 'xray' as const,
         exampleSolution: 'site:github.com (React OR ReactJS OR "front end" OR "frontend developer") AND (Austin OR "Austin, TX" OR Texas) AND ("repositories" OR "contributions") AND ("open source" OR "open-source") -site:github.com/topics -site:github.com/trending',
         promptGenerator: (submission) => `
-            You are an X-ray search specialist. A participant has written a search to find React developers in Austin with active GitHub profiles and open-source contributions.
+            You are a Technical Sourcer. A participant has written an X-ray search for GitHub.
 
+            Goal: React developers in Austin, TX with open source contributions.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the search for accuracy and thoroughness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for refinement.
-            4. Provide an optimized version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they include the location (Austin/TX)?
+            2. Did they include "React" keywords?
+            3. Did they filter for activity ("contributions" or "repositories")?
+            4. Did they try to reduce noise by excluding generic pages (-topics)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Location on GitHub is free-text; try variations.
+            2. "site:github.com" is essential.
+            3. Once you find a strong profile, look at followers/following for similar talent.
         `
     },
     {
@@ -564,18 +466,28 @@ Evaluate now.`
         skillCategory: 'persona' as const,
         exampleSolution: 'A proven enterprise sales leader with 10-15 years of experience, including at least 5 years selling cybersecurity or infrastructure solutions to Fortune 500 companies. Likely has an MBA and has managed teams of 10-20 AEs/SEs, with a track record of consistently exceeding $10M+ quotas. Motivated by equity upside and the opportunity to build a sales organization from the ground up at a high-growth startup. Has probably worked at established cybersecurity vendors (Palo Alto Networks, CrowdStrike, Okta) and is ready to take on more strategic responsibility. May be active on LinkedIn sharing thought leadership about enterprise sales or cybersecurity trends. Can be found at RSA Conference, Black Hat, or through referrals from VPs at competitor companies.',
         promptGenerator: (submission) => `
-            You are a persona development expert for senior executive roles. A participant has created a candidate persona for a VP of Sales in cybersecurity.
+            You are an Executive Search Researcher. A participant has created a persona.
 
-            Requirements: Enterprise sales, cybersecurity domain knowledge, team leadership
-
+            Role: VP of Sales (Cybersecurity, Enterprise Sales).
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for depth, accuracy, and actionability.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for stronger personas.
-            4. Provide an enhanced version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they identify the specific domain experience (Cybersecurity/Security)?
+            2. Did they mention the target market (Enterprise/Fortune 500)?
+            3. Did they suggest *where* to find them (e.g., RSA Conference, Competitors)?
+            4. Did they reflect realistic seniority (10-15 yrs, quota ownership, team size)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Executives hang out at industry conferences (Black Hat, RSA).
+            2. Look for "Series B/C" experience for scaling roles.
+            3. Include likely deal sizes and sales cycles for more depth.
         `
     },
     {
@@ -588,17 +500,28 @@ Evaluate now.`
         skillCategory: 'job-description' as const,
         exampleSolution: '1) "Rockstar developer" - Use "experienced developer" or "skilled engineer" to avoid gendered/exclusionary jargon. 2) "Top-tier university" - This excludes candidates from non-traditional backgrounds; change to "relevant degree or equivalent experience." 3) "Young, hungry talent" - Age discrimination red flag; use "motivated professionals" or "passionate engineers." 4) "Work-hard-play-hard culture" - Can deter candidates with caregiving responsibilities; replace with "collaborative, results-driven environment with work-life balance."',
         promptGenerator: (submission) => `
-            You are a diversity and inclusion expert in recruitment. A participant has identified problematic language in a job description and suggested inclusive alternatives.
+            You are a DE&I Consultant. A participant has rewritten a biased JD.
 
-            Original JD excerpt: "We need a rockstar developer who can hit the ground running. Must have a computer science degree from a top-tier university. Looking for young, hungry talent to join our fast-paced, work-hard-play-hard culture."
-
+            Original: "Rockstar", "Top-tier uni", "Young/Hungry", "Work-hard-play-hard".
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the analysis for completeness and quality of alternatives.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 additional tips for inclusive JDs.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they catch "Rockstar" (Gendered)?
+            2. Did they catch "Top-tier university" (Elitist)?
+            3. Did they catch "Young/Hungry" (Ageist)?
+            4. Did they address "Work-hard-play-hard" (Burnout signal)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Replace "Rockstar" with "Senior Engineer".
+            2. Focus on *skills* not *pedigree* (Degree equivalent).
+            3. Ensure rewritten version still sells the role (not just neutralizes bias).
         `
     },
     {
@@ -611,16 +534,28 @@ Evaluate now.`
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Current Title: (CTO OR "Chief Technology Officer" OR "VP Engineering" transitioning to CTO)\nKeywords: ("scaled team" OR "grew team" OR "10 to 100" OR "team growth" OR "built engineering team")\nCompany Type: Venture-backed startup OR funded startup\nCompany Size: 51-200, 201-500, 501-1000 (companies that have scaled)\nPast Company Keywords: (Series B OR Series C OR Series D OR growth stage OR scale-up)\nYears at Current Company: 2+ (looking for people who stayed through scaling phase)\nFunction: Engineering\nSeniority Level: CXO, VP',
         promptGenerator: (submission) => `
-            You are a LinkedIn Recruiter expert. A participant has specified the filters to find CTOs who have scaled engineering teams at startups.
+            You are a LinkedIn Recruiter Power User. A participant has selected filters.
 
+            Goal: CTOs who scaled teams (10->100) at Venture-backed startups.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the filter strategy for effectiveness and completeness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for optimizing LinkedIn Recruiter searches.
-            4. Provide an improved filter set.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they use the "Company Size" filter (or keywords for growth)?
+            2. Did they use "Past Company" keywords for "Venture/Series"?
+            3. Did they use "Years in Position" to find seasoned leaders?
+            4. Did they combine Function: Engineering + Seniority: CXO/VP?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. "Company Size" is a powerful proxy for scaling experience.
+            2. Search for "Series B" or "VC funded" in keywords.
+            3. Use "Years at company" + "Years in role" to verify they *actually* stayed through the scaling phase.
         `
     },
     // INDUSTRY-SPECIFIC EXPANSION
@@ -634,16 +569,28 @@ Evaluate now.`
         skillCategory: 'boolean' as const,
         exampleSolution: '("Registered Nurse" OR RN OR "Critical Care Nurse") AND (ICU OR "Intensive Care Unit" OR "Critical Care") AND (CCRN OR "CCRN certified" OR "Critical Care Registered Nurse") AND (Chicago OR "Chicago area" OR Illinois OR IL) AND ("travel nurse" OR "travel nursing" OR "open to relocation" OR "willing to travel")',
         promptGenerator: (submission) => `
-            You are a healthcare recruiting expert. A participant has written a Boolean search for ICU nurses with CCRN certification in Chicago open to travel positions.
+            You are a Healthcare Recruiter. A participant has written a Boolean search.
 
+            Goal: ICU Nurses (RN), CCRN certified, Chicago, Travel ready.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for healthcare-specific terminology, certifications, and geographic targeting.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for healthcare recruitment searches.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they include the certification (CCRN)?
+            2. Did they include "Travel" or "Relocation" keywords?
+            3. Did they target the location (Chicago/IL)?
+            4. Did they include ICU synonyms (critical care, intensive care)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Certifications (CCRN, BLS) are often non-negotiable.
+            2. "Travel Nurse" is a specific job title/category.
+            3. Encourage adding license state (IL) if relevant to the role.
         `
     },
     {
@@ -656,18 +603,29 @@ Evaluate now.`
         skillCategory: 'screening' as const,
         exampleSolution: 'The candidate has the right licenses (Series 7 and 63) and relevant compliance experience, but fintech and traditional banking compliance can differ significantly in regulatory scope. The 4 years of experience meets the minimum, but the lack of traditional banking or regulatory agency background is a gap. Recommend a phone screen to assess: 1) Their specific experience with banking regulations (BSA/AML, FDIC, OCC requirements), 2) Whether their fintech exposure included any banking partnerships or bank-like regulations, 3) Their understanding of the regulatory examination process. If they have strong transferable knowledge and are coachable, they could be a culture fit given fintech\'s innovative approach to compliance.',
         promptGenerator: (submission) => `
-            You are a financial services recruiting expert. A participant has screened a Compliance Officer candidate from fintech for a banking role.
+            You are a Financial Services Recruiter & Compliance Screener. A participant has screened a candidate.
 
-            Candidate: 4 years fintech, Series 7/63, finance degree
-            Role Requirements: Banking experience preferred, regulatory agency background a plus
-
+            Role: Compliance Officer (Banking exp preferred).
+            Candidate: 4 yrs Fintech, Series 7/63, No Banking.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the screening decision for industry-specific knowledge and thoroughness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for financial services screening.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they acknowledge the licenses (Series 7/63 are good)?
+            2. Did they flag the "Fintech vs Banking" gap (Regulatory difference)?
+            3. Did they suggest probing for specific banking reg knowledge (BSA/AML)?
+            4. Did they recommend a next step (phone screen vs reject vs HM consult) clearly?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Fintech compliance != Bank compliance (different regulators).
+            2. Series 7/63 are standard but valuable.
+            3. Adopt a risk/controls mindset when evaluating compliance roles.
         `
     },
     {
@@ -680,15 +638,29 @@ Evaluate now.`
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Provide interview questions and format details in advance to reduce anxiety and allow preparation. 2) Offer alternative interview formats: written responses, take-home assignments, or skills-based assessments instead of only verbal interviews. 3) Create a sensory-friendly interview environment: quiet room, option to turn off cameras in virtual interviews, minimal distractions. 4) Allow extra time for processing questions and formulating responses; avoid rapid-fire questioning. 5) Focus on skills-based evaluation over culture fit, and train interviewers to recognize different communication styles. 6) Partner with neurodiversity employment organizations like Specialisterne or Integrate Autism Employment Advisors. 7) Provide clear, structured onboarding with written documentation.',
         promptGenerator: (submission) => `
-            You are a neurodiversity hiring specialist. A participant has designed accommodations for a neurodiversity hiring program.
+            You are an Inclusive Hiring Expert. A participant has designed accommodations.
 
+            Goal: Neurodiversity-friendly process for QA roles.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for comprehensiveness, practicality, and adherence to best practices.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 additional suggestions for neurodiversity inclusion.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they suggest "Questions in Advance"?
+            2. Did they offer alternative formats (Written vs Verbal)?
+            3. Did they mention sensory considerations (Quiet room)?
+            4. Did they tie accommodations to better evaluation of actual job skills (QA/testing work samples)?
+            5. Did they avoid stereotypes (no "superpowers" clichés)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Anxiety reduction is key; remove the element of surprise.
+            2. Focus on "Work Samples" (actual coding/testing) over talk.
+            3. Train interviewers to recognize different communication styles.
         `
     },
     {
@@ -700,99 +672,30 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'ats' as const,
         exampleSolution: 'The bottleneck is at the top of the funnel - 120 candidates sitting in "New" status suggests inadequate screening capacity or unclear qualification criteria. The conversion rate from Phone Screen (45) to Onsite (20) is healthy at 44%, and Onsite to Offer (15 to 15) needs monitoring. Actions: 1) Implement knockout questions in the application to auto-screen unqualified candidates, reducing the "New" pile. 2) Schedule a calibration session with the hiring manager to tighten screening criteria and create a scorecard. 3) Dedicate 2 hours daily for the next week to batch-process "New" candidates - aim to clear 30-40 per day. 4) Set up automated rejection emails for clearly unqualified candidates to improve candidate experience. 5) Track time-in-stage metrics weekly to prevent future buildup. Goal: Get "New" down to <30 within one week.',
-        promptGenerator: (submission) => `You are a Senior Recruiting Operations Consultant who has optimized pipelines for 100+ companies. You specialize in data-driven hiring process improvements and ATS workflow design.
+        promptGenerator: (submission) => `
+            You are a Recruiting Ops Analyst. A participant has diagnosed a pipeline bottleneck.
 
-## CANDIDATE SUBMISSION
-"${submission}"
+            Data: 120 New, 45 Phone, 20 Onsite, 15 Offer.
+            Submission: "${submission}"
 
-## PIPELINE DATA
-- **Total Candidates:** 200
-- **New (Unscreened):** 120 (60%)
-- **Phone Screen:** 45 (22.5%)
-- **Onsite:** 20 (10%)
-- **Offer:** 15 (7.5%)
+            Evaluate:
+            1. Did they identify the bottleneck at the top ("New" stage)?
+            2. Did they suggest a "Screening Blitz" or "Knockout Questions"?
+            3. Did they analyze the conversion rates (Phone->Onsite is good)?
+            4. Did they propose *time-bound* actions (clear "by when")?
 
-**Context:** Hiring Manager frustrated with timeline for Senior Product Manager role
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
 
-## EVALUATION RUBRIC
-
-**1. Bottleneck Identification (25 points)**
-- Correctly identifies primary constraint
-- Uses conversion rate analysis
-- Understands stage-specific challenges
-- Considers both capacity and quality issues
-
-**2. Root Cause Analysis (20 points)**
-- Goes beyond symptoms to underlying causes
-- Considers process, people, and tooling factors
-- Understands recruiter capacity constraints
-- Identifies qualification criteria clarity
-
-**3. Solution Practicality (25 points)**
-- Actionable recommendations with clear steps
-- Considers timeline and resources
-- Addresses immediate vs. long-term fixes
-- Realistic time estimates
-
-**4. Metrics & Accountability (15 points)**
-- Defines success metrics
-- Includes time-based goals
-- Suggests tracking mechanisms
-- Quantifies expected improvements
-
-**5. Candidate Experience (15 points)**
-- Considers impact on candidates
-- Addresses communication/rejection protocols
-- Maintains quality while improving speed
-- Prevents negative employer brand impact
-
-**Total: /100 points**
-
-## CONVERSION RATE CONTEXT
-Industry Benchmarks for PM roles:
-- New → Phone Screen: 20-30% (Current: 37.5% - good)
-- Phone Screen → Onsite: 25-40% (Current: 44% - excellent)
-- Onsite → Offer: 30-50% (Current: 75% - needs review, might be too high)
-
-## REQUIRED OUTPUT FORMAT
-
-**Pipeline Diagnosis:**
-[Identify the primary bottleneck with data supporting your analysis]
-
-**SCORE: [X]**
-
-**Strong Points:**
-- [2-3 things the analysis got right]
-
-**Gaps in Analysis:**
-1. [Missing consideration + why it matters]
-2. [Overlooked factor + implications]
-3. [Additional metric or action needed]
-
-**Optimized Action Plan:**
-**Immediate (This Week):**
-- [Specific action with timeline]
-
-**Short-term (Next 2 weeks):**
-- [Specific action with timeline]
-
-**Systemic Fix (Ongoing):**
-- [Process change to prevent recurrence]
-
-**Expected Impact:**
-- [Quantified outcome: e.g., "Reduce time-to-fill from X to Y days"]
-
-**Metrics to Track:**
-- [Specific KPIs to monitor]
-
-## SCORING GUIDELINES
-- 90-100: Excellent - Data-driven diagnosis, practical solutions, metrics-focused
-- 75-89: Good - Correct bottleneck ID, solid actions, minor gaps in metrics
-- 60-74: Adequate - Identifies issue, generic solutions, weak measurement plan
-- 40-59: Needs Work - Misidentifies bottleneck or impractical solutions
-- 0-39: Poor - Incorrect analysis or solutions that would worsen the problem
-
-Evaluate now.`
+            Tips:
+            1. A large "New" bucket means screening is too slow or volume is too high.
+            2. Align with the hiring manager on capacity planning.
+            3. "Time in Stage" is the metric to watch.
+        `
     },
     {
         id: 'game21',
@@ -804,17 +707,28 @@ Evaluate now.`
         skillCategory: 'diversity' as const,
         exampleSolution: 'Issue 1: "Rockstar" and "ninja" are tech-bro jargon that may discourage women and underrepresented groups from applying. Replace with "skilled engineer" or "experienced developer". Issue 2: "Recent grad" can be interpreted as age discrimination, potentially excluding career-changers and older candidates. Use "early career" or remove time-based language. Issue 3: "Top university" requirement creates socioeconomic and geographic bias, excluding talented developers from non-elite schools, bootcamps, or self-taught backgrounds. Change to "CS degree or equivalent experience". Issue 4: Sourcing only from MIT/Stanford/CMU perpetuates lack of diversity. Expand to HBCUs (Howard, Spelman), HSIs (UT Austin, UC System), regional state schools, and coding bootcamps (Hack Reactor, App Academy). Issue 5: Add diversity job boards (PowerToFly, Jopwell, Fairygodboss) and focus on skills-based assessments over pedigree.',
         promptGenerator: (submission) => `
-            You are an EEOC compliance and diversity recruitment expert. A participant has identified bias issues in sourcing practices.
+            You are a Compliance & DE&I Talent Partner. A participant has identified bias in sourcing.
 
-            Original Practices: Terms like "rockstar", "ninja", "recent grad", required top university CS degree, sourced only from MIT/Stanford/CMU
-
+            Issues: "Rockstar", "Recent Grad", "Top University", "MIT/Stanford only".
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the identification of issues and quality of solutions.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 additional compliance tips.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they flag "Recent Grad" as age discrimination?
+            2. Did they flag "Top University" as socioeconomic bias?
+            3. Did they suggest expanding the school list (e.g., State schools, HBCUs)?
+            4. Did they propose **skill-based sourcing** (diversity boards, non-elite schools, career changers)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Focus on *skills* (Java, Python) not *pedigree* (Ivy League).
+            2. "Recent Grad" implies you don't want older workers (illegal).
+            3. Use "Early Career" instead of "Junior" or "Grad".
         `
     },
     {
@@ -827,16 +741,28 @@ Evaluate now.`
         skillCategory: 'boolean' as const,
         exampleSolution: '("District Manager" OR "Regional Manager" OR "Area Manager" OR "Multi-Unit Manager") AND (retail OR "brick and mortar" OR stores) AND ("P&L" OR "profit and loss" OR "P&L responsibility" OR revenue) AND ("store performance" OR "sales improvement" OR "comp sales" OR "same-store sales") AND (Target OR Walmart OR "Best Buy" OR Nordstrom OR Macy\'s OR Gap OR "Home Depot" OR Lowe\'s OR CVS OR Walgreens)',
         promptGenerator: (submission) => `
-            You are a retail recruiting specialist. A participant has written a Boolean search for District Managers with multi-unit and P&L experience.
+            You are a Retail Recruiter. A participant has written a Boolean search.
 
+            Goal: District Managers, Multi-unit, P&L, Retail competitors.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for retail-specific terminology and targeting.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for retail talent searches.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they use "District Manager" OR "Area Manager"?
+            2. Did they include "P&L" or "Profit and Loss"?
+            3. Did they list specific competitors (Target, Walmart, etc.)?
+            4. Did they mention "multi-unit" or "multi-store" management?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Retail titles vary (District Leader, Market Manager). Use OR.
+            2. "Multi-unit" is the key keyword for this level.
+            3. List 5-10 specific competitor names for best results.
         `
     },
     {
@@ -849,16 +775,29 @@ Evaluate now.`
         skillCategory: 'boolean' as const,
         exampleSolution: '("Manufacturing Engineer" OR "Process Engineer" OR "Production Engineer" OR "Industrial Engineer") AND ("Lean Six Sigma" OR "Six Sigma" OR "Green Belt" OR "Black Belt" OR LSS) AND (automotive OR aerospace OR aviation OR "auto industry") AND (CAD OR AutoCAD OR SolidWorks OR "3D modeling" OR "CAD software") AND (Detroit OR Michigan OR Seattle OR Washington OR "Puget Sound")',
         promptGenerator: (submission) => `
-            You are a manufacturing and engineering recruiter. A participant has written a Boolean search for Manufacturing Engineers with Lean Six Sigma and CAD skills.
+            You are an Engineering Sourcer. A participant has written a Boolean search.
 
+            Goal: Manufacturing Engineers, Lean Six Sigma, CAD, Detroit/Seattle.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for manufacturing-specific terminology and certifications.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for manufacturing talent searches.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they include "Lean Six Sigma" OR "Green Belt" OR "Black Belt"?
+            2. Did they include CAD software (AutoCAD OR SolidWorks)?
+            3. Did they target the locations (Detroit OR Seattle)?
+            4. Did they target "Automotive OR aerospace" explicitly?
+            5. Would this reasonably fill a shortlist without being too narrow?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. "Six Sigma" often appears as "LSS" or "Green Belt".
+            2. CAD tools are specific; list the major ones.
+            3. Use state abbreviations (MI, WA) for broader coverage.
         `
     },
     {
@@ -871,18 +810,29 @@ Evaluate now.`
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Current Title: ("Sales Director" OR "Director of Sales" OR "VP Sales" OR "Head of Sales")\nKeywords: (SaaS OR "Software as a Service" OR "B2B software") AND (enterprise OR "Fortune 500" OR "enterprise sales" OR "strategic accounts")\nCompany Revenue: $10M-$50M, $50M-$100M\nIndustry: Computer Software, Information Technology & Services, Internet\nYears in Current Position: 0-1 years, 1-2 years\nFunction: Sales\nSeniority Level: Director, VP\nBoolean in Keywords field: (enterprise OR "Fortune 500") AND (SaaS OR "B2B software")',
         promptGenerator: (submission) => `
-            You are a LinkedIn Recruiter power user and sales recruiting expert. A participant has written a LinkedIn Recruiter search for enterprise SaaS Sales Directors.
+            You are a SaaS Recruiter. A participant has written a LinkedIn Recruiter search.
 
-            Requirements: SaaS, $10-100M revenue, enterprise/F500 sales, <2 years in role
-
+            Goal: Sales Directors, SaaS ($10-100M), Enterprise, <2 years tenure.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate use of LinkedIn-specific filters and Boolean syntax.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 advanced LinkedIn Recruiter tips.
-            4. Provide an optimized search strategy.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they use "Company Revenue" or keywords for size?
+            2. Did they use "Years in Current Position" (0-2 years)?
+            3. Did they include "Enterprise" or "Fortune 500" keywords?
+            4. Did they include title variations (Director/Head/VP)?
+            5. Did they combine Function: Sales + Seniority: Director/VP?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. "Years in Current Position" < 1 year = Flight risk (or bad hire).
+            2. "Enterprise" implies large deal sizes; crucial for this role.
+            3. Use "Industry: Computer Software" to filter for SaaS.
         `
     },
     {
@@ -895,15 +845,28 @@ Evaluate now.`
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Army Logistics Officers (88A/92A MOS) and Navy Supply Corps Officers have direct operational and supply chain experience. 2) Marine Corps Operations Officers and Air Force Mission Support Officers bring coordination and team leadership skills. 3) Senior NCOs (E-7 to E-9) across all branches with logistics or operations backgrounds. Sourcing approach: Partner with veteran organizations (Hire Heroes USA, Veterati, FourBlock), attend veteran job fairs, use LinkedIn\'s Military Occupational Specialty feature, search for keywords like "veteran", "transitioning service member", "military leadership", "clearance holder". Create veteran-friendly JDs that translate requirements (avoid corporate jargon, highlight leadership and problem-solving). Offer MOS-to-civilian role translation guides and mentorship programs for smooth transition.',
         promptGenerator: (submission) => `
-            You are a military veteran recruiting specialist. A participant has identified relevant MOS codes and created a veteran sourcing strategy.
+            You are a Veteran Talent Acquisition Specialist. A participant has created a sourcing strategy.
 
+            Goal: Veterans for Ops Manager/Logistics.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for accuracy of MOS knowledge and effectiveness of sourcing approach.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for veteran recruitment.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they mention specific MOS codes (e.g., 92A, 88N)?
+            2. Did they mention specific ranks (NCOs, Officers)?
+            3. Did they suggest veteran-specific job boards (Hire Heroes, etc.)?
+            4. Did they mention *translation* of military skills to civilian roles (Ops/Logistics)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. MOS codes are the "keywords" of military sourcing.
+            2. "NCOs" (Non-Commissioned Officers) are great Ops Managers.
+            3. Translate military jargon for them (e.g., "Platoon Leader" = "Team Lead").
         `
     },
     {
@@ -916,17 +879,28 @@ Evaluate now.`
         skillCategory: 'ats' as const,
         exampleSolution: 'Step 1: Segment by role similarity - use ATS tags to match candidates to the 5 new openings by skills and level. Prioritize those who interviewed within the last 6 months (warmer leads). Step 2: Check candidate status - scrub LinkedIn to see who might have changed jobs (remove those recently promoted or moved). Step 3: Personalized outreach sequence - Email 1 (Day 0): "We\'re reaching out because we were impressed by you during your [role] interview. We have new opportunities that might be a better fit." Include specific role links. Email 2 (Day 5): Follow-up for non-responders with additional context about team/company updates. Step 4: Fast-track process - Offer expedited interviews (skip phone screen) since they\'re already vetted. Step 5: Track metrics - monitor response rate, conversion to interview, and time-to-hire vs. new candidates. Silver medalists should convert 20-30% to interviews.',
         promptGenerator: (submission) => `
-            You are an ATS operations and candidate engagement expert. A participant has designed a silver medalist re-engagement campaign.
+            You are a Candidate Marketing Manager. A participant has designed a re-engagement campaign.
 
-            Context: 500 candidates from final rounds in past 12 months, 5 new openings available
-
+            Goal: Re-engage 500 "Silver Medalists" for 5 new roles.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate the campaign strategy for practicality and effectiveness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for candidate re-engagement.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they segment the list (e.g., by role or recency)?
+            2. Did they acknowledge the past relationship ("We met last year")?
+            3. Did they offer a "Fast Track" (skip phone screen)?
+            4. Did they define a basic sequence (touchpoints / timing)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. "Silver Medalists" are your highest ROI source.
+            2. Acknowledge *why* they weren't hired (timing, etc.) if possible.
+            3. Personalization at scale (templates but tailored lines) is key.
         `
     },
     {
@@ -939,15 +913,28 @@ Evaluate now.`
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Obtain explicit consent before adding candidates to your ATS - you cannot store personal data without their permission. Use LinkedIn InMail or email to request consent first. 2) Provide clear privacy notice - inform candidates how their data will be used, stored, and for how long (typically 6-12 months for recruiting purposes). 3) Right to erasure - candidates can request deletion of their data at any time. Build ATS workflows to honor these requests within 30 days. 4) Data minimization - only collect necessary information (no sensitive data like race, religion, health unless legally required for diversity monitoring with consent). 5) Lawful basis - ensure you have legitimate interest or consent for processing. Don\'t share candidate data with third parties without explicit consent. 6) Cross-border transfer - if transferring data from EU to US, ensure your company has Standard Contractual Clauses or Privacy Shield equivalent. 7) Document compliance - maintain records of consent and data processing activities.',
         promptGenerator: (submission) => `
-            You are a GDPR compliance and international recruiting expert. A participant has outlined GDPR requirements for EU candidate sourcing.
+            You are a Data Privacy Officer. A participant has outlined GDPR steps.
 
+            Goal: Sourcing candidates in the EU.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for accuracy and completeness of GDPR knowledge.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 additional GDPR recruiting tips.
-            4. Format your response in simple markdown.
+            Evaluate:
+            1. Did they mention "Legitimate Interest" or "Consent"?
+            2. Did they mention the "Right to be Forgotten" (Deletion)?
+            3. Did they mention "Data Minimization" (Only what's needed)?
+            4. Did they mention informing candidates within a certain timeframe / privacy notice?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. You must notify candidates *within 30 days* of sourcing them.
+            2. Don't store sensitive data (health, religion) without explicit consent.
+            3. Keep a "Consent Log" in your ATS.
         `
     },
     {
@@ -960,18 +947,28 @@ Evaluate now.`
         skillCategory: 'xray' as const,
         exampleSolution: 'GitHub X-ray: site:github.com ("Developer Advocate" OR "DevRel" OR "Developer Relations") AND (speaker OR conference OR "open source" OR contributor) -site:github.com/topics\n\nTwitter/X X-ray: site:twitter.com ("Developer Advocate" OR "DevRel") AND (backend OR "backend developer" OR API) AND (speaking OR conference OR "just spoke")\n\nLinkedIn Boolean: ("Developer Advocate" OR "DevRel Engineer" OR "Developer Relations") AND (speaker OR "conference speaker" OR "technical blog" OR blogger) AND (backend OR "backend development" OR Python OR Node OR Go)\n\nDev.to X-ray: site:dev.to (author OR "@") AND ("Developer Advocate" OR DevRel) AND (backend OR API OR "backend development")\n\nMedium X-ray: site:medium.com ("Developer Advocate" OR DevRel) AND (backend OR API OR microservices) AND (@)\n\nConference sites: site:sessionize.com ("Developer Advocate" OR DevRel) AND (backend OR API)',
         promptGenerator: (submission) => `
-            You are a multi-platform sourcing expert specializing in developer relations roles. A participant has created a cross-platform sourcing strategy.
+            You are a DevRel Sourcer. A participant has written a cross-platform strategy.
 
-            Requirements: DevRel/Developer Advocate, Twitter active, conference speakers, GitHub contributors, tech bloggers, backend experience
-
+            Goal: DevRel, Twitter/GitHub active, Speakers.
             Submission: "${submission}"
 
-            Your task is to:
-            1. Evaluate for coverage across platforms and Boolean accuracy.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 advanced multi-platform sourcing tips.
-            4. Provide optimization suggestions.
-            5. Format your response in simple markdown.
+            Evaluate:
+            1. Did they use "site:twitter.com" or "site:x.com"?
+            2. Did they look for "Speaker" or "Conference" keywords?
+            3. Did they combine platforms (e.g., GitHub AND Twitter)?
+            4. Did they use platform-specific logic (GitHub vs Twitter vs Dev.to)?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. DevRel lives on Twitter/X; look for "Dev Advocate" in bios.
+            2. Conference speaker lists are gold mines (Sessionize.com).
+            3. Repurpose names: once you find one DevRel, snowball using followers/following.
         `
     },
     {
@@ -984,18 +981,28 @@ Evaluate now.`
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Act as an expert technical sourcer. Write a Boolean search string for LinkedIn Recruiter to find Senior Site Reliability Engineers in London. Required skills: Terraform AND AWS. Exclude candidates currently working at consulting firms (like Accenture, Deloitte, KPMG, etc.). Please use standard Boolean operators (AND, OR, NOT) and group terms correctly with parentheses. Include common job title variations for SRE.',
         promptGenerator: (submission) => `
-            You are a Prompt Engineering Instructor for Recruiters. A participant has written a prompt to ask an AI (like me) to generate a Boolean search string.
+            You are a Prompt Engineering Coach. A participant has written a prompt for AI.
 
-            Goal: Find Senior SREs in London, with Terraform + AWS, excluding consulting firms.
+            Goal: Generate Boolean for Senior SRE, London, Terraform/AWS, No Consulting.
+            Submission: "${submission}"
 
-            Participant's Prompt: "${submission}"
+            Evaluate:
+            1. Did they specify the Persona ("Act as a Sourcer")?
+            2. Did they provide the Context (London, SRE, Tech Stack)?
+            3. Did they include the Constraint ("Exclude consulting firms")?
+            4. Did they specify output format (Boolean in code block)?
 
-            Your task is to:
-            1. Evaluate the prompt's clarity, context, and constraints. Did they give the AI enough info to do a good job?
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for better prompting (e.g., assigning a persona, specifying output format, giving examples).
-            4. Show what the AI would likely have produced based on their prompt vs. what a perfect prompt would produce.
-            5. Format your response in simple markdown.
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
+            Tips:
+            1. Persona + Task + Context + Format = Perfect Prompt.
+            2. Be specific about exclusions ("NOT Accenture").
+            3. Ask AI to propose synonyms and job title variants.
         `
     },
     // PHASE 1: Advanced Engagement & AI (Games 30-37)
@@ -1009,20 +1016,28 @@ Evaluate now.`
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Act as a Senior Technical Recruiter. I will paste a resume below. Please extract the 3 most significant achievements related to "Cloud Migration" or "Digital Transformation". Format them as punchy bullet points that quantify the impact (cost savings, speed, scale). Ignore general responsibilities; focus on outcomes. Output ONLY the 3 bullets.',
         promptGenerator: (submission) => `
-            You are an AI Efficiency Coach. A participant wants to use AI to summarize a resume.
+            You are an AI Co-pilot Coach for Recruiters. A participant has used AI to summarize a resume.
+
+            Resume: 5 pages, legacy tech, one recent cloud project.
             Submission: "${submission}"
-            
+
             Evaluate:
-            1. Did they specify the role (Principal Architect)?
-            2. Did they ask for the specific output format (3 bullets)?
-            3. Did they focus on the key skill (Cloud Migration)?
-            
-            SCORE: [number]
-            
+            1. Did they ask for a "Summary" vs "Rewrite"?
+            2. Did they focus on the "Cloud Migration" project (the key relevance)?
+            3. Did they ask for a specific format (Bullet points)?
+            4. Did they tell AI to ignore generic responsibilities and focus on results?
+
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
+
             Tips:
-            1. Always specify "Output ONLY..." to avoid chatter.
-            2. Ask for "quantifiable results" to get better bullets.
-            3. Define the persona (Technical Recruiter) for better tone.
+            1. Long resumes often hide the gold; ask AI to extract "Key Achievements".
+            2. Be specific: "Summarize the last 3 years only".
+            3. Verify the AI's summary against the actual resume (hallucination check).
         `
     },
     {
@@ -1042,12 +1057,18 @@ Evaluate now.`
             1. Is it truly a "take-away" (removing the offer)?
             2. Is it polite but firm?
             3. Is it short (under 50 words)?
+            4. Is there a *clear* next-step hook ("If things change...")?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Use "Permission to close your file?" as a subject line - it has a high open rate.
-            2. Don't be passive-aggressive.
+            2. Don't be passive-aggressive or guilt-tripping.
             3. Leave the door slightly ajar ("If things change...").
         `
     },
@@ -1068,12 +1089,18 @@ Evaluate now.`
             1. Did they validate the candidate's feelings (Empathy)?
             2. Did they anchor to data (Market/Internal Equity)?
             3. Did they pivot to "Total Compensation" or a conversation?
+            4. Did they avoid defensiveness / blame ("budget is the problem")?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Never say "No" immediately. Say "Let's look at the whole picture."
-            2. Use "Internal Equity" as a neutral reason.
+            2. Check if expectations were misaligned earlier and own that.
             3. Get them on the phone; don't negotiate numbers via email.
         `
     },
@@ -1094,13 +1121,19 @@ Evaluate now.`
             1. Did they ask for behavioral questions?
             2. Did they request a rubric/evaluation guide (Crucial for structured interviewing)?
             3. Did they specify the skills (Experimentation/Data)?
+            4. Did they ask for follow-up / probing questions?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Always ask AI for "Good vs Bad" answer examples.
             2. Specify "Behavioral" or "Situational" questions.
-            3. Ask for follow-up probing questions.
+            3. Ask for follow-up probing questions to dig deeper.
         `
     },
     {
@@ -1120,12 +1153,18 @@ Evaluate now.`
             1. Does it sound conversational (not like a script)?
             2. Is there a "pattern interrupt" (acknowledging the spam)?
             3. Is the call to action low pressure?
+            4. Did they mention something *specific* about the candidate (project, repo, talk)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Voice notes have 3x response rates. Use them!
-            2. Start with "I know you're busy..." or "I know this is random..."
+            2. Encourage natural imperfection (not over-polished script).
             3. Focus on "Human connection" over "Job pitch".
         `
     },
@@ -1146,12 +1185,18 @@ Evaluate now.`
             1. Did they ask for a "narrative" style?
             2. Did they focus on "Strategic Impact" over tasks?
             3. Is the audience defined (CEO)?
+            4. Did they limit length (e.g., under 200 words) so a CEO actually reads it?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. CEOs care about Revenue, Scale, and Speed.
-            2. Use words like "Visionary," "Transformational," "Proven."
+            2. Include *concrete metrics* in the bio.
             3. Ask AI to "sell" the candidate.
         `
     },
@@ -1172,12 +1217,18 @@ Evaluate now.`
             1. Did they target the right site (kaggle.com)?
             2. Did they look for ranking keywords (Master, Grandmaster)?
             3. Did they try to filter out competition pages?
+            4. Did they use Computer Vision synonyms (CV, image, etc.)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Kaggle ranks are: Novice, Contributor, Expert, Master, Grandmaster. Use these!
-            2. Profiles often have "Competitions" and "Datasets" tabs.
+            2. Use "site:kaggle.com/users" as a pattern for profiles.
             3. Look for specific competition names if you know them.
         `
     },
@@ -1198,13 +1249,19 @@ Evaluate now.`
             1. Did they target dribbble.com?
             2. Did they include the aesthetic keywords (Minimalist/Clean)?
             3. Did they exclude "shots" (individual images) to find profiles?
+            4. Did they hint at how to judge "fit" (e.g., click a few portfolios)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Dribbble profiles often have "Hire Me" buttons.
             2. Search for "shots" if you want to see work, but "profiles" if you want people.
-            3. Use "site:behance.net" as an alternative.
+            3. Combine Dribbble + Behance for cross-check.
         `
     },
     // PHASE 2: Talent Intelligence & Strategy (Games 38-45)
@@ -1225,12 +1282,18 @@ Evaluate now.`
             1. Are the companies relevant to Fintech/Payments?
             2. Are they likely to have teams in NYC?
             3. Is the reasoning sound (tech stack match)?
+            4. Did they think about *level* of engineers (payments infra vs consumer fintech)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Don't just list banks (JPMorgan) unless the role is legacy.
-            2. Look for "Engineering Blogs" of these companies to verify their stack.
+            2. Validate via job boards / engineering blogs.
             3. Use Crunchbase to find well-funded competitors.
         `
     },
@@ -1251,13 +1314,19 @@ Evaluate now.`
             1. Did they use data/percentiles to make the case?
             2. Did they offer options (Raise budget OR Lower requirements)?
             3. Was the tone advisory, not complaining?
+            4. Did they keep it under 100 words (as requested)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Use terms like "Median," "Percentile," and "Total Comp."
             2. Always give the manager a choice (The "Double Bind" technique).
-            3. Mention the risk: "We will lose candidates at the offer stage."
+            3. Use market sources (Radford, Levels, etc.) without naming if internal.
         `
     },
     {
@@ -1277,13 +1346,20 @@ Evaluate now.`
             1. Are the accommodations practical?
             2. Do they specifically help with anxiety/processing (common in neurodivergence)?
             3. Do they maintain the bar for quality?
+            4. Did they consider interviewer training / expectations?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. "Surprise" questions measure quick thinking, not competence. Avoid them.
-            2. Clear structure helps everyone, not just neurodiverse folks.
-            3. Focus on "Work Samples" over "Social cues."
+            2. Avoid vague culture-fit questions, use structured scoring.
+            3. Clear structure helps everyone, not just neurodiverse folks.
+            4. Focus on "Work Samples" over "Social cues."
         `
     },
     {
@@ -1303,13 +1379,19 @@ Evaluate now.`
             1. Did they ask about the transitions (Job hopping)?
             2. Did they ask for the "Baseline" of the metrics (500% of what?)?
             3. Is the tone curious, not accusatory?
+            4. Did they probe "We vs I" (individual contribution)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Short stints at executive levels are a major risk. Dig deep.
             2. "We" vs "I" - ask what *they* did specifically.
-            3. Ask for the "Why" behind every move.
+            3. Ask for specific examples of conflict or failure.
         `
     },
     {
@@ -1329,13 +1411,19 @@ Evaluate now.`
             1. Is the hook strong (first 3 seconds)?
             2. Is the tone right for Gen Z (Authentic, not corporate)?
             3. Is there a clear Call to Action (Link in bio)?
+            4. Did they mention a time limit (e.g., "keep it under 60s")?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Don't say "We are looking for..." - say "You will..."
             2. Focus on the "Vibe" and "Perks" (Remote, Creative freedom).
-            3. Keep it under 60 words for a 30s video.
+            3. Add subtitles – most people watch on mute.
         `
     },
     {
@@ -1355,8 +1443,14 @@ Evaluate now.`
             1. Did they use the filetype: operator?
             2. Did they include keywords for "Resume" (CV, Vitae)?
             3. Did they exclude templates/samples (-sample)?
+            4. Did they target specific domains (e.g., site:edu or site:github.io)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. University sites often host these. Add "site:.edu" for US schools.
@@ -1381,12 +1475,18 @@ Evaluate now.`
             1. Did they set Past Company correctly?
             2. Did they EXCLUDE the Current Company (Crucial!)?
             3. Is the logic sound?
+            4. Did they add a role constraint (e.g., Engineering) to avoid non-relevant alumni?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Boomerangs have 2x retention rates.
-            2. If you don't exclude Current Company, you'll just find current employees.
+            2. Check internal ERGs for alumni connections.
             3. Look for people who left 2+ years ago (vesting cliffs).
         `
     },
@@ -1407,12 +1507,18 @@ Evaluate now.`
             1. Did they identify a Unique Identifier (Email)?
             2. Did they have a secondary check (Phone/Name)?
             3. Did they define a "Master" record rule (Recency)?
+            4. Did they suggest testing on a small sample first?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Never delete; always Merge or Archive.
-            2. Email is the gold standard for uniqueness.
+            2. Log every merge in case you need to undo.
             3. Be careful with common names (John Smith).
         `
     },
@@ -1434,12 +1540,18 @@ Evaluate now.`
             1. Did they acknowledge the compliment (The raise)?
             2. Did they pivot back to the "Pain" (Why they looked)?
             3. Did they avoid being pushy/salesy?
+            4. Did they invite reflection ("Why did you accept the interview?")?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Counter-offers rarely fix the root problem. Remind them of that.
-            2. Use "Future Pacing" - "In 6 months, will you be happy?"
+            2. Send a "Pros/Cons" list template.
             3. Be willing to walk away. It builds trust.
         `
     },
@@ -1460,12 +1572,18 @@ Evaluate now.`
             1. Did they use an analogy (Rent vs Wealth)?
             2. Did they explain the "Upside" potential?
             3. Did they use the word "Owner"?
+            4. Did they be honest about vesting/risk (not just upside)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Non-tech people fear risk. Frame equity as "Ownership," not "Gambling."
-            2. Show the math: "If we grow 2x, this is worth $X."
+            2. Use simple numbers (10,000 shares @ $5).
             3. Don't overpromise - say "potential."
         `
     },
@@ -1486,12 +1604,18 @@ Evaluate now.`
             1. Did they distinguish "Fit" (Sameness) vs "Add" (New perspective)?
             2. Did they mention the business risk of "Groupthink"?
             3. Did they advocate for the candidate's specific strength?
+            4. Did they tie the "add" to a business benefit (e.g., "better at risk assessment")?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. "Culture Fit" is often unconscious bias. Call it out gently.
-            2. Focus on "Values Alignment" instead of personality.
+            2. Link to company diversity strategy.
             3. Use business logic: Diverse teams build better products.
         `
     },
@@ -1512,13 +1636,19 @@ Evaluate now.`
             1. Did they mention Cost/Competition?
             2. Did they mention Quality/Supply (STEM education)?
             3. Did they mention Retention (Big fish in small pond)?
+            4. Did they consider time zones?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
             1. Data speaks louder than opinions.
-            2. "Follow the sun" support is another benefit of global hubs.
-            3. Mention specific success stories (e.g., "Google hires in Warsaw").
+            2. Use real salary benchmarks (e.g., "Poland is 40% of US cost").
+            3. "Follow the sun" support is another benefit of global hubs.
         `
     },
     {
@@ -1531,20 +1661,26 @@ Evaluate now.`
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'You are a Boolean Search Generator. Your ONLY purpose is to output valid Boolean search strings. Rules: 1. Receive a job description or list of skills. 2. Output a Boolean string inside a code block. 3. Do NOT explain the string. 4. Do NOT say "Here is your string." 5. Use standard operators (AND, OR, NOT). 6. If the user input is vague, ask ONE clarifying question. Otherwise, just generate.',
         promptGenerator: (submission) => `
-            You are an AI Developer.
+            You are a Sourcing Automation Architect.
             Submission: "${submission}"
             
             Evaluate:
-            1. Did they define the Persona (Boolean Generator)?
-            2. Did they set negative constraints (Do NOT explain)?
-            3. Did they handle edge cases (Vague input)?
+            1. Did they specify the role/keywords clearly?
+            2. Did they ask for "Boolean" output specifically?
+            3. Did they include "Exclusions" (NOT)?
+            4. Did they ask for Boolean-only output (no conversational filler)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
-            1. The more constraints, the better the bot.
-            2. "Output ONLY" is the most important command.
-            3. Instruct it on how to handle errors.
+            1. "Act as a Sourcing Expert" is a strong persona.
+            2. Specify the language/platform (e.g., "for LinkedIn Recruiter").
+            3. Iterate: "Refine this to be broader" is a valid command.
         `
     },
     {
@@ -1557,20 +1693,26 @@ Evaluate now.`
         skillCategory: 'boolean' as const,
         exampleSolution: 'Boolean: (Rust OR RustLang) AND (Cryptography OR Crypto OR "Zero Knowledge" OR ZK) AND (Japanese OR "JLPT" OR "Japanese speaker"). Platform: GitHub (search for Rust crypto repos), LinkedIn (filter by Language: Japanese), and Rust Community Discords. Outreach Angle: "Your unique blend of Rust + Crypto + Japanese is exactly what we need for our Tokyo-Zurich bridge team. We offer full relocation support to Switzerland."',
         promptGenerator: (submission) => `
-            You are a Master Sourcer.
+            You are a Niche Sourcing Specialist.
             Submission: "${submission}"
             
             Evaluate:
-            1. Did the Boolean cover all 3 niche skills?
-            2. Did they pick the right platforms (GitHub/Discord)?
-            3. Was the outreach hyper-personalized to the "Purple Squirrel" nature?
+            1. Did they look for "adjacent" skills (e.g., C++ for Rust)?
+            2. Did they target specific communities (RustConf, Discord)?
+            3. Did they use "Project" keywords (e.g., "Servo", "Tokio")?
+            4. Did they look for language cues (e.g., "Rust" often appears with "Systems Programming")?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
-            1. For impossible roles, look for the "Intersection" of communities.
-            2. Relocation is a huge selling point - lead with it.
-            3. Don\'t rely on just one channel.
+            1. Purple Squirrels hang out in niche corners (Discord, IRC, Slack).
+            2. Snowball: Find one profile and see what *they* list.
+            3. Don't rely on job titles; rely on "evidence of work."
         `
     },
     {
@@ -1583,20 +1725,26 @@ Evaluate now.`
         skillCategory: 'talent-intelligence' as const,
         exampleSolution: 'Tools: Use free LinkedIn (optimize network), GitHub X-Ray (free), and a simple Trello/Notion board as an ATS. Process: Implement "Founder Sourcing" blocks (Founder sends 10 emails/week). Set up a generous Employee Referral Program (cash bonus). Brand: Write 1 high-quality engineering blog post per month to drive inbound. Focus on "High Touch" candidate experience to win against big tech.',
         promptGenerator: (submission) => `
-            You are a VC Talent Partner.
+            You are a VP of Talent.
             Submission: "${submission}"
             
             Evaluate:
-            1. Was the tool stack truly free/low-cost?
-            2. Did they leverage the Founders (Best free resource)?
-            3. Did they focus on Referrals (Highest ROI)?
+            1. Did they include "Time to Fill"?
+            2. Did they include "Quality of Hire" (Retention/Performance)?
+            3. Did they include "Pipeline Health" (Conversion rates)?
+            4. Did they mention a tracking system (ATS/Spreadsheet)?
             
-            SCORE: [number]
+            Return your answer in this format:
+            SCORE: [1-5]
+            WHAT WORKED (2-3 bullets):
+            - ...
+            IMPROVEMENT AREAS (2-3 bullets):
+            - ...
             
             Tips:
-            1. At Series A, the Founder is your best recruiter. Use them.
-            2. Referrals are the lifeblood of early-stage hiring.
-            3. You don't need a $20k LinkedIn license to hire great people.
+            1. Metrics tell a story. Don't just report numbers; report *insights*.
+            2. "Quality of Hire" is the holy grail.
+            3. Review metrics weekly, not monthly.
         `
     }
 ];
