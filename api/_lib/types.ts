@@ -22,37 +22,37 @@ export interface ChatMessage {
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface Game {
-    id: string;
-    title: string;
-    description: string;
-    task: string;
-    context?: string;
-    placeholder: string;
-    promptGenerator: (submission: string) => string;
-    exampleSolution?: string;
-    difficulty: Difficulty;
-    skillCategory: SkillCategory;
+  id: string;
+  title: string;
+  description: string;
+  task: string;
+  context?: string;
+  placeholder: string;
+  promptGenerator: (submission: string) => string;
+  exampleSolution?: string;
+  difficulty: Difficulty;
+  skillCategory: SkillCategory;
 }
 
 export type ToastType = 'success' | 'error' | 'info';
 
 export interface Toast {
-    id: number;
-    message: string;
-    type: ToastType;
+  id: number;
+  message: string;
+  type: ToastType;
 }
 
 export interface PlayerStats {
-    totalGamesPlayed: number;
-    averageScore: number;
+  totalGamesPlayed: number;
+  averageScore: number;
+  bestScore: number;
+  totalPoints: number;
+  gameBreakdown: {
+    gameId: string;
+    gameTitle: string;
+    attempts: number;
     bestScore: number;
-    totalPoints: number;
-    gameBreakdown: {
-        gameId: string;
-        gameTitle: string;
-        attempts: number;
-        bestScore: number;
-    }[];
+  }[];
 }
 
 export type SkillCategory =
@@ -64,7 +64,10 @@ export type SkillCategory =
   | 'diversity'        // Diversity & inclusion sourcing
   | 'ats'              // ATS/CRM usage
   | 'screening'        // Resume/profile screening
-  | 'job-description'; // Writing effective JDs
+  | 'job-description'  // Writing effective JDs
+  | 'ai-prompting'     // AI Prompt Engineering
+  | 'negotiation'      // Closing & Objection Handling
+  | 'talent-intelligence'; // Market Mapping & Strategy
 
 export type TimeFilter = 'all-time' | 'weekly' | 'monthly';
 

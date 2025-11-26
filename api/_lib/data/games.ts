@@ -1,4 +1,4 @@
-import { Game } from '../types.js';
+import { Game } from '../types';
 
 /**
  * This is the central repository for all game challenges.
@@ -17,55 +17,6 @@ export const games: Game[] = [
         skillCategory: 'boolean' as const,
         exampleSolution: '("Senior Backend Engineer" OR "Backend Developer" OR "Software Engineer") AND (Go OR Golang) AND (Kubernetes OR K8s OR "container orchestration") AND (Vienna OR Wien) AND ("open source" OR "open-source" OR GitHub OR "contributor")',
         promptGenerator: (submission) => `You are an expert Technical Sourcing Coach with 15+ years of experience training recruiters on Boolean search techniques. You provide structured, actionable feedback with specific examples.
-
-## LANGUAGE STYLE - IMPORTANT!
-
-Write like you're chatting with a fellow recruiter or sourcer, not writing an academic paper:
-- Use everyday recruiting language: "find candidates" not "identify talent pools"
-- Be conversational: "you nailed it", "that's solid", "here's the thing"
-- Say "reach out" not "initiate contact", "good fit" not "optimal alignment"
-- Avoid overly formal phrases like "demonstrates mastery" or "keen understanding of"
-- Be direct, practical, and respectful
-- Think: "How would an experienced sourcer explain this over coffee?"
-
-## FEEDBACK TONE GUIDELINES - CRITICAL!
-
-Adjust your feedback tone and depth based on the score you assign:
-
-**0-30 points (Needs Significant Work):**
-- Supportive but honest tone
-- Focus on 2-3 fundamental gaps
-- Provide step-by-step guidance
-- Keep "Areas for Improvement" detailed
-- Encourage practice: "Don't worry, everyone starts somewhere!"
-
-**31-50 points (Making Progress):**
-- Encouraging tone
-- Acknowledge what's working
-- Point out 2-3 key improvements
-- Provide clear examples
-- "You're on the right track, let's refine..."
-
-**51-75 points (Good Effort):**
-- Positive, constructive tone
-- Highlight strengths first
-- Suggest 1-2 optimization opportunities
-- Show advanced techniques
-- "Good work! Here's how to take it to the next level..."
-
-**76-84 points (Very Good):**
-- Congratulatory tone
-- Celebrate what they did well first
-- Mention only 1 minor polish opportunity (if any)
-- Keep "Areas for Improvement" brief
-- "Very strong! You're almost at expert level..."
-
-**85-100 points (Excellent/Expert):**
-- Highly celebratory, brief tone
-- Focus entirely on praise and validation
-- NO "Areas for Improvement" section or max 1 very minor suggestion
-- Position as "professional-level" or "expert-level"
-- "Outstanding! This is professional-grade sourcing!"
 
 ## CANDIDATE SUBMISSION
 "${submission}"
@@ -1021,6 +972,631 @@ Evaluate now.`
             3. Give 3 advanced multi-platform sourcing tips.
             4. Provide optimization suggestions.
             5. Format your response in simple markdown.
+        `
+    },
+    {
+        id: 'game29',
+        title: 'Game 29: The Gemini Prompt Engineer',
+        description: 'You need to find "Senior Site Reliability Engineers" (SREs) in London who have experience with Terraform and AWS, but you want to exclude candidates from consulting firms. You want to use Gemini to generate the perfect Boolean string for you.',
+        task: 'Your task: Write a prompt for Gemini that will generate a high-quality Boolean search string for this role. Be specific about your requirements.',
+        placeholder: 'e.g., Act as a sourcing expert and write a Boolean string for...',
+        difficulty: 'medium' as const,
+        skillCategory: 'ai-prompting' as const,
+        exampleSolution: 'Act as an expert technical sourcer. Write a Boolean search string for LinkedIn Recruiter to find Senior Site Reliability Engineers in London. Required skills: Terraform AND AWS. Exclude candidates currently working at consulting firms (like Accenture, Deloitte, KPMG, etc.). Please use standard Boolean operators (AND, OR, NOT) and group terms correctly with parentheses. Include common job title variations for SRE.',
+        promptGenerator: (submission) => `
+            You are a Prompt Engineering Instructor for Recruiters. A participant has written a prompt to ask an AI (like me) to generate a Boolean search string.
+
+            Goal: Find Senior SREs in London, with Terraform + AWS, excluding consulting firms.
+
+            Participant's Prompt: "${submission}"
+
+            Your task is to:
+            1. Evaluate the prompt's clarity, context, and constraints. Did they give the AI enough info to do a good job?
+            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
+            3. Give 3 tips for better prompting (e.g., assigning a persona, specifying output format, giving examples).
+            4. Show what the AI would likely have produced based on their prompt vs. what a perfect prompt would produce.
+            5. Format your response in simple markdown.
+        `
+    },
+    // PHASE 1: Advanced Engagement & AI (Games 30-37)
+    {
+        id: 'game30',
+        title: 'Game 30: The Resume Summarizer',
+        description: 'You have a 5-page resume for a "Principal Architect" that is full of fluff. You need to send a 3-bullet summary to the Hiring Manager highlighting their Cloud Migration experience.',
+        task: 'Your task: Write a prompt for an AI to extract and summarize the key Cloud Migration achievements from a long text.',
+        placeholder: 'e.g., Act as a technical recruiter and summarize...',
+        difficulty: 'easy' as const,
+        skillCategory: 'ai-prompting' as const,
+        exampleSolution: 'Act as a Senior Technical Recruiter. I will paste a resume below. Please extract the 3 most significant achievements related to "Cloud Migration" or "Digital Transformation". Format them as punchy bullet points that quantify the impact (cost savings, speed, scale). Ignore general responsibilities; focus on outcomes. Output ONLY the 3 bullets.',
+        promptGenerator: (submission) => `
+            You are an AI Efficiency Coach. A participant wants to use AI to summarize a resume.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they specify the role (Principal Architect)?
+            2. Did they ask for the specific output format (3 bullets)?
+            3. Did they focus on the key skill (Cloud Migration)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Always specify "Output ONLY..." to avoid chatter.
+            2. Ask for "quantifiable results" to get better bullets.
+            3. Define the persona (Technical Recruiter) for better tone.
+        `
+    },
+    {
+        id: 'game31',
+        title: 'Game 31: The Break-Up Email',
+        description: 'You have reached out to a candidate 3 times with no response. You want to send one final "break-up" email to close the loop and potentially trigger a response (the "strip-line" technique).',
+        task: 'Your task: Write a subject line and short email body (under 50 words) that politely withdraws the offer to chat.',
+        placeholder: 'e.g., Subject: Permission to close your file?',
+        difficulty: 'medium' as const,
+        skillCategory: 'outreach' as const,
+        exampleSolution: 'Subject: Permission to close your file?\n\nHi Alex, I haven\'t heard back, so I assume you\'re not interested in the Head of Engineering role right now. I\'m going to close your file for this search so I don\'t keep bothering you. If things change, let me know. Best, [Name]',
+        promptGenerator: (submission) => `
+            You are a Sales Psychology Expert. A participant is writing a "break-up" email.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Is it truly a "take-away" (removing the offer)?
+            2. Is it polite but firm?
+            3. Is it short (under 50 words)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Use "Permission to close your file?" as a subject line - it has a high open rate.
+            2. Don't be passive-aggressive.
+            3. Leave the door slightly ajar ("If things change...").
+        `
+    },
+    {
+        id: 'game32',
+        title: 'Game 32: The Lowball Rebuttal',
+        description: 'You offered a candidate $120k. They are offended because they wanted $140k. The market average is $125k. You need to de-escalate and keep them interested without immediately raising the offer.',
+        task: 'Your task: Write a response (email or script) to handle this objection.',
+        placeholder: 'e.g., I understand your frustration...',
+        difficulty: 'hard' as const,
+        skillCategory: 'negotiation' as const,
+        exampleSolution: 'I completely understand where you\'re coming from, and I appreciate you being open about your expectations. We arrived at $120k based on our internal equity and current market benchmarks for this specific level. However, I don\'t want money to be the only blocker if this is the right career move for you. Can we hop on a call to look at the total package (equity, benefits, bonus) and see if we can bridge the gap in other ways?',
+        promptGenerator: (submission) => `
+            You are a Negotiation Coach. A participant is handling a lowball objection.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they validate the candidate's feelings (Empathy)?
+            2. Did they anchor to data (Market/Internal Equity)?
+            3. Did they pivot to "Total Compensation" or a conversation?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Never say "No" immediately. Say "Let's look at the whole picture."
+            2. Use "Internal Equity" as a neutral reason.
+            3. Get them on the phone; don't negotiate numbers via email.
+        `
+    },
+    {
+        id: 'game33',
+        title: 'Game 33: The Interview Script Generator',
+        description: 'You are hiring a "Growth Marketing Manager". You need 5 behavioral interview questions focused on "Experimentation" and "Data Analysis".',
+        task: 'Your task: Write a prompt for AI to generate these specific interview questions with a scoring rubric.',
+        placeholder: 'e.g., Create an interview guide for...',
+        difficulty: 'medium' as const,
+        skillCategory: 'ai-prompting' as const,
+        exampleSolution: 'Create a structured interview guide for a Growth Marketing Manager. I need 5 behavioral questions focusing on "Experimentation" (A/B testing) and "Data Analysis". For each question, provide a "Good Answer" vs. "Bad Answer" rubric to help me evaluate candidates. Tone: Professional and rigorous.',
+        promptGenerator: (submission) => `
+            You are an Interview Design Expert.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they ask for behavioral questions?
+            2. Did they request a rubric/evaluation guide (Crucial for structured interviewing)?
+            3. Did they specify the skills (Experimentation/Data)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Always ask AI for "Good vs Bad" answer examples.
+            2. Specify "Behavioral" or "Situational" questions.
+            3. Ask for follow-up probing questions.
+        `
+    },
+    {
+        id: 'game34',
+        title: 'Game 34: The LinkedIn Voice Note',
+        description: 'You are connected with a "Senior Java Engineer" on LinkedIn who ignores text messages. You decide to send a 30-second voice note.',
+        task: 'Your task: Write the script for this voice note (approx. 60-80 words). Sound natural and human.',
+        placeholder: 'e.g., Hey [Name], I noticed you...',
+        difficulty: 'easy' as const,
+        skillCategory: 'outreach' as const,
+        exampleSolution: 'Hey [Name], I know your inbox is probably exploding with recruiter spam, so I wanted to send a voice note to show there\'s a real human behind this profile. I saw your work on the [Project Name] repo and was genuinely impressed by your approach to concurrency. We\'re building something similar at [Company] and I\'d love to just geek out about it for 5 mins. No pitch, just engineering talk. Let me know.',
+        promptGenerator: (submission) => `
+            You are a Personal Branding Expert.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Does it sound conversational (not like a script)?
+            2. Is there a "pattern interrupt" (acknowledging the spam)?
+            3. Is the call to action low pressure?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Voice notes have 3x response rates. Use them!
+            2. Start with "I know you're busy..." or "I know this is random..."
+            3. Focus on "Human connection" over "Job pitch".
+        `
+    },
+    {
+        id: 'game35',
+        title: 'Game 35: The Executive Bio',
+        description: 'You found a great "VP of Engineering" candidate. You need to send their profile to your CEO, but the resume is dry. You need a compelling 1-paragraph bio.',
+        task: 'Your task: Write a prompt for AI to rewrite a dry resume summary into an exciting executive bio.',
+        placeholder: 'e.g., Rewrite this summary to sound...',
+        difficulty: 'medium' as const,
+        skillCategory: 'persona' as const,
+        exampleSolution: 'Rewrite the following resume summary into a compelling, narrative-style executive bio suitable for presenting to a CEO. Highlight their leadership scale (team size), strategic impact (revenue growth), and technical vision. Tone: Impressive, confident, and executive. Keep it under 200 words.',
+        promptGenerator: (submission) => `
+            You are an Executive Search Researcher.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they ask for a "narrative" style?
+            2. Did they focus on "Strategic Impact" over tasks?
+            3. Is the audience defined (CEO)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. CEOs care about Revenue, Scale, and Speed.
+            2. Use words like "Visionary," "Transformational," "Proven."
+            3. Ask AI to "sell" the candidate.
+        `
+    },
+    {
+        id: 'game36',
+        title: 'Game 36: The Kaggle Miner',
+        description: 'You need to find a "Machine Learning Engineer" who is top-tier at "Computer Vision". LinkedIn is too noisy. You want to search Kaggle.',
+        task: 'Your task: Write a Google X-Ray search string to find Kaggle user profiles with "Computer Vision" expertise.',
+        placeholder: 'e.g., site:kaggle.com ...',
+        difficulty: 'hard' as const,
+        skillCategory: 'xray' as const,
+        exampleSolution: 'site:kaggle.com/ (users OR "competitions") ("Computer Vision" OR CV OR "Image Processing") AND ("Grandmaster" OR "Master" OR "Expert" OR ranking) -site:kaggle.com/c -site:kaggle.com/code',
+        promptGenerator: (submission) => `
+            You are a Technical Sourcing Guru.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they target the right site (kaggle.com)?
+            2. Did they look for ranking keywords (Master, Grandmaster)?
+            3. Did they try to filter out competition pages?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Kaggle ranks are: Novice, Contributor, Expert, Master, Grandmaster. Use these!
+            2. Profiles often have "Competitions" and "Datasets" tabs.
+            3. Look for specific competition names if you know them.
+        `
+    },
+    {
+        id: 'game37',
+        title: 'Game 37: The Dribbble Detective',
+        description: 'You need a "Senior UI Designer" with a style that is "Minimalist" and "Clean". You want to search Dribbble.',
+        task: 'Your task: Write a Google X-Ray search string to find Dribbble profiles with these keywords.',
+        placeholder: 'e.g., site:dribbble.com ...',
+        difficulty: 'medium' as const,
+        skillCategory: 'xray' as const,
+        exampleSolution: 'site:dribbble.com (minimalist OR clean OR "minimalism") AND ("UI Designer" OR "Product Designer") AND (location OR "hiring" OR "available") -site:dribbble.com/shots -site:dribbble.com/stories',
+        promptGenerator: (submission) => `
+            You are a Design Recruiting Specialist.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they target dribbble.com?
+            2. Did they include the aesthetic keywords (Minimalist/Clean)?
+            3. Did they exclude "shots" (individual images) to find profiles?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Dribbble profiles often have "Hire Me" buttons.
+            2. Search for "shots" if you want to see work, but "profiles" if you want people.
+            3. Use "site:behance.net" as an alternative.
+        `
+    },
+    // PHASE 2: Talent Intelligence & Strategy (Games 38-45)
+    {
+        id: 'game38',
+        title: 'Game 38: The Competitor Map',
+        description: 'You are hiring for a Fintech startup in New York. You need to identify 5 specific competitor companies to target for "Payments Engineers".',
+        task: 'Your task: List 5 companies that have strong payments engineering teams in NYC and explain why you chose them.',
+        placeholder: 'e.g., 1. Stripe - because...',
+        difficulty: 'medium' as const,
+        skillCategory: 'talent-intelligence' as const,
+        exampleSolution: '1. Stripe (Best-in-class payments infra). 2. Adyen (Direct competitor, strong engineering culture). 3. Block/Square (Mature payments stack). 4. PayPal/Venmo (Deep talent pool in NYC). 5. Brex (Modern fintech stack). Strategy: Target these because their engineers solve similar high-scale transaction challenges.',
+        promptGenerator: (submission) => `
+            You are a Market Mapping Expert.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Are the companies relevant to Fintech/Payments?
+            2. Are they likely to have teams in NYC?
+            3. Is the reasoning sound (tech stack match)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Don't just list banks (JPMorgan) unless the role is legacy.
+            2. Look for "Engineering Blogs" of these companies to verify their stack.
+            3. Use Crunchbase to find well-funded competitors.
+        `
+    },
+    {
+        id: 'game39',
+        title: 'Game 39: The Salary Benchmarker',
+        description: 'Your Hiring Manager wants to pay $150k for a "Staff AI Engineer" in San Francisco. The market rate is $220k+. You need to explain this gap using data logic.',
+        task: 'Your task: Write a short email (under 100 words) persuading the HM to increase the budget or lower expectations.',
+        placeholder: 'e.g., Hi [Manager], I reviewed the market data...',
+        difficulty: 'hard' as const,
+        skillCategory: 'talent-intelligence' as const,
+        exampleSolution: 'Hi Sarah, I\'ve analyzed the current market for Staff AI Engineers in SF. Our $150k budget is in the 10th percentile; the median is closer to $220k for this level of experience. At $150k, we will likely only attract junior candidates or those requiring visa sponsorship. To hire a true Staff-level engineer who can lead the team, I recommend we either adjust the budget to $210k+ or re-scope the role to "Senior" level. Which path do you prefer?',
+        promptGenerator: (submission) => `
+            You are a Compensation Analyst.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they use data/percentiles to make the case?
+            2. Did they offer options (Raise budget OR Lower requirements)?
+            3. Was the tone advisory, not complaining?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Use terms like "Median," "Percentile," and "Total Comp."
+            2. Always give the manager a choice (The "Double Bind" technique).
+            3. Mention the risk: "We will lose candidates at the offer stage."
+        `
+    },
+    {
+        id: 'game40',
+        title: 'Game 40: The Neurodiverse Interview',
+        description: 'You are designing an interview process for a "QA Tester" role and want to make it inclusive for candidates with Autism/ADHD.',
+        task: 'Your task: List 3 specific accommodations you would add to the interview process.',
+        placeholder: 'e.g., 1. Send questions in advance...',
+        difficulty: 'medium' as const,
+        skillCategory: 'diversity' as const,
+        exampleSolution: '1. Send the interview agenda and core questions 24 hours in advance to reduce anxiety. 2. Offer a "camera-off" option for the initial screen to lower sensory load. 3. Replace one abstract "behavioral" interview with a practical, take-home work sample test that mimics the actual job.',
+        promptGenerator: (submission) => `
+            You are a DE&I Consultant.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Are the accommodations practical?
+            2. Do they specifically help with anxiety/processing (common in neurodivergence)?
+            3. Do they maintain the bar for quality?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. "Surprise" questions measure quick thinking, not competence. Avoid them.
+            2. Clear structure helps everyone, not just neurodiverse folks.
+            3. Focus on "Work Samples" over "Social cues."
+        `
+    },
+    {
+        id: 'game41',
+        title: 'Game 41: The Red Flag Spotter',
+        description: 'You are screening a resume for a "VP of Sales". They list: "Increased revenue by 500%," "Managed team of 50," and "Advisor to CEO." But they have had 4 jobs in 3 years.',
+        task: 'Your task: Write 2 probing questions to ask in the phone screen to validate these claims and check the job hopping.',
+        placeholder: 'e.g., 1. Can you walk me through...',
+        difficulty: 'medium' as const,
+        skillCategory: 'screening' as const,
+        exampleSolution: '1. "You\'ve had incredible impact in short stints. What specifically prompted your transition from Company A to Company B after only 9 months?" (Probes job hopping). 2. "Regarding the 500% growth - what was the starting revenue number, and what specific contribution was directly yours vs. the market trend?" (Probes attribution).',
+        promptGenerator: (submission) => `
+            You are an Executive Recruiter.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they ask about the transitions (Job hopping)?
+            2. Did they ask for the "Baseline" of the metrics (500% of what?)?
+            3. Is the tone curious, not accusatory?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Short stints at executive levels are a major risk. Dig deep.
+            2. "We" vs "I" - ask what *they* did specifically.
+            3. Ask for the "Why" behind every move.
+        `
+    },
+    {
+        id: 'game42',
+        title: 'Game 42: The Video JD Script',
+        description: 'You need to hire Gen Z "Social Media Managers". You want to post a 30-second video on TikTok/Reels to advertise the role.',
+        task: 'Your task: Write the script for the video. Keep it high-energy and authentic.',
+        placeholder: 'e.g., Stop scrolling! If you love...',
+        difficulty: 'easy' as const,
+        skillCategory: 'job-description' as const,
+        exampleSolution: 'Stop scrolling! 🛑 Do you spend more time on TikTok than you sleep? We need a Social Media Manager for [Brand] who actually gets it. You\'ll own our entire content calendar, work with top creators, and yes - you can work from your couch. 🛋️ No degree required, just show us your best viral video. Link in bio to apply! 🚀',
+        promptGenerator: (submission) => `
+            You are a Social Media Recruiter.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Is the hook strong (first 3 seconds)?
+            2. Is the tone right for Gen Z (Authentic, not corporate)?
+            3. Is there a clear Call to Action (Link in bio)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Don't say "We are looking for..." - say "You will..."
+            2. Focus on the "Vibe" and "Perks" (Remote, Creative freedom).
+            3. Keep it under 60 words for a 30s video.
+        `
+    },
+    {
+        id: 'game43',
+        title: 'Game 43: The PDF Hunter',
+        description: 'You need to find resumes of "Data Scientists" that are publicly hosted on university websites (often as PDF or Word docs).',
+        task: 'Your task: Write a Google Boolean string to find these file types specifically.',
+        placeholder: 'e.g., filetype:pdf ...',
+        difficulty: 'hard' as const,
+        skillCategory: 'boolean' as const,
+        exampleSolution: '(filetype:pdf OR filetype:doc OR filetype:docx) "Data Scientist" AND (Python OR R) AND ("machine learning" OR ML) AND (resume OR cv OR vitae) -job -sample -template',
+        promptGenerator: (submission) => `
+            You are a Google Search Hacker.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they use the filetype: operator?
+            2. Did they include keywords for "Resume" (CV, Vitae)?
+            3. Did they exclude templates/samples (-sample)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. University sites often host these. Add "site:.edu" for US schools.
+            2. People name files "firstname_lastname_resume.pdf" - try "intitle:resume".
+            3. Exclude "job description" to avoid false positives.
+        `
+    },
+    {
+        id: 'game44',
+        title: 'Game 44: The Alumni Network',
+        description: 'You want to hire "Boomerang" employees - people who used to work at your company (e.g., "Airbnb") but left, and might want to come back.',
+        task: 'Your task: Write the LinkedIn Recruiter filters to find these people.',
+        placeholder: 'e.g., Past Company: Airbnb AND...',
+        difficulty: 'medium' as const,
+        skillCategory: 'linkedin' as const,
+        exampleSolution: 'Past Company: Airbnb\nCurrent Company: NOT Airbnb\nYears of Experience: 5+ (Targeting seniors)\nKeywords: "Software Engineer" OR "Product Manager"\nInMail Strategy: "Miss you!"',
+        promptGenerator: (submission) => `
+            You are a LinkedIn Power User.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they set Past Company correctly?
+            2. Did they EXCLUDE the Current Company (Crucial!)?
+            3. Is the logic sound?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Boomerangs have 2x retention rates.
+            2. If you don't exclude Current Company, you'll just find current employees.
+            3. Look for people who left 2+ years ago (vesting cliffs).
+        `
+    },
+    {
+        id: 'game45',
+        title: 'Game 45: The Clean-Up Crew',
+        description: 'Your ATS is a mess. You have 3,000 duplicate profiles. You need a strategy to merge them without losing data.',
+        task: 'Your task: Describe a 3-step process to identify and merge duplicates safely.',
+        placeholder: 'e.g., 1. Export data and match by email...',
+        difficulty: 'hard' as const,
+        skillCategory: 'ats' as const,
+        exampleSolution: '1. Match by Email Address (Unique Identifier): Run a script to group profiles with the exact same email. 2. Match by Name + Phone: For those with different emails, look for exact name AND phone matches. 3. Merge Rule: Always keep the "Most Recently Updated" profile as the master, but append notes/attachments from the older profile. Archive the old one.',
+        promptGenerator: (submission) => `
+            You are an Ops Manager.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they identify a Unique Identifier (Email)?
+            2. Did they have a secondary check (Phone/Name)?
+            3. Did they define a "Master" record rule (Recency)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Never delete; always Merge or Archive.
+            2. Email is the gold standard for uniqueness.
+            3. Be careful with common names (John Smith).
+        `
+    },
+    // PHASE 3: The Closer & Strategy (Games 46-52)
+    {
+        id: 'game46',
+        title: 'Game 46: The Counter-Offer Killer',
+        description: 'Your candidate just resigned, and their current boss offered them a $20k raise to stay. They are wavering. You need to remind them why they wanted to leave in the first place.',
+        task: 'Your task: Write a script (email or phone) to handle this counter-offer situation.',
+        placeholder: 'e.g., I hear you, and it\'s flattering...',
+        difficulty: 'hard' as const,
+        skillCategory: 'negotiation' as const,
+        exampleSolution: 'It\'s completely normal to feel torn—that counter-offer is a sign they value you. But let\'s go back to our first conversation. You mentioned you were feeling stagnant and wanted to move into AI-driven products, which your current role can\'t offer. Does a $20k raise solve that stagnation? Or does it just make the golden handcuffs tighter? I want you to make the best decision for your *career*, not just your wallet.',
+        promptGenerator: (submission) => `
+            You are a Career Coach.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they acknowledge the compliment (The raise)?
+            2. Did they pivot back to the "Pain" (Why they looked)?
+            3. Did they avoid being pushy/salesy?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Counter-offers rarely fix the root problem. Remind them of that.
+            2. Use "Future Pacing" - "In 6 months, will you be happy?"
+            3. Be willing to walk away. It builds trust.
+        `
+    },
+    {
+        id: 'game47',
+        title: 'Game 47: The Equity Explainer',
+        description: 'You are hiring a "Senior Engineer" from a non-tech company. They don\'t understand why you are offering lower cash ($160k) but high equity (RSUs). They only care about the monthly paycheck.',
+        task: 'Your task: Explain the value of the equity package in simple terms to get them excited.',
+        placeholder: 'e.g., Think of equity like...',
+        difficulty: 'medium' as const,
+        skillCategory: 'negotiation' as const,
+        exampleSolution: 'Think of the cash ($160k) as your rent and bills money—it\'s guaranteed. But the equity is your wealth-building money. If we hit our growth targets and the stock price doubles over 4 years, that equity grant isn\'t just a bonus; it could be worth more than your salary. You\'re not just an employee here; you\'re an owner. You get to benefit from the value you help create.',
+        promptGenerator: (submission) => `
+            You are a Startup Advisor.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they use an analogy (Rent vs Wealth)?
+            2. Did they explain the "Upside" potential?
+            3. Did they use the word "Owner"?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Non-tech people fear risk. Frame equity as "Ownership," not "Gambling."
+            2. Show the math: "If we grow 2x, this is worth $X."
+            3. Don't overpromise - say "potential."
+        `
+    },
+    {
+        id: 'game48',
+        title: 'Game 48: The Culture Add',
+        description: 'You are interviewing a candidate who is very different from your current team (introverted, different background). The team says "not a culture fit." You think they are a "Culture Add."',
+        task: 'Your task: Write a note to the Hiring Manager explaining why "Culture Fit" is dangerous and why this candidate adds value.',
+        placeholder: 'e.g., I noticed the team feedback...',
+        difficulty: 'hard' as const,
+        skillCategory: 'screening' as const,
+        exampleSolution: 'I noticed the feedback on "culture fit," but I want to challenge us to look for "Culture Add" instead. "Fit" often just means "more of the same," which leads to groupthink. This candidate brings a rigorous, thoughtful approach that balances our team\'s high-energy, rapid-fire style. We need that diversity of thought to avoid blind spots. If they can do the job and share our values, their different personality is an asset, not a risk.',
+        promptGenerator: (submission) => `
+            You are a DE&I Leader.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they distinguish "Fit" (Sameness) vs "Add" (New perspective)?
+            2. Did they mention the business risk of "Groupthink"?
+            3. Did they advocate for the candidate's specific strength?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. "Culture Fit" is often unconscious bias. Call it out gently.
+            2. Focus on "Values Alignment" instead of personality.
+            3. Use business logic: Diverse teams build better products.
+        `
+    },
+    {
+        id: 'game49',
+        title: 'Game 49: The Location Strategy',
+        description: 'Your CTO wants to open a new remote hub for "Data Engineers". She suggests "San Francisco" or "London". You think "Poland" or "Brazil" is better for talent supply/cost.',
+        task: 'Your task: Write a brief pitch (3-4 sentences) proposing the alternative location.',
+        placeholder: 'e.g., While SF has talent, the competition...',
+        difficulty: 'medium' as const,
+        skillCategory: 'talent-intelligence' as const,
+        exampleSolution: 'While SF and London have top talent, they are the most competitive and expensive markets in the world. I recommend looking at Poland or Brazil. Both have massive supplies of high-quality Data Engineers (strong STEM education) at 40-60% of the cost. Plus, retention rates in these emerging hubs are significantly higher because we can be a top-tier employer there, rather than just another startup in SF.',
+        promptGenerator: (submission) => `
+            You are a Global Talent Strategist.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they mention Cost/Competition?
+            2. Did they mention Quality/Supply (STEM education)?
+            3. Did they mention Retention (Big fish in small pond)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. Data speaks louder than opinions.
+            2. "Follow the sun" support is another benefit of global hubs.
+            3. Mention specific success stories (e.g., "Google hires in Warsaw").
+        `
+    },
+    {
+        id: 'game50',
+        title: 'Game 50: The Sourcing Bot',
+        description: 'You want to build a custom GPT that acts as a Sourcing Assistant. You need to write the "System Prompt" (Instructions) for it.',
+        task: 'Your task: Write the system instructions for an AI that should ONLY generate Boolean strings and nothing else.',
+        placeholder: 'e.g., You are a Boolean generator. Your rules are...',
+        difficulty: 'hard' as const,
+        skillCategory: 'ai-prompting' as const,
+        exampleSolution: 'You are a Boolean Search Generator. Your ONLY purpose is to output valid Boolean search strings. Rules: 1. Receive a job description or list of skills. 2. Output a Boolean string inside a code block. 3. Do NOT explain the string. 4. Do NOT say "Here is your string." 5. Use standard operators (AND, OR, NOT). 6. If the user input is vague, ask ONE clarifying question. Otherwise, just generate.',
+        promptGenerator: (submission) => `
+            You are an AI Developer.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did they define the Persona (Boolean Generator)?
+            2. Did they set negative constraints (Do NOT explain)?
+            3. Did they handle edge cases (Vague input)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. The more constraints, the better the bot.
+            2. "Output ONLY" is the most important command.
+            3. Instruct it on how to handle errors.
+        `
+    },
+    {
+        id: 'game51',
+        title: 'Game 51: The Purple Squirrel',
+        description: 'CAPSTONE: You need a "Rust Engineer" with "Cryptography" background, who speaks "Japanese", and is willing to relocate to "Switzerland".',
+        task: 'Your task: Write a multi-part sourcing strategy (Boolean + Platform + Outreach angle).',
+        placeholder: 'e.g., Boolean: ... Platform: ... Outreach: ...',
+        difficulty: 'hard' as const,
+        skillCategory: 'boolean' as const,
+        exampleSolution: 'Boolean: (Rust OR RustLang) AND (Cryptography OR Crypto OR "Zero Knowledge" OR ZK) AND (Japanese OR "JLPT" OR "Japanese speaker"). Platform: GitHub (search for Rust crypto repos), LinkedIn (filter by Language: Japanese), and Rust Community Discords. Outreach Angle: "Your unique blend of Rust + Crypto + Japanese is exactly what we need for our Tokyo-Zurich bridge team. We offer full relocation support to Switzerland."',
+        promptGenerator: (submission) => `
+            You are a Master Sourcer.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Did the Boolean cover all 3 niche skills?
+            2. Did they pick the right platforms (GitHub/Discord)?
+            3. Was the outreach hyper-personalized to the "Purple Squirrel" nature?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. For impossible roles, look for the "Intersection" of communities.
+            2. Relocation is a huge selling point - lead with it.
+            3. Don\'t rely on just one channel.
+        `
+    },
+    {
+        id: 'game52',
+        title: 'Game 52: The Head of Talent',
+        description: 'THE FINALE: You are the first Head of Talent at a Series A startup. You have $0 budget for tools. You need to hire 20 engineers in 6 months.',
+        task: 'Your task: Outline your "Guerrilla Recruiting" strategy (Tools, Process, Brand).',
+        placeholder: 'e.g., Tools: Free versions of... Process: ...',
+        difficulty: 'hard' as const,
+        skillCategory: 'talent-intelligence' as const,
+        exampleSolution: 'Tools: Use free LinkedIn (optimize network), GitHub X-Ray (free), and a simple Trello/Notion board as an ATS. Process: Implement "Founder Sourcing" blocks (Founder sends 10 emails/week). Set up a generous Employee Referral Program (cash bonus). Brand: Write 1 high-quality engineering blog post per month to drive inbound. Focus on "High Touch" candidate experience to win against big tech.',
+        promptGenerator: (submission) => `
+            You are a VC Talent Partner.
+            Submission: "${submission}"
+            
+            Evaluate:
+            1. Was the tool stack truly free/low-cost?
+            2. Did they leverage the Founders (Best free resource)?
+            3. Did they focus on Referrals (Highest ROI)?
+            
+            SCORE: [number]
+            
+            Tips:
+            1. At Series A, the Founder is your best recruiter. Use them.
+            2. Referrals are the lifeblood of early-stage hiring.
+            3. You don't need a $20k LinkedIn license to hire great people.
         `
     }
 ];
