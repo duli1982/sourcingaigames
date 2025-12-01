@@ -1,9 +1,17 @@
 /**
  * Formats AI feedback text into structured HTML with proper styling.
- * Any markup from the AI response is escaped before we add our own structure.
+ * If the AI returns HTML (contains <p> tags), pass it through directly.
+ * Otherwise, convert markdown to HTML.
  */
 
 export function formatFeedback(feedbackText: string, score: number): string {
+  // Check if feedback is already HTML (AI now returns HTML directly)
+  if (feedbackText.includes('<p>') || feedbackText.includes('<ul>') || feedbackText.includes('<strong>')) {
+    // AI returned pre-formatted HTML - just return it as-is
+    return feedbackText;
+  }
+
+  // Legacy path: Convert markdown to HTML (kept for backwards compatibility)
   const codeBlocks: string[] = [];
   const inlineCodes: string[] = [];
 
