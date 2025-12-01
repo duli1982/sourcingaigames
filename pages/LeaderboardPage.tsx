@@ -1,11 +1,13 @@
 
 import React, { useState, useMemo } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useLeaderboardContext } from '../context/LeaderboardContext';
+import { usePlayerContext } from '../context/PlayerContext';
 import { Spinner } from '../components/Spinner';
 import { TimeFilter, Player } from '../types';
 
 const LeaderboardPage: React.FC = () => {
-    const { leaderboard, player, isLoadingLeaderboard } = useAppContext();
+    const { leaderboard, isLoadingLeaderboard } = useLeaderboardContext();
+    const { player } = usePlayerContext();
     const [timeFilter, setTimeFilter] = useState<TimeFilter>('all-time');
 
     // Calculate filtered leaderboard based on time filter
@@ -52,31 +54,28 @@ const LeaderboardPage: React.FC = () => {
             <div className="mb-6 flex gap-2">
                 <button
                     onClick={() => setTimeFilter('all-time')}
-                    className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                        timeFilter === 'all-time'
+                    className={`px-6 py-2 rounded-lg font-semibold transition-all ${timeFilter === 'all-time'
                             ? 'bg-cyan-600 text-white shadow-lg'
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
-                    }`}
+                        }`}
                 >
                     All Time
                 </button>
                 <button
                     onClick={() => setTimeFilter('weekly')}
-                    className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                        timeFilter === 'weekly'
+                    className={`px-6 py-2 rounded-lg font-semibold transition-all ${timeFilter === 'weekly'
                             ? 'bg-cyan-600 text-white shadow-lg'
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
-                    }`}
+                        }`}
                 >
                     Weekly
                 </button>
                 <button
                     onClick={() => setTimeFilter('monthly')}
-                    className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                        timeFilter === 'monthly'
+                    className={`px-6 py-2 rounded-lg font-semibold transition-all ${timeFilter === 'monthly'
                             ? 'bg-cyan-600 text-white shadow-lg'
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
-                    }`}
+                        }`}
                 >
                     Monthly
                 </button>

@@ -24,6 +24,26 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      esbuild: {
+        drop: mode === 'production' ? ['console', 'debugger'] : []
+      },
+      build: {
+        target: 'es2020',
+        sourcemap: false,
+        cssCodeSplit: true,
+        minify: 'esbuild',
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              react: ['react', 'react-dom'],
+              supabase: ['@supabase/supabase-js']
+            },
+            chunkFileNames: 'assets/[name]-[hash].js',
+            entryFileNames: 'assets/[name]-[hash].js',
+            assetFileNames: 'assets/[name]-[hash][extname]'
+          }
+        }
       }
     };
 });

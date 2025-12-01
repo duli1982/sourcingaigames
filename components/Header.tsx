@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Page } from '../types';
 
 interface HeaderProps {
@@ -8,15 +8,24 @@ interface HeaderProps {
     onOpenTutorial: () => void;
 }
 
-const navItems: { page: Page; label: string }[] = [
-    { page: 'home', label: 'Home' },
-    { page: 'games', label: 'The Games' },
-    { page: 'leaderboard', label: 'Leaderboard' },
-    { page: 'profile', label: 'Profile' },
-];
-
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage, onOpenTutorial }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showAdminNav, setShowAdminNav] = useState(false);
+
+    useEffect(() => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+        setShowAdminNav(Boolean(token));
+    }, []);
+
+    const navItems: { page: Page; label: string }[] = [
+        { page: 'home', label: 'Home' },
+        { page: 'games', label: 'The Games' },
+        { page: 'leaderboard', label: 'Leaderboard' },
+        { page: 'profile', label: 'Profile' },
+    ];
+    if (showAdminNav) {
+        navItems.push({ page: 'admin', label: 'Admin' });
+    }
 
     const handleNavClick = (page: Page) => {
         onNavigate(page);

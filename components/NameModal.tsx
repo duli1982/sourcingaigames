@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { usePlayerContext } from '../context/PlayerContext';
+import { useUIContext } from '../context/UIContext';
 import { validateName } from '../utils/nameValidator';
 import { requestSessionToken } from '../utils/sessionUtils';
 import { hashPin, isValidPin, PIN_LENGTH } from '../utils/pinUtils';
@@ -13,7 +14,8 @@ const NameModal: React.FC = () => {
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [returningPin, setReturningPin] = useState('');
-  const { setPlayer, addToast } = useAppContext();
+  const { setPlayer } = usePlayerContext();
+  const { addToast } = useUIContext();
 
   const checkAvailability = async (candidate: string) => {
     if (!candidate.trim()) {
@@ -172,12 +174,11 @@ const NameModal: React.FC = () => {
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
               placeholder="Your Name"
-              className={`w-full bg-gray-700 border rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 ${
-                validationError ? 'border-red-500 focus:ring-red-500' :
-                available === true ? 'border-green-500 focus:ring-green-500' :
-                available === false ? 'border-red-500 focus:ring-red-500' :
-                'border-gray-600 focus:ring-cyan-500'
-              }`}
+              className={`w-full bg-gray-700 border rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 ${validationError ? 'border-red-500 focus:ring-red-500' :
+                  available === true ? 'border-green-500 focus:ring-green-500' :
+                    available === false ? 'border-red-500 focus:ring-red-500' :
+                      'border-gray-600 focus:ring-cyan-500'
+                }`}
               required
               minLength={2}
               maxLength={50}

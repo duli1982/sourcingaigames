@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from './context/AppContext';
+import { usePlayerContext } from './context/PlayerContext';
+import { useUIContext } from './context/UIContext';
 import NameModal from './components/NameModal';
 import OnboardingTutorial from './components/OnboardingTutorial';
 import Header from './components/Header';
@@ -8,13 +9,15 @@ import HomePage from './pages/HomePage';
 import GamesPage from './pages/GamesPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
+import AdminPage from './pages/AdminPage';
 import Toast from './components/Toast';
 import { Page } from './types';
 
 const TUTORIAL_COMPLETED_KEY = 'ai-sourcing-tutorial-completed';
 
 const App: React.FC = () => {
-  const { player, isLoadingPlayer, currentPage, setCurrentPage, toasts } = useAppContext();
+  const { player, isLoadingPlayer } = usePlayerContext();
+  const { currentPage, setCurrentPage, toasts } = useUIContext();
   const [showTutorial, setShowTutorial] = useState(false);
 
   // Check if user has completed tutorial
@@ -26,6 +29,30 @@ const App: React.FC = () => {
       }
     }
   }, [player]);
+
+  // Admin access via URL parameter (?admin=true)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === 'true') {
+      setCurrentPage('admin');
+      // Clean URL after navigation (optional - removes ?admin=true from URL)
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [setCurrentPage]);
+
+  // Admin access via keyboard shortcut (Ctrl+Shift+A)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl+Shift+A (Windows/Linux) or Cmd+Shift+A (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setCurrentPage('admin');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [setCurrentPage]);
 
   const handleNavigate = (page: Page) => {
     setCurrentPage(page);
@@ -66,6 +93,7 @@ const App: React.FC = () => {
           <div className={`page ${currentPage === 'games' ? 'active' : ''}`}><GamesPage /></div>
           <div className={`page ${currentPage === 'leaderboard' ? 'active' : ''}`}><LeaderboardPage /></div>
           <div className={`page ${currentPage === 'profile' ? 'active' : ''}`}><ProfilePage /></div>
+          <div className={`page ${currentPage === 'admin' ? 'active' : ''}`}><AdminPage /></div>
         </div>
       </main>
       <div className="fixed top-5 right-5 z-50 space-y-2">

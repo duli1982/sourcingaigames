@@ -30,7 +30,7 @@ export const games: Game[] = [
             5. Would this search reasonably fill a first shortlist?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -66,7 +66,7 @@ export const games: Game[] = [
             5. Did they hint at how this persona influences the outreach pitch?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -100,7 +100,7 @@ export const games: Game[] = [
             4. Is the tone respectful, specific, and not pushy?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -134,7 +134,7 @@ export const games: Game[] = [
             4. Did they include both Python **and** Django?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -170,7 +170,7 @@ export const games: Game[] = [
             5. Will this query likely give a focused but not over-narrow pool?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -205,7 +205,7 @@ export const games: Game[] = [
             5. Does the strategy ensure compliance with protected characteristics?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -240,7 +240,7 @@ export const games: Game[] = [
             4. Did they differentiate "nice to have" vs "must have"?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -274,7 +274,7 @@ export const games: Game[] = [
             4. Did they use inclusive language (no hype/bro culture terms)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -308,7 +308,7 @@ export const games: Game[] = [
             4. Do they balance automation vs manual review (not 100% filter-driven)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -342,7 +342,7 @@ export const games: Game[] = [
             4. Did they cover role title variations (ML Eng, Applied Scientist)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -376,7 +376,7 @@ export const games: Game[] = [
             4. Is the query likely to exclude noise (e.g. tags, jobs, companies)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -410,7 +410,7 @@ export const games: Game[] = [
             4. Does it reference the previous email without re-pitching everything?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -444,7 +444,7 @@ export const games: Game[] = [
             4. Did they try to reduce noise by excluding generic pages (-topics)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -478,7 +478,7 @@ export const games: Game[] = [
             4. Did they reflect realistic seniority (10-15 yrs, quota ownership, team size)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -512,7 +512,7 @@ export const games: Game[] = [
             4. Did they address "Work-hard-play-hard" (Burnout signal)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -546,7 +546,7 @@ export const games: Game[] = [
             4. Did they combine Function: Engineering + Seniority: CXO/VP?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -581,7 +581,7 @@ export const games: Game[] = [
             4. Did they include ICU synonyms (critical care, intensive care)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -616,7 +616,7 @@ export const games: Game[] = [
             4. Did they recommend a next step (phone screen vs reject vs HM consult) clearly?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -651,7 +651,7 @@ export const games: Game[] = [
             5. Did they avoid stereotypes (no "superpowers" clichés)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -685,7 +685,7 @@ export const games: Game[] = [
             4. Did they propose *time-bound* actions (clear "by when")?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -719,7 +719,7 @@ export const games: Game[] = [
             4. Did they propose **skill-based sourcing** (diversity boards, non-elite schools, career changers)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -753,7 +753,7 @@ export const games: Game[] = [
             4. Did they mention "multi-unit" or "multi-store" management?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -788,7 +788,7 @@ export const games: Game[] = [
             5. Would this reasonably fill a shortlist without being too narrow?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -823,7 +823,7 @@ export const games: Game[] = [
             5. Did they combine Function: Sales + Seniority: Director/VP?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -857,7 +857,7 @@ export const games: Game[] = [
             4. Did they mention *translation* of military skills to civilian roles (Ops/Logistics)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -891,7 +891,7 @@ export const games: Game[] = [
             4. Did they define a basic sequence (touchpoints / timing)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -925,7 +925,7 @@ export const games: Game[] = [
             4. Did they mention informing candidates within a certain timeframe / privacy notice?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -959,7 +959,7 @@ export const games: Game[] = [
             4. Did they use platform-specific logic (GitHub vs Twitter vs Dev.to)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -993,7 +993,7 @@ export const games: Game[] = [
             4. Did they specify output format (Boolean in code block)?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1028,7 +1028,7 @@ export const games: Game[] = [
             4. Did they tell AI to ignore generic responsibilities and focus on results?
 
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1060,7 +1060,7 @@ export const games: Game[] = [
             4. Is there a *clear* next-step hook ("If things change...")?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1092,7 +1092,7 @@ export const games: Game[] = [
             4. Did they avoid defensiveness / blame ("budget is the problem")?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1124,7 +1124,7 @@ export const games: Game[] = [
             4. Did they ask for follow-up / probing questions?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1156,7 +1156,7 @@ export const games: Game[] = [
             4. Did they mention something *specific* about the candidate (project, repo, talk)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1188,7 +1188,7 @@ export const games: Game[] = [
             4. Did they limit length (e.g., under 200 words) so a CEO actually reads it?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1220,7 +1220,7 @@ export const games: Game[] = [
             4. Did they use Computer Vision synonyms (CV, image, etc.)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1252,7 +1252,7 @@ export const games: Game[] = [
             4. Did they hint at how to judge "fit" (e.g., click a few portfolios)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1285,7 +1285,7 @@ export const games: Game[] = [
             4. Did they think about *level* of engineers (payments infra vs consumer fintech)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1317,7 +1317,7 @@ export const games: Game[] = [
             4. Did they keep it under 100 words (as requested)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1349,7 +1349,7 @@ export const games: Game[] = [
             4. Did they consider interviewer training / expectations?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1382,7 +1382,7 @@ export const games: Game[] = [
             4. Did they probe "We vs I" (individual contribution)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1414,7 +1414,7 @@ export const games: Game[] = [
             4. Did they mention a time limit (e.g., "keep it under 60s")?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1446,7 +1446,7 @@ export const games: Game[] = [
             4. Did they target specific domains (e.g., site:edu or site:github.io)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1478,7 +1478,7 @@ export const games: Game[] = [
             4. Did they add a role constraint (e.g., Engineering) to avoid non-relevant alumni?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1510,7 +1510,7 @@ export const games: Game[] = [
             4. Did they suggest testing on a small sample first?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1543,7 +1543,7 @@ export const games: Game[] = [
             4. Did they invite reflection ("Why did you accept the interview?")?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1575,7 +1575,7 @@ export const games: Game[] = [
             4. Did they be honest about vesting/risk (not just upside)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1607,7 +1607,7 @@ export const games: Game[] = [
             4. Did they tie the "add" to a business benefit (e.g., "better at risk assessment")?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1639,7 +1639,7 @@ export const games: Game[] = [
             4. Did they consider time zones?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1671,7 +1671,7 @@ export const games: Game[] = [
             4. Did they ask for Boolean-only output (no conversational filler)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1703,7 +1703,7 @@ export const games: Game[] = [
             4. Did they look for language cues (e.g., "Rust" often appears with "Systems Programming")?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):
@@ -1735,7 +1735,7 @@ export const games: Game[] = [
             4. Did they mention a tracking system (ATS/Spreadsheet)?
             
             Return your answer in this format:
-            SCORE: [1-5]
+            SCORE: [0-100]
             WHAT WORKED (2-3 bullets):
             - ...
             IMPROVEMENT AREAS (2-3 bullets):

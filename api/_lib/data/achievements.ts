@@ -1,4 +1,4 @@
-import { AchievementDefinition, Player } from '../types.js';
+import { AchievementDefinition, Player } from '../../../types.js';
 
 /**
  * Achievement Definitions

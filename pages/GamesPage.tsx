@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import GameCard from '../components/GameCard';
-import { games } from '../data/games';
+import { games as baseGames } from '../data/games';
 import { Game, SkillCategory } from '../types';
-import { useAppContext } from '../context/AppContext';
+import { usePlayerContext } from '../context/PlayerContext';
+import { fetchGames } from '../services/gameService';
+
 
 const getNextFriday = (): Date => {
     const today = new Date();
@@ -15,18 +17,23 @@ const getNextFriday = (): Date => {
 };
 
 const GamesPage: React.FC = () => {
-    const { player } = useAppContext();
+    const { player } = usePlayerContext();
     const [mode, setMode] = useState<'challenge' | 'practice'>('challenge');
     const [selectedGame, setSelectedGame] = useState<Game | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<SkillCategory | 'all'>('all');
+    const [games, setGames] = useState<Game[]>(baseGames);
+
+    useEffect(() => {
+        fetchGames().then(setGames).catch(() => setGames(baseGames));
+    }, []);
 
     // Determine which game to show based on the week number
     // This creates a stable rotation that changes each week
     const startDate = new Date('2025-01-03T00:00:00Z'); // First Friday of 2025
     const now = new Date();
     const weeksPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
-    const gameIndex = weeksPassed % games.length;
-    const currentGame = games[gameIndex];
+    const gameIndex = games.length > 0 ? weeksPassed % games.length : 0;
+    const currentGame = games.length > 0 ? games[gameIndex] : null;
 
     const nextFridayUtc = getNextFriday();
 
@@ -101,7 +108,7 @@ const GamesPage: React.FC = () => {
             </div>
 
             {/* Challenge Mode */}
-            {mode === 'challenge' && (
+            {mode === 'challenge' && currentGame && (
                 <div>
                     <div className="mb-6 border-b border-gray-700 pb-4">
                         <h2 className="text-3xl font-bold text-cyan-400">This Week's Challenge</h2>
@@ -120,6 +127,9 @@ const GamesPage: React.FC = () => {
                         <p className="text-gray-300">The next challenge will be available on <span className="font-bold text-cyan-400">{nextChallengeDate}</span>.</p>
                     </div>
                 </div>
+            )}
+            {mode === 'challenge' && !currentGame && (
+                <div className="text-gray-400">No games available.</div>
             )}
 
             {/* Practice Mode */}
@@ -202,6 +212,9 @@ const GamesPage: React.FC = () => {
                                                             {difficulty.icon}
                                                         </span>
                                                     </div>
+                                                    {game.featured && (
+                                                        <p className="text-xs text-cyan-400 font-semibold mb-2">Featured</p>
+                                                    )}
                                                     <p className="text-gray-400 text-sm mb-3">{game.description}</p>
                                                     <div className="flex items-center gap-2 text-xs">
                                                         <span className="bg-gray-700 text-purple-400 px-3 py-1 rounded-full font-semibold">
@@ -243,6 +256,9 @@ const GamesPage: React.FC = () => {
                                                             {difficulty.icon}
                                                         </span>
                                                     </div>
+                                                    {game.featured && (
+                                                        <p className="text-xs text-cyan-500 font-semibold mb-2">Featured</p>
+                                                    )}
                                                     <p className="text-gray-600 text-sm mb-3">Play this in Weekly Challenge to unlock</p>
                                                     <div className="flex items-center gap-2 text-xs">
                                                         <span className="bg-gray-800 text-gray-500 px-3 py-1 rounded-full font-semibold">

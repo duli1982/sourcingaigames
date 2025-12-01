@@ -1,11 +1,12 @@
+
 import React, { useState } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { usePlayerContext } from '../context/PlayerContext';
 import AchievementsPanel from '../components/AchievementsPanel';
 import { formatFeedback } from '../utils/feedbackFormatter';
 import '../styles/feedback.css';
 
 const ProfilePage: React.FC = () => {
-    const { player, getPlayerStats } = useAppContext();
+    const { player, getPlayerStats } = usePlayerContext();
     const [showHistory, setShowHistory] = useState(false);
     const [expandedFeedback, setExpandedFeedback] = useState<number | null>(null);
 

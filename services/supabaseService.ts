@@ -20,6 +20,7 @@ const mapPlayer = (row: any): Player => ({
   id: row.id,
   name: row.name,
   score: row.score ?? 0,
+  status: row.status ?? 'active',
   sessionToken: row.session_token,
   attempts: row.progress?.attempts || [],
   achievements: row.progress?.achievements || [],
@@ -33,7 +34,7 @@ export const fetchLeaderboard = async (): Promise<Player[]> => {
 
   const { data, error } = await supabaseClient
     .from('players')
-    .select('id, name, score, progress')
+      .select('id, name, score, progress')
     .order('score', { ascending: false });
 
   if (error) {
@@ -45,6 +46,7 @@ export const fetchLeaderboard = async (): Promise<Player[]> => {
     id: row.id,
     name: row.name,
     score: row.score ?? 0,
+    status: row.status ?? 'active',
     attempts: row.progress?.attempts || [],
     achievements: row.progress?.achievements || [],
   })) ?? [];
@@ -229,6 +231,7 @@ export const createPlayer = async (name: string, sessionToken: string, pinHash?:
       .insert({
         name,
         score: 0,
+        status: 'active',
         session_token: sessionToken,
         progress: { attempts: [], achievements: [], pinHash: pinHash || null },
         updated_at: new Date().toISOString()

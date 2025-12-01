@@ -1,13 +1,15 @@
 
 import React from 'react';
-import { useAppContext } from '../context/AppContext';
+import { usePlayerContext } from '../context/PlayerContext';
+import { useUIContext } from '../context/UIContext';
 import { Page } from '../types';
 
 const HomePage: React.FC = () => {
-    const { player, setCurrentPage } = useAppContext();
-    
+    const { player } = usePlayerContext();
+    const { setCurrentPage } = useUIContext();
+
     const handleNavigate = (page: Page) => {
-      setCurrentPage(page);
+        setCurrentPage(page);
     };
 
     return (
@@ -28,7 +30,7 @@ const HomePage: React.FC = () => {
                     <p className="text-gray-400">See how you stack up against your peers on a live, global leaderboard.</p>
                 </div>
             </div>
-             <button onClick={() => handleNavigate('games')} className="mt-8 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-md transition duration-300">
+            <button onClick={() => handleNavigate('games')} className="mt-8 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-md transition duration-300">
                 Go to The Games
             </button>
         </div>

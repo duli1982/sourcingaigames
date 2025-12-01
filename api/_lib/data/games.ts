@@ -1,4 +1,4 @@
-import { Game } from '../types';
+import { Game } from '../../../types';
 
 /**
  * This is the central repository for all game challenges.

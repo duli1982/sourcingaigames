@@ -4,6 +4,7 @@ export interface Player {
   id?: string;
   name: string; // display name
   score: number;
+  status?: 'active' | 'banned';
   email?: string;
   sessionToken?: string; // Persistent session token for authentication
   attempts?: Attempt[]; // Player's game attempts history
@@ -11,7 +12,7 @@ export interface Player {
   pinHash?: string; // Secure PIN hash for account recovery
 }
 
-export type Page = 'home' | 'games' | 'leaderboard' | 'profile';
+export type Page = 'home' | 'games' | 'leaderboard' | 'profile' | 'admin';
 
 export interface ChatMessage {
   sender: 'user' | 'coach';
@@ -32,6 +33,7 @@ export interface Game {
   exampleSolution?: string;
   difficulty: Difficulty;
   skillCategory: SkillCategory;
+  featured?: boolean;
 }
 
 export type ToastType = 'success' | 'error' | 'info';

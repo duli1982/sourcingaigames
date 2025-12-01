@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { usePlayerContext } from '../context/PlayerContext';
+import { useUIContext } from '../context/UIContext';
 import { Game, Player } from '../types';
 import { Spinner } from './Spinner';
 import { formatFeedback } from '../utils/feedbackFormatter';
@@ -14,7 +15,8 @@ interface GameCardProps {
 const COOLDOWN_MS = 30000; // 30 seconds
 
 const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
-    const { player, addToast, refreshPlayer } = useAppContext();
+    const { player, refreshPlayer } = usePlayerContext();
+    const { addToast } = useUIContext();
     const [submission, setSubmission] = useState('');
     const [feedback, setFeedback] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -207,7 +209,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
             )}
 
             {game.context && (
-                 <div className="text-sm bg-gray-700 p-4 rounded-md mb-4 border-l-4 border-cyan-500" dangerouslySetInnerHTML={{ __html: game.context }}></div>
+                <div className="text-sm bg-gray-700 p-4 rounded-md mb-4 border-l-4 border-cyan-500" dangerouslySetInnerHTML={{ __html: game.context }}></div>
             )}
             <p className="text-gray-300 mb-4 font-semibold">{game.task}</p>
 

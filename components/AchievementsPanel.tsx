@@ -1,22 +1,23 @@
 import React from 'react';
-import { Player, Achievement } from '../types';
-import { achievementDefinitions } from '../data/achievements';
+import { Player } from '../types';
+import { achievementDefinitions, getAllAchievementsWithStatus } from '../data/achievements';
 
 interface AchievementsPanelProps {
     player: Player;
 }
 
 const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ player }) => {
-    const unlockedAchievements = player.achievements || [];
+    const achievementsWithStatus = getAllAchievementsWithStatus(player);
+    const unlockedAchievements = achievementsWithStatus.filter(a => a.unlocked);
     const unlockedIds = new Set(unlockedAchievements.map(a => a.id));
 
     // Group achievements by category
     const categories = {
-        score: achievementDefinitions.filter(a => a.category === 'score'),
-        games: achievementDefinitions.filter(a => a.category === 'games'),
-        skill: achievementDefinitions.filter(a => a.category === 'skill'),
-        streak: achievementDefinitions.filter(a => a.category === 'streak'),
-        special: achievementDefinitions.filter(a => a.category === 'special'),
+        score: achievementsWithStatus.filter(a => a.category === 'score'),
+        games: achievementsWithStatus.filter(a => a.category === 'games'),
+        skill: achievementsWithStatus.filter(a => a.category === 'skill'),
+        streak: achievementsWithStatus.filter(a => a.category === 'streak'),
+        special: achievementsWithStatus.filter(a => a.category === 'special'),
     };
 
     const categoryLabels = {
@@ -45,6 +46,9 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ player }) => {
                 <div className="text-gray-400">
                     <span className="font-bold text-white">{unlockedAchievements.length}</span>
                     <span> / {achievementDefinitions.length} Unlocked</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                        ({achievementDefinitions.length - unlockedAchievements.length} locked)
+                    </span>
                 </div>
             </div>
 
@@ -67,8 +71,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ player }) => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {achievements.map(achievement => {
-                                const isUnlocked = unlockedIds.has(achievement.id);
-                                const unlockedData = unlockedAchievements.find(a => a.id === achievement.id);
+                                const isUnlocked = achievement.unlocked;
 
                                 return (
                                     <div
@@ -90,9 +93,14 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ player }) => {
                                                 <p className={`text-xs mt-1 ${isUnlocked ? 'text-gray-300' : 'text-gray-600'}`}>
                                                     {achievement.description}
                                                 </p>
-                                                {isUnlocked && unlockedData?.unlockedAt && (
+                                                {isUnlocked && achievement.unlockedAt && (
                                                     <p className="text-xs text-cyan-400 mt-2">
-                                                        Unlocked {new Date(unlockedData.unlockedAt).toLocaleDateString()}
+                                                        Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                                                    </p>
+                                                )}
+                                                {!isUnlocked && (
+                                                    <p className="text-xs text-gray-500 mt-2">
+                                                        Locked — complete the requirement to unlock.
                                                     </p>
                                                 )}
                                             </div>
