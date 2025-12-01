@@ -2,47 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { games as baseGames } from '../data/games';
 import { useUIContext } from '../context/UIContext';
 
-type AdminAnalytics = {
-  totalPlayers: number;
-  active7d: number;
-  active30d: number;
-  attempts7d: number;
-  attempts30d: number;
-  repeatPlayers: number;
-  churned14d: number;
-  gameStats: { gameId: string; gameTitle: string; attempts: number; avgScore: number }[];
-};
-
-type AdminPlayer = {
-  id: string;
-  name: string;
-  score: number;
-  status: 'active' | 'banned';
-  totalAttempts: number;
-  lastAttemptAt?: string | null;
-};
-
-type AdminAttempt = {
-  attemptId: string;
-  playerId: string;
-  playerName: string;
-  gameId: string;
-  gameTitle: string;
-  submission: string;
-  score: number;
-  ts: string;
-};
-
-type GameOverride = {
-  id: string;
-  title?: string;
-  description?: string;
-  task?: string;
-  prompt_template?: string;
-  rubric_json?: any;
-  featured?: boolean;
-  active?: boolean;
-};
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, CartesianGrid } from 'recharts';
+import PlayerDetailModal from '../components/PlayerDetailModal';
+import { AdminAnalytics, AdminPlayer, AdminAttempt, GameOverride } from '../types';
 
 const AdminPage: React.FC = () => {
   const { addToast } = useUIContext();
@@ -54,6 +16,12 @@ const AdminPage: React.FC = () => {
   const [gameOverrides, setGameOverrides] = useState<GameOverride[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'players' | 'attempts' | 'games'>('overview');
+
+  // New feature states
+  const [playerSearchQuery, setPlayerSearchQuery] = useState('');
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<AdminPlayer | null>(null);
 
   const authHeaders = useMemo(
     () => ({ 'x-admin-token': adminToken, 'x-admin-actor': adminActor, 'Content-Type': 'application/json' }),
@@ -106,6 +74,7 @@ const AdminPage: React.FC = () => {
       addToast('Admin fetch failed', 'error');
     } finally {
       setIsLoading(false);
+      setLastUpdated(new Date());
     }
   };
 
@@ -147,6 +116,25 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  // Auto-refresh effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (autoRefresh && adminToken) {
+      interval = setInterval(() => {
+        fetchAll();
+      }, 30000); // 30 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [autoRefresh, adminToken]);
+
+
+
+  const handleBan = (id: string) => handleAction(id, 'ban');
+  const handleUnban = (id: string) => handleAction(id, 'unban');
+  const handleResetScore = (id: string) => handleAction(id, 'reset-score');
+
   const overridesMap = useMemo(() => {
     const map = new Map<string, GameOverride>();
     gameOverrides.forEach(o => map.set(o.id, o));
@@ -163,6 +151,46 @@ const AdminPage: React.FC = () => {
         <StatCard label="Attempts (30d)" value={analytics?.attempts30d ?? 0} />
         <StatCard label="Repeat Players" value={analytics?.repeatPlayers ?? 0} />
         <StatCard label="Churned (14d)" value={analytics?.churned14d ?? 0} />
+      </div>
+
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <h4 className="text-sm font-bold text-gray-400 mb-4">Game Popularity</h4>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={analytics?.gameStats.slice(0, 10) || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="gameTitle" hide />
+                <YAxis stroke="#9ca3af" fontSize={12} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '0.5rem' }}
+                  itemStyle={{ color: '#e5e7eb' }}
+                  cursor={{ fill: '#374151' }}
+                />
+                <Bar dataKey="attempts" fill="#22d3ee" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <h4 className="text-sm font-bold text-gray-400 mb-4">Score Distribution</h4>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={analytics?.gameStats.slice(0, 10).map(g => ({ name: g.gameTitle, score: g.avgScore })) || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="name" hide />
+                <YAxis stroke="#9ca3af" fontSize={12} domain={[0, 100]} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '0.5rem' }}
+                  itemStyle={{ color: '#e5e7eb' }}
+                />
+                <Area type="monotone" dataKey="score" stroke="#c084fc" fill="#c084fc" fillOpacity={0.2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       <div className="bg-gray-800 rounded-lg p-4">
@@ -190,28 +218,53 @@ const AdminPage: React.FC = () => {
 
   const renderPlayers = () => (
     <div className="bg-gray-800 rounded-lg p-4">
-      <div className="flex justify-between items-center mb-3">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         <h4 className="text-lg font-bold text-white">Players</h4>
-        <button className="text-sm text-cyan-400" onClick={fetchAll}>Refresh</button>
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <input
+              type="text"
+              placeholder="Search players..."
+              value={playerSearchQuery}
+              onChange={(e) => setPlayerSearchQuery(e.target.value)}
+              className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-cyan-500 text-sm"
+            />
+            {playerSearchQuery && (
+              <button
+                onClick={() => setPlayerSearchQuery('')}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <button className="text-sm text-cyan-400 whitespace-nowrap" onClick={fetchAll}>Refresh</button>
+        </div>
       </div>
       <div className="space-y-2">
-        {players.map(p => (
-          <div key={p.id} className="bg-gray-700 rounded p-3 flex justify-between items-center">
-            <div>
-              <p className="text-white font-semibold">{p.name}</p>
-              <p className="text-xs text-gray-400">Score: {p.score} • Attempts: {p.totalAttempts} • Last: {p.lastAttemptAt ? new Date(p.lastAttemptAt).toLocaleString() : '—'}</p>
-              <p className={`text-xs ${p.status === 'banned' ? 'text-red-400' : 'text-green-400'}`}>{p.status}</p>
+        {players
+          .filter(p => p.name.toLowerCase().includes(playerSearchQuery.toLowerCase()))
+          .map(p => (
+            <div
+              key={p.id}
+              onClick={() => setSelectedPlayer(p)}
+              className="bg-gray-700 rounded p-3 flex justify-between items-center cursor-pointer hover:bg-gray-600 transition duration-200"
+            >
+              <div>
+                <p className="text-white font-semibold">{p.name}</p>
+                <p className="text-xs text-gray-400">Score: {p.score} • Attempts: {p.totalAttempts} • Last: {p.lastAttemptAt ? new Date(p.lastAttemptAt).toLocaleString() : '—'}</p>
+                <p className={`text-xs ${p.status === 'banned' ? 'text-red-400' : 'text-green-400'}`}>{p.status}</p>
+              </div>
+              <div className="flex gap-2">
+                <button className="px-3 py-1 rounded bg-gray-600 text-white text-xs" onClick={() => handleAction(p.id, 'reset-score')}>Reset Score</button>
+                {p.status === 'banned' ? (
+                  <button className="px-3 py-1 rounded bg-green-600 text-white text-xs" onClick={() => handleAction(p.id, 'unban')}>Unban</button>
+                ) : (
+                  <button className="px-3 py-1 rounded bg-red-600 text-white text-xs" onClick={() => handleAction(p.id, 'ban')}>Ban</button>
+                )}
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button className="px-3 py-1 rounded bg-gray-600 text-white text-xs" onClick={() => handleAction(p.id, 'reset-score')}>Reset Score</button>
-              {p.status === 'banned' ? (
-                <button className="px-3 py-1 rounded bg-green-600 text-white text-xs" onClick={() => handleAction(p.id, 'unban')}>Unban</button>
-              ) : (
-                <button className="px-3 py-1 rounded bg-red-600 text-white text-xs" onClick={() => handleAction(p.id, 'ban')}>Ban</button>
-              )}
-            </div>
-          </div>
-        ))}
+          ))}
         {players.length === 0 && <p className="text-gray-400 text-sm">No players yet.</p>}
       </div>
     </div>
@@ -360,14 +413,33 @@ const AdminPage: React.FC = () => {
       {activeTab === 'players' && renderPlayers()}
       {activeTab === 'attempts' && renderAttempts()}
       {activeTab === 'games' && renderGames()}
+      {/* Player Detail Modal */}
+      {selectedPlayer && (
+        <PlayerDetailModal
+          player={selectedPlayer}
+          attempts={attempts}
+          onClose={() => setSelectedPlayer(null)}
+          onAction={async (playerId, action) => {
+            if (action === 'ban') handleBan(playerId);
+            if (action === 'unban') handleUnban(playerId);
+            if (action === 'reset_score') handleResetScore(playerId);
+            // Close modal after action if needed, or keep open to see updated status
+            // For now, we'll refresh data
+            await fetchAll();
+            // Update selected player with new data
+            const updated = players.find(p => p.id === playerId);
+            if (updated) setSelectedPlayer(updated);
+          }}
+        />
+      )}
     </div>
   );
 };
 
 const StatCard: React.FC<{ label: string; value: number | string }> = ({ label, value }) => (
-  <div className="bg-gray-800 rounded-lg p-4">
-    <p className="text-gray-400 text-sm">{label}</p>
-    <p className="text-2xl font-bold text-white">{value}</p>
+  <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+    <p className="text-gray-400 text-xs uppercase tracking-wider">{label}</p>
+    <p className="text-2xl font-bold text-white mt-1">{value}</p>
   </div>
 );
 

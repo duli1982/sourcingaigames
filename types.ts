@@ -100,3 +100,46 @@ export interface AchievementDefinition {
   category: 'score' | 'games' | 'streak' | 'skill' | 'special';
   checkUnlock: (player: Player) => boolean; // Function to check if achievement is unlocked
 }
+
+// Admin Dashboard Types
+export type AdminAnalytics = {
+  totalPlayers: number;
+  active7d: number;
+  active30d: number;
+  attempts7d: number;
+  attempts30d: number;
+  repeatPlayers: number;
+  churned14d: number;
+  gameStats: { gameId: string; gameTitle: string; attempts: number; avgScore: number }[];
+};
+
+export type AdminPlayer = {
+  id: string;
+  name: string;
+  score: number;
+  status: 'active' | 'banned';
+  totalAttempts: number;
+  lastAttemptAt?: string | null;
+};
+
+export type AdminAttempt = {
+  attemptId: string;
+  playerId: string;
+  playerName: string;
+  gameId: string;
+  gameTitle: string;
+  submission: string;
+  score: number;
+  ts: string;
+};
+
+export type GameOverride = {
+  id: string;
+  title?: string;
+  description?: string;
+  task?: string;
+  prompt_template?: string;
+  rubric_json?: any;
+  featured?: boolean;
+  active?: boolean;
+};
