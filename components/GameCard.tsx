@@ -5,6 +5,9 @@ import { useUIContext } from '../context/UIContext';
 import { Game, Player } from '../types';
 import { Spinner } from './Spinner';
 import { formatFeedback } from '../utils/feedbackFormatter';
+import { validateBooleanSearch, validateOutreach, validateGeneral, validateSimilarity } from '../utils/answerValidators';
+import { ValidationResult } from '../types';
+import { rubricByDifficulty } from '../utils/rubrics';
 import '../styles/feedback.css';
 
 interface GameCardProps {
@@ -71,6 +74,31 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
         setIsLoading(true);
         setFeedback(null);
 
+        // Run client-side validation
+        let validation: ValidationResult | undefined;
+        if (game.skillCategory === 'boolean' || game.skillCategory === 'xray') {
+            validation = validateBooleanSearch(submission);
+        } else if (game.skillCategory === 'outreach') {
+            validation = validateOutreach(submission);
+        } else {
+            validation = validateGeneral(submission);
+        }
+
+        // Calculate similarity score if example solution exists
+        if (game.exampleSolution && validation) {
+            const similarity = validateSimilarity(submission, game.exampleSolution);
+            validation.similarityScore = similarity;
+
+            // If similarity is very high (>0.9), boost the score or add feedback
+            if (similarity > 0.9) {
+                validation.feedback.push('Your answer is extremely close to the example solution!');
+                validation.score = Math.max(validation.score, 95);
+            }
+        }
+
+        // If validation score is extremely low, we could warn, but for now we pass it to AI
+        // to let AI give the detailed feedback, but we send the validation result to the server.
+
         try {
             const response = await fetch('/api/submitAttempt', {
                 method: 'POST',
@@ -78,7 +106,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                 body: JSON.stringify({
                     sessionToken: player.sessionToken,
                     gameId: game.id,
-                    submission
+                    submission,
+                    validation // Pass validation result to server
                 })
             });
 
@@ -131,27 +160,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
     const difficulty = difficultyConfig[game.difficulty];
 
     // Scoring rubric based on difficulty
-    const rubricByDifficulty = {
-        easy: [
-            { criteria: 'Relevant Keywords', points: 30, description: 'Includes key terms related to the role/skill' },
-            { criteria: 'Basic Boolean Operators', points: 25, description: 'Uses AND, OR to combine search terms' },
-            { criteria: 'Search Syntax', points: 25, description: 'Proper use of quotes, parentheses, or platform syntax' },
-            { criteria: 'Completeness', points: 20, description: 'Addresses all requirements in the task description' }
-        ],
-        medium: [
-            { criteria: 'Advanced Keywords', points: 25, description: 'Includes synonyms, variations, and related terms' },
-            { criteria: 'Complex Boolean Logic', points: 30, description: 'Uses AND, OR, NOT with proper grouping/nesting' },
-            { criteria: 'Platform-Specific Features', points: 25, description: 'Leverages advanced search operators (site:, intitle:, etc.)' },
-            { criteria: 'Optimization & Precision', points: 20, description: 'Balanced between broad and specific, avoids noise' }
-        ],
-        hard: [
-            { criteria: 'Expert Keyword Strategy', points: 25, description: 'Comprehensive terms including industry jargon, certifications' },
-            { criteria: 'Sophisticated Boolean Logic', points: 30, description: 'Multi-level nesting, excludes false positives effectively' },
-            { criteria: 'Advanced Search Techniques', points: 25, description: 'Uses proximity operators, wildcards, regex where applicable' },
-            { criteria: 'Strategic Optimization', points: 20, description: 'Highly targeted, considers edge cases, minimal false positives' }
-        ]
-    };
-
     const currentRubric = rubricByDifficulty[game.difficulty];
 
     return (

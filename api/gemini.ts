@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
 
-const GEMINI_MAX_OUTPUT_TOKENS = 120;
+const GEMINI_MAX_OUTPUT_TOKENS = 800;
 const GEMINI_PROMPT_CHAR_LIMIT = 2800;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

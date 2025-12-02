@@ -361,18 +361,67 @@ Evaluate now.`
         difficulty: 'easy' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'title:(Marketing Director OR Head of Marketing OR VP Marketing) AND ("product launch" OR "go-to-market" OR "GTM") AND location:"San Francisco Bay Area" AND company_size:(11-50 OR 51-200) AND past_company:(funded startup OR Series A OR Series B)',
-        promptGenerator: (submission) => `
-            You are an expert LinkedIn sourcing coach. A participant has written a LinkedIn search query to find Marketing Directors at early-stage startups in SF with product launch experience.
+        promptGenerator: (submission) => `You are an expert LinkedIn Sourcing Coach. A participant has written a LinkedIn search query to find Marketing Directors at early-stage startups in SF with product launch experience.
+            
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## SEARCH REQUIREMENTS
+- Role: Marketing Director (or equivalent)
+- Company Stage: Series A/B (Funded startups)
+- Location: San Francisco Bay Area
+- Experience: Product Launches / GTM
 
-            Your task is to:
-            1. Evaluate the search for effective use of LinkedIn filters, keywords, and targeting.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for improving the LinkedIn search.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Title Targeting (25 points)**
+- Covers key variations (Marketing Director, Head of Marketing, VP Marketing)
+- Appropriate seniority level
+
+**2. Keywords & Skills (25 points)**
+- Includes "product launch", "GTM", "Go-to-market"
+- Relevant functional keywords
+
+**3. Location & Company Filters (25 points)**
+- Correct location targeting (San Francisco Bay Area)
+- Company size or funding keywords (Series A, Series B, startup)
+
+**4. Boolean Syntax (25 points)**
+- Correct use of OR/AND
+- Proper field commands (title:, location:, etc.) if used
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Search String:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect syntax, comprehensive coverage.
+- 75-89: Good - Solid logic, minor missing variations.
+- 60-74: Adequate - Basic search, missing key filters or synonyms.
+- 40-59: Needs Work - Major syntax errors or missing requirements.
+- 0-39: Poor - Irrelevant or broken search.
+
+Evaluate now.`
     },
     {
         id: 'game6',
@@ -383,17 +432,63 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Partner with organizations like Code2040, Women Who Code, and Black Girls Code to tap into diverse talent pools. 2) Source from HBCUs, women\'s colleges, and universities with strong diversity programs. 3) Use inclusive language in job descriptions and avoid gendered/biased terms. 4) Search for candidates who participate in diversity-focused tech communities, conferences (Grace Hopper, AfroTech), and ERGs.',
-        promptGenerator: (submission) => `
-            You are a diversity recruitment expert. A participant has outlined strategies for building diverse candidate pipelines without using discriminatory search practices.
+        promptGenerator: (submission) => `You are a Diversity Recruitment Expert. A participant has outlined strategies for building diverse candidate pipelines without using discriminatory search practices.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate the strategies for effectiveness, ethics, and compliance with EEOC guidelines.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for improving the diversity sourcing approach.
-            4. Format your response in simple markdown.
-        `
+## SCENARIO
+- Goal: Source underrepresented candidates for Senior Software Engineer
+- Constraint: No discriminatory search terms (e.g., no "female", "minority" keywords)
+
+## EVALUATION RUBRIC
+
+**1. Strategic Partnerships (25 points)**
+- Identifies relevant organizations (e.g., excessive, specific groups)
+- Focuses on community engagement
+
+**2. Sourcing Channels (25 points)**
+- Suggests diverse platforms (HBCUs, specific conferences, job boards)
+- Goes beyond standard LinkedIn search
+
+**3. Inclusive Language (25 points)**
+- Emphasizes inclusive JD language
+- Avoids bias in outreach
+
+**4. Compliance & Ethics (25 points)**
+- Adheres to EEOC guidelines
+- Focuses on skills and qualifications, not demographics directly in search strings
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Strategy:**
+[Provide a refined or expanded strategy]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Comprehensive, ethical, and actionable strategy.
+- 75-89: Good - Solid approach, minor gaps in specific resources.
+- 60-74: Adequate - Basic ideas, lacks specific examples or depth.
+- 40-59: Needs Work - Vague or potentially risky approaches.
+- 0-39: Poor - Unethical or ineffective.
+
+Evaluate now.`
     },
     {
         id: 'game7',
@@ -404,20 +499,63 @@ Evaluate now.`
         difficulty: 'easy' as const,
         skillCategory: 'screening' as const,
         exampleSolution: 'This candidate has strong technical fundamentals with a PhD in Statistics and relevant tools (Python/R/SQL), but falls short of the 5+ years industry experience requirement with only 3 years in consulting. The consulting background likely provided exposure to A/B testing and modeling, but there\'s no evidence of ML deployment or production systems experience. Recommend a phone screen to assess if their consulting work involved tech companies and to probe for any ML deployment experience not listed on the resume. If deployment experience is minimal, they may be better suited for a mid-level rather than senior role.',
-        promptGenerator: (submission) => `
-            You are an expert recruiter screening coach. A participant has assessed whether a Data Scientist candidate should move forward based on their resume vs. job requirements.
+        promptGenerator: (submission) => `You are an Expert Recruiter Screening Coach. A participant has assessed whether a Data Scientist candidate should move forward based on their resume vs. job requirements.
 
-            Job Requirements: 5+ years in tech company, ML deployment experience
-            Candidate: PhD Statistics, 3 years consulting, Python/R/SQL, predictive modeling, A/B testing
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## COMPARISON
+- **Job**: 5+ years tech exp, ML deployment.
+- **Candidate**: PhD Stats, 3 years consulting, Python/R/SQL, predictive modeling.
 
-            Your task is to:
-            1. Evaluate the screening decision for thoroughness, fairness, and accuracy.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for better resume screening.
-            4. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Analysis of Requirements (30 points)**
+- Correctly identifies the gap in years of experience (3 vs 5+)
+- Notes the lack of specific "ML deployment" experience
+
+**2. Gap Identification (30 points)**
+- Acknowledges the strength of the PhD/Stats background
+- Weighs consulting vs. tech company experience
+
+**3. Decision Logic (20 points)**
+- Provides a clear recommendation (Screen vs Reject)
+- Justification is sound based on the data
+
+**4. Communication Clarity (20 points)**
+- Concise and professional
+- Clear reasoning
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Assessment:**
+[Provide a more nuanced or accurate assessment]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Nuanced analysis, correctly identifies all gaps and strengths.
+- 75-89: Good - Solid analysis, misses minor details.
+- 60-74: Adequate - Basic assessment, might miss the "deployment" gap.
+- 40-59: Needs Work - Incorrect conclusion or ignores key requirements.
+- 0-39: Poor - Vague or irrelevant.
+
+Evaluate now.`
     },
     {
         id: 'game8',
@@ -428,20 +566,65 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'job-description' as const,
         exampleSolution: 'As our Customer Success Manager, you\'ll be the trusted advisor to our mid-market clients, ensuring they achieve maximum value from our platform. You\'ll own the full customer lifecycle post-sale, from onboarding through renewal and expansion. Working closely with Sales, Product, and Support teams, you\'ll advocate for customer needs while driving adoption and identifying growth opportunities. This role requires a consultative mindset, analytical skills to track health metrics, and the ability to build strong relationships with C-level stakeholders. You\'ll directly impact our 90%+ retention rate and help shape our customer success playbook as we scale. If you thrive on solving complex problems, love turning customers into advocates, and want to make a measurable impact in a fast-growing SaaS company, this role is for you.',
-        promptGenerator: (submission) => `
-            You are a job description expert. A participant has written an "About the Role" section for a Customer Success Manager at a B2B SaaS company.
+        promptGenerator: (submission) => `You are a Job Description Expert. A participant has written an "About the Role" section for a Customer Success Manager at a B2B SaaS company.
 
-            Requirements to cover: 3-5 years experience, customer retention ownership, cross-functional collaboration
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## REQUIREMENTS
+- Role: Customer Success Manager
+- Experience: 3-5 years
+- Key Duties: Customer retention, cross-functional collaboration
+- Industry: B2B SaaS
 
-            Your task is to:
-            1. Evaluate the JD for clarity, appeal to candidates, completeness, and inclusive language.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for improving the job description.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Engagement & Hook (25 points)**
+- Opens with a compelling statement
+- Excites the candidate about the opportunity
+
+**2. Clarity of Role (25 points)**
+- Clearly defines the core responsibilities (retention, collaboration)
+- Mentions the experience level implicitly or explicitly
+
+**3. Inclusive Language (25 points)**
+- Uses gender-neutral terms
+- Focuses on growth and impact rather than just requirements
+
+**4. Call to Action (25 points)**
+- Encourages application
+- Professional yet inviting tone
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Description:**
+[Provide a polished version]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Engaging, clear, inclusive, and professional.
+- 75-89: Good - Clear and accurate, but maybe a bit dry.
+- 60-74: Adequate - Covers basics but lacks "sell".
+- 40-59: Needs Work - Confusing, generic, or exclusionary language.
+- 0-39: Poor - Fails to describe the role accurately.
+
+Evaluate now.`
     },
     {
         id: 'game9',
@@ -452,17 +635,64 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'ats' as const,
         exampleSolution: '1) Years of PM experience: Must have 3+ years in a product management role, not just "project" management. 2) B2B SaaS experience: Strong preference for candidates from similar industries/business models. 3) Technical background: Look for engineering degrees, CS minors, or demonstrated ability to work with engineering teams. 4) Ownership of product launches: Evidence of taking products from 0-1 or managing a full product lifecycle. 5) Analytical skills: Mentions of data-driven decision making, A/B testing, or metrics ownership. Filter order: Hard requirements first (years exp), then industry match, then differentiators (technical background, ownership). Review top 15-20 manually to account for non-traditional backgrounds.',
-        promptGenerator: (submission) => `
-            You are an ATS and recruiting operations expert. A participant has outlined their filtering strategy to narrow 50 Product Manager candidates to the top 10.
+        promptGenerator: (submission) => `You are a Recruiting Operations Expert. A participant has outlined their filtering strategy to narrow 50 Product Manager candidates to the top 10.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate the filtering criteria for effectiveness, fairness, and practicality.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for optimizing ATS filtering.
-            4. Format your response in simple markdown.
-        `
+## SCENARIO
+- Role: Product Manager
+- Pool: 50 candidates
+- Goal: Top 10 for phone screens
+
+## EVALUATION RUBRIC
+
+**1. Hard Requirements First (30 points)**
+- Prioritizes non-negotiables (e.g., years of experience, specific industry background)
+- Efficiently reduces the pool size
+
+**2. Soft Skills/Differentiators (20 points)**
+- Looks for "plus" factors (technical background, specific achievements)
+- Distinguishes good from great
+
+**3. Efficiency of Process (25 points)**
+- Logical order of operations
+- Practical for a human to execute
+
+**4. Fairness & Bias Check (25 points)**
+- Avoids arbitrary filters (e.g., school pedigree) unless relevant
+- Focuses on relevant skills
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Strategy:**
+[Provide a more efficient strategy]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Strategic, efficient, fair, and effective.
+- 75-89: Good - Logical approach, minor inefficiencies.
+- 60-74: Adequate - Basic filtering, might miss some nuance.
+- 40-59: Needs Work - Inefficient or biased criteria.
+- 0-39: Poor - Random or ineffective filtering.
+
+Evaluate now.`
     },
     {
         id: 'game10',
@@ -473,18 +703,68 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Machine Learning Engineer" OR "ML Engineer" OR "Applied Scientist") AND (TensorFlow OR PyTorch OR "deep learning framework") AND (Google OR Amazon OR Microsoft OR FAANG) AND (Seattle OR "Seattle area" OR Bellevue OR Redmond) AND ("published research" OR "research paper" OR "conference paper" OR arxiv OR "peer reviewed")',
-        promptGenerator: (submission) => `
-            You are an advanced Boolean search expert. A participant has written a complex Boolean string to find ML Engineers in Seattle with framework experience, Big Tech background, and research publications.
+        promptGenerator: (submission) => `You are an Advanced Boolean Search Expert. A participant has written a complex Boolean string to find ML Engineers in Seattle with framework experience, Big Tech background, and research publications.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate the string for correct Boolean logic, comprehensiveness, and efficiency.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 advanced tips for improvement.
-            4. Provide an optimized version.
-            5. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Role: Machine Learning Engineer
+- Location: Seattle
+- Skills: TensorFlow OR PyTorch
+- Companies: Google OR Amazon OR Microsoft
+- Extra: Published research
+
+## EVALUATION RUBRIC
+
+**1. Core Logic Structure (25 points)**
+- Correct use of AND/OR operators
+- Proper grouping with parentheses
+
+**2. Synonym Coverage (25 points)**
+- Covers "ML Engineer", "Machine Learning", etc.
+- Covers company variations if needed
+
+**3. Operator Usage (25 points)**
+- Correct syntax for the specific platform (implied general/LinkedIn)
+- No broken strings
+
+**4. Nested Logic Accuracy (25 points)**
+- Correctly nests the (Company) AND (Skill) AND (Location) logic
+- Handles the "Research" requirement effectively
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Boolean String:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect syntax, advanced logic, comprehensive.
+- 75-89: Good - Working string, minor missing synonyms.
+- 60-74: Adequate - Basic string, some syntax errors or missing groups.
+- 40-59: Needs Work - Broken logic, missing major requirements.
+- 0-39: Poor - Unusable string.
+
+Evaluate now.`
     },
     {
         id: 'game11',
@@ -495,18 +775,67 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:stackoverflow.com/users (Swift OR SwiftUI OR "Swift UI") AND (iOS OR iPhone) AND ("reputation" OR "top user" OR "answers") -site:stackoverflow.com/questions',
-        promptGenerator: (submission) => `
-            You are a technical sourcing expert specializing in X-ray searches. A participant has written an X-ray search to find iOS/Swift developers on Stack Overflow.
+        promptGenerator: (submission) => `You are a Technical Sourcing Specialist. A participant has written an X-ray search to find iOS/Swift developers on Stack Overflow.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate the X-ray search for correctness and effectiveness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips to improve the X-ray search.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Site: Stack Overflow
+- Role: iOS Developers
+- Skill: Swift UI
+- Goal: Find user profiles
+
+## EVALUATION RUBRIC
+
+**1. Site Operator Usage (25 points)**
+- Correctly uses site:stackoverflow.com/users (or similar profile path)
+- Avoids searching generic Q&A pages
+
+**2. Profile Targeting (25 points)**
+- Targets user profiles specifically
+- Uses terms like "reputation", "location", or "answers" to identify profiles
+
+**3. Keyword Relevance (25 points)**
+- Includes "Swift UI", "SwiftUI", "iOS"
+- Covers variations
+
+**4. Exclusion Logic (25 points)**
+- Excludes /questions, /jobs, or other noise if necessary
+- Keeps the search focused on people
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved X-Ray Search:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect syntax, targets profiles precisely.
+- 75-89: Good - Finds profiles, maybe some noise.
+- 60-74: Adequate - Basic search, might land on Q&A pages.
+- 40-59: Needs Work - Wrong site operator or keywords.
+- 0-39: Poor - Completely broken search.
+
+Evaluate now.`
     },
     {
         id: 'game12',
@@ -517,20 +846,66 @@ Evaluate now.`
         difficulty: 'easy' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Hi Jennifer, I wanted to follow up on my message from last week about the Senior Data Engineer role at DataCorp. I know you\'re likely busy, but wanted to make sure it didn\'t get lost in your inbox. If the timing isn\'t right or you\'re not interested, no worries at all—just let me know and I won\'t bother you again. Thanks!',
-        promptGenerator: (submission) => `
-            You are an outreach and candidate engagement expert. A participant has written a follow-up message for a non-responsive candidate.
+        promptGenerator: (submission) => `You are an Outreach & Engagement Expert. A participant has written a follow-up message for a non-responsive candidate.
 
-            Context: First email sent 5 days ago, no response yet, this is the first follow-up
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## SCENARIO
+- Context: 1st follow-up after 5 days of silence
+- Role: Senior Data Engineer
+- Goal: Re-engage without being annoying
 
-            Your task is to:
-            1. Evaluate for professionalism, brevity, and effectiveness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 tips for better follow-ups.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Professionalism (25 points)**
+- Polite and respectful tone
+- Acknowledges their busy schedule
+
+**2. Brevity (25 points)**
+- Short and sweet (under 75 words)
+- Easy to read on mobile
+
+**3. Value Reinforcement (25 points)**
+- Briefly reminds them of the value/role (without repeating the whole pitch)
+- Keeps the door open
+
+**4. No-Pressure CTA (25 points)**
+- "Let me know if you're interested" vs "Call me now"
+- Gives them an "out" (it's okay to say no)
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Follow-Up:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect tone, length, and strategy.
+- 75-89: Good - Solid message, maybe a bit wordy.
+- 60-74: Adequate - generic "just checking in".
+- 40-59: Needs Work - Pushy, desperate, or too long.
+- 0-39: Poor - Unprofessional or rude.
+
+Evaluate now.`
     },
     {
         id: 'game13',
@@ -541,18 +916,67 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:github.com (React OR ReactJS OR "front end" OR "frontend developer") AND (Austin OR "Austin, TX" OR Texas) AND ("repositories" OR "contributions") AND ("open source" OR "open-source") -site:github.com/topics -site:github.com/trending',
-        promptGenerator: (submission) => `
-            You are an X-ray search specialist. A participant has written a search to find React developers in Austin with active GitHub profiles and open-source contributions.
+        promptGenerator: (submission) => `You are an X-Ray Search Specialist. A participant has written a search to find React developers in Austin with active GitHub profiles and open-source contributions.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate the search for accuracy and thoroughness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for refinement.
-            4. Provide an optimized version.
-            5. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Site: GitHub
+- Role: Front-end / React Developers
+- Location: Austin, Texas
+- Activity: Open source contributions
+
+## EVALUATION RUBRIC
+
+**1. Site Specificity (25 points)**
+- Correct uses site:github.com
+- Targets user profiles (not just repos)
+
+**2. Location Filtering (25 points)**
+- "Austin" AND "TX" or "Texas"
+- Handles location field logic on GitHub
+
+**3. Activity Indicators (25 points)**
+- Keywords like "contributions", "repositories", "stars", "followers"
+- "Open source" keyword usage
+
+**4. Syntax Accuracy (25 points)**
+- Proper Boolean operators
+- Correct exclusion of non-profile pages (topics, help, etc.)
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved X-Ray Search:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Pinpoint accuracy, finds active contributors in Austin.
+- 75-89: Good - Finds developers, maybe misses some activity signals.
+- 60-74: Adequate - Basic search, lots of false positives.
+- 40-59: Needs Work - Wrong syntax or location logic.
+- 0-39: Poor - Broken search.
+
+Evaluate now.`
     },
     {
         id: 'game14',
@@ -563,20 +987,64 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'persona' as const,
         exampleSolution: 'A proven enterprise sales leader with 10-15 years of experience, including at least 5 years selling cybersecurity or infrastructure solutions to Fortune 500 companies. Likely has an MBA and has managed teams of 10-20 AEs/SEs, with a track record of consistently exceeding $10M+ quotas. Motivated by equity upside and the opportunity to build a sales organization from the ground up at a high-growth startup. Has probably worked at established cybersecurity vendors (Palo Alto Networks, CrowdStrike, Okta) and is ready to take on more strategic responsibility. May be active on LinkedIn sharing thought leadership about enterprise sales or cybersecurity trends. Can be found at RSA Conference, Black Hat, or through referrals from VPs at competitor companies.',
-        promptGenerator: (submission) => `
-            You are a persona development expert for senior executive roles. A participant has created a candidate persona for a VP of Sales in cybersecurity.
+        promptGenerator: (submission) => `You are a Persona Development Expert. A participant has created a candidate persona for a VP of Sales in cybersecurity.
 
-            Requirements: Enterprise sales, cybersecurity domain knowledge, team leadership
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## REQUIREMENTS
+- Role: VP of Sales
+- Industry: Cybersecurity
+- Skills: Enterprise sales, Team leadership
 
-            Your task is to:
-            1. Evaluate for depth, accuracy, and actionability.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for stronger personas.
-            4. Provide an enhanced version.
-            5. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Depth of Insight (25 points)**
+- Goes beyond the JD (e.g., specific companies they might work at)
+- Identifies specific "pain points" or motivations for this level
+
+**2. Motivations & Drivers (25 points)**
+- Understands what drives a VP (Equity, Scale, Impact)
+- Mentions "Why they would move"
+
+**3. Sourcing Channels (25 points)**
+- Identifies where they hang out (RSA Conference, specific groups)
+- Names competitor companies or tiers
+
+**4. Actionability (25 points)**
+- Is this persona useful for sourcing?
+- Specific enough to build a search string from?
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Enhanced Persona:**
+[Provide a richer version]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Deep, strategic, and highly actionable.
+- 75-89: Good - Solid profile, covers key bases.
+- 60-74: Adequate - Generic VP description.
+- 40-59: Needs Work - Too brief or misses the "Cybersecurity" nuance.
+- 0-39: Poor - Irrelevant.
+
+Evaluate now.`
     },
     {
         id: 'game15',
@@ -587,19 +1055,62 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'job-description' as const,
         exampleSolution: '1) "Rockstar developer" - Use "experienced developer" or "skilled engineer" to avoid gendered/exclusionary jargon. 2) "Top-tier university" - This excludes candidates from non-traditional backgrounds; change to "relevant degree or equivalent experience." 3) "Young, hungry talent" - Age discrimination red flag; use "motivated professionals" or "passionate engineers." 4) "Work-hard-play-hard culture" - Can deter candidates with caregiving responsibilities; replace with "collaborative, results-driven environment with work-life balance."',
-        promptGenerator: (submission) => `
-            You are a diversity and inclusion expert in recruitment. A participant has identified problematic language in a job description and suggested inclusive alternatives.
+        promptGenerator: (submission) => `You are a Diversity & Inclusion Expert. A participant has identified problematic language in a job description and suggested inclusive alternatives.
 
-            Original JD excerpt: "We need a rockstar developer who can hit the ground running. Must have a computer science degree from a top-tier university. Looking for young, hungry talent to join our fast-paced, work-hard-play-hard culture."
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## ORIGINAL TEXT
+"Rockstar developer", "hit the ground running", "top-tier university", "young, hungry talent", "work-hard-play-hard"
 
-            Your task is to:
-            1. Evaluate the analysis for completeness and quality of alternatives.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 2-3 additional tips for inclusive JDs.
-            4. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Identification of Bias (30 points)**
+- Identifies gendered language ("Rockstar")
+- Identifies ageism ("Young", "Recent grad")
+- Identifies socioeconomic bias ("Top-tier university")
+
+**2. Quality of Alternatives (30 points)**
+- Suggests neutral, skills-based terms
+- "Experienced" instead of "Rockstar"
+- "Motivated" instead of "Hungry"
+
+**3. Explanation of Impact (20 points)**
+- Explains *why* the terms are problematic (e.g., "discourages women", "excludes parents")
+
+**4. Completeness (20 points)**
+- Catches all or most of the red flags in the excerpt
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved JD Excerpt:**
+[Provide a rewritten version]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Catches all bias, provides perfect alternatives.
+- 75-89: Good - Catches most bias, good alternatives.
+- 60-74: Adequate - Misses subtle bias (e.g., "hit the ground running").
+- 40-59: Needs Work - Misses major red flags like "Young".
+- 0-39: Poor - Fails to identify bias.
+
+Evaluate now.`
     },
     {
         id: 'game16',
@@ -610,18 +1121,64 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Current Title: (CTO OR "Chief Technology Officer" OR "VP Engineering" transitioning to CTO)\nKeywords: ("scaled team" OR "grew team" OR "10 to 100" OR "team growth" OR "built engineering team")\nCompany Type: Venture-backed startup OR funded startup\nCompany Size: 51-200, 201-500, 501-1000 (companies that have scaled)\nPast Company Keywords: (Series B OR Series C OR Series D OR growth stage OR scale-up)\nYears at Current Company: 2+ (looking for people who stayed through scaling phase)\nFunction: Engineering\nSeniority Level: CXO, VP',
-        promptGenerator: (submission) => `
-            You are a LinkedIn Recruiter expert. A participant has specified the filters to find CTOs who have scaled engineering teams at startups.
+        promptGenerator: (submission) => `You are a LinkedIn Recruiter Expert. A participant has specified the filters to find CTOs who have scaled engineering teams at startups.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate the filter strategy for effectiveness and completeness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for optimizing LinkedIn Recruiter searches.
-            4. Provide an improved filter set.
-            5. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Role: CTO / VP Engineering
+- Experience: Scaling 10 -> 100+
+- Company Type: Venture-backed Startup
+
+## EVALUATION RUBRIC
+
+**1. Filter Selection (25 points)**
+- Uses "Job Titles", "Company Size", "Keywords"
+- Uses "Past Company" effectively to find people who *have done it*
+
+**2. Keyword Strategy (25 points)**
+- "Scaling", "Growth", "Series B", "Startup"
+- "0 to 1", "10 to 100"
+
+**3. Company/Industry Targeting (25 points)**
+- Targets "Venture Capital", "Computer Software", "Internet"
+- Excludes large corporate entities
+
+**4. Seniority/Function Logic (25 points)**
+- Targets CXO, VP level
+- Ensures Engineering function
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Filter Set:**
+[Provide an optimized list of filters]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Masterful use of filters and keywords.
+- 75-89: Good - Solid strategy, might miss "Past Company" trick.
+- 60-74: Adequate - Basic title search.
+- 40-59: Needs Work - Missing key filters like Company Size.
+- 0-39: Poor - Ineffective.
+
+Evaluate now.`
     },
     // INDUSTRY-SPECIFIC EXPANSION
     {
@@ -633,18 +1190,67 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Registered Nurse" OR RN OR "Critical Care Nurse") AND (ICU OR "Intensive Care Unit" OR "Critical Care") AND (CCRN OR "CCRN certified" OR "Critical Care Registered Nurse") AND (Chicago OR "Chicago area" OR Illinois OR IL) AND ("travel nurse" OR "travel nursing" OR "open to relocation" OR "willing to travel")',
-        promptGenerator: (submission) => `
-            You are a healthcare recruiting expert. A participant has written a Boolean search for ICU nurses with CCRN certification in Chicago open to travel positions.
+        promptGenerator: (submission) => `You are a Healthcare Recruiting Expert. A participant has written a Boolean search for ICU nurses with CCRN certification in Chicago open to travel positions.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate for healthcare-specific terminology, certifications, and geographic targeting.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for healthcare recruitment searches.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Role: Registered Nurse (ICU)
+- Certification: CCRN
+- Location: Chicago
+- Condition: Open to travel / Travel Nurse
+
+## EVALUATION RUBRIC
+
+**1. Certification Accuracy (25 points)**
+- Includes "CCRN" and spelled out variations
+- Correctly links certification to the role
+
+**2. Clinical Keywords (25 points)**
+- "ICU", "Critical Care", "Intensive Care"
+- Ensures the right specialty is targeted
+
+**3. Location Targeting (25 points)**
+- "Chicago", "IL", "Illinois"
+- Handles the "Travel" aspect (might search for people *in* Chicago willing to travel, or people *willing to travel to* Chicago - context implies finding people *in* Chicago open to travel)
+
+**4. Boolean Logic (25 points)**
+- Correct AND/OR syntax
+- Proper grouping of terms
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Boolean String:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect healthcare syntax and logic.
+- 75-89: Good - Finds the right people, minor missing terms.
+- 60-74: Adequate - Basic search, might miss "Travel" or "CCRN".
+- 40-59: Needs Work - Wrong specialty or location logic.
+- 0-39: Poor - Broken search.
+
+Evaluate now.`
     },
     {
         id: 'game18',
@@ -655,20 +1261,63 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'screening' as const,
         exampleSolution: 'The candidate has the right licenses (Series 7 and 63) and relevant compliance experience, but fintech and traditional banking compliance can differ significantly in regulatory scope. The 4 years of experience meets the minimum, but the lack of traditional banking or regulatory agency background is a gap. Recommend a phone screen to assess: 1) Their specific experience with banking regulations (BSA/AML, FDIC, OCC requirements), 2) Whether their fintech exposure included any banking partnerships or bank-like regulations, 3) Their understanding of the regulatory examination process. If they have strong transferable knowledge and are coachable, they could be a culture fit given fintech\'s innovative approach to compliance.',
-        promptGenerator: (submission) => `
-            You are a financial services recruiting expert. A participant has screened a Compliance Officer candidate from fintech for a banking role.
+        promptGenerator: (submission) => `You are a Financial Services Recruiting Expert. A participant has screened a Compliance Officer candidate from fintech for a banking role.
 
-            Candidate: 4 years fintech, Series 7/63, finance degree
-            Role Requirements: Banking experience preferred, regulatory agency background a plus
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## COMPARISON
+- **Candidate**: 4 yrs Fintech, Series 7/63, Finance Degree.
+- **Role**: Banking experience preferred, Regulatory agency background (+).
 
-            Your task is to:
-            1. Evaluate the screening decision for industry-specific knowledge and thoroughness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for financial services screening.
-            4. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Regulatory Knowledge (30 points)**
+- Identifies the difference between Fintech and Traditional Banking compliance
+- Notes the Series 7/63 relevance
+
+**2. Gap Analysis (30 points)**
+- Highlights the lack of "Regulatory Agency" background
+- Assesses the "Banking" experience gap
+
+**3. Risk Assessment (20 points)**
+- Evaluates if the candidate can handle the stricter banking environment
+- "Culture fit" assessment (Fintech speed vs Banking rigor)
+
+**4. Interview Strategy (20 points)**
+- Suggests specific questions to probe the gaps
+- Recommendation (Screen/Pass) is well-reasoned
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Assessment:**
+[Provide a more nuanced assessment]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Deep understanding of FinServ nuances.
+- 75-89: Good - Solid analysis, identifies main gaps.
+- 60-74: Adequate - Basic match/mismatch analysis.
+- 40-59: Needs Work - Misses the regulatory distinction.
+- 0-39: Poor - Irrelevant.
+
+Evaluate now.`
     },
     {
         id: 'game19',
@@ -679,17 +1328,63 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Provide interview questions and format details in advance to reduce anxiety and allow preparation. 2) Offer alternative interview formats: written responses, take-home assignments, or skills-based assessments instead of only verbal interviews. 3) Create a sensory-friendly interview environment: quiet room, option to turn off cameras in virtual interviews, minimal distractions. 4) Allow extra time for processing questions and formulating responses; avoid rapid-fire questioning. 5) Focus on skills-based evaluation over culture fit, and train interviewers to recognize different communication styles. 6) Partner with neurodiversity employment organizations like Specialisterne or Integrate Autism Employment Advisors. 7) Provide clear, structured onboarding with written documentation.',
-        promptGenerator: (submission) => `
-            You are a neurodiversity hiring specialist. A participant has designed accommodations for a neurodiversity hiring program.
+        promptGenerator: (submission) => `You are a Neurodiversity Hiring Specialist. A participant has designed accommodations for a neurodiversity hiring program.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate for comprehensiveness, practicality, and adherence to best practices.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 additional suggestions for neurodiversity inclusion.
-            4. Format your response in simple markdown.
-        `
+## GOAL
+- Inclusive process for Software QA/Testing roles
+- Target: Neurodiverse candidates
+
+## EVALUATION RUBRIC
+
+**1. Process Accommodations (30 points)**
+- Pre-interview prep (sending questions in advance)
+- Flexible scheduling/timing
+
+**2. Environment Adjustments (25 points)**
+- Sensory considerations (quiet rooms, camera optional)
+- Clear communication styles
+
+**3. Evaluation Methods (25 points)**
+- Skills-based vs "Culture fit"
+- Alternative formats (written vs verbal)
+
+**4. Inclusivity (20 points)**
+- Partnering with specialist orgs
+- Training for interviewers
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Plan:**
+[Provide a more comprehensive plan]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Comprehensive, empathetic, and practical.
+- 75-89: Good - Good ideas, covers basics.
+- 60-74: Adequate - Generic accommodations.
+- 40-59: Needs Work - Misses key sensory/process barriers.
+- 0-39: Poor - Harmful or irrelevant.
+
+Evaluate now.`
     },
     {
         id: 'game20',
@@ -803,19 +1498,64 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: 'Issue 1: "Rockstar" and "ninja" are tech-bro jargon that may discourage women and underrepresented groups from applying. Replace with "skilled engineer" or "experienced developer". Issue 2: "Recent grad" can be interpreted as age discrimination, potentially excluding career-changers and older candidates. Use "early career" or remove time-based language. Issue 3: "Top university" requirement creates socioeconomic and geographic bias, excluding talented developers from non-elite schools, bootcamps, or self-taught backgrounds. Change to "CS degree or equivalent experience". Issue 4: Sourcing only from MIT/Stanford/CMU perpetuates lack of diversity. Expand to HBCUs (Howard, Spelman), HSIs (UT Austin, UC System), regional state schools, and coding bootcamps (Hack Reactor, App Academy). Issue 5: Add diversity job boards (PowerToFly, Jopwell, Fairygodboss) and focus on skills-based assessments over pedigree.',
-        promptGenerator: (submission) => `
-            You are an EEOC compliance and diversity recruitment expert. A participant has identified bias issues in sourcing practices.
+        promptGenerator: (submission) => `You are an EEOC Compliance & Diversity Expert. A participant has identified bias issues in sourcing practices.
 
-            Original Practices: Terms like "rockstar", "ninja", "recent grad", required top university CS degree, sourced only from MIT/Stanford/CMU
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## ORIGINAL PRACTICES
+- "Rockstar", "Ninja", "Recent Grad"
+- Required "Top University"
+- Sourced only from MIT/Stanford/CMU
 
-            Your task is to:
-            1. Evaluate the identification of issues and quality of solutions.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 additional compliance tips.
-            4. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Bias Identification (25 points)**
+- Identifies all exclusionary terms (Gender, Age, Socioeconomic)
+- Explains *why* they are biased
+
+**2. Legal Knowledge (25 points)**
+- References EEOC concepts (Disparate Impact) implicitly or explicitly
+- Focuses on fair hiring practices
+
+**3. Remediation Strategy (25 points)**
+- Suggests specific replacements ("Skilled" vs "Ninja")
+- Proposes "Equivalent Experience" vs "Degree"
+
+**4. Sourcing Expansion (25 points)**
+- Suggests specific diverse channels (HBCUs, HSIs, Bootcamps)
+- Broadens the funnel
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Strategy:**
+[Provide a compliant strategy]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Thorough legal and strategic understanding.
+- 75-89: Good - Catches most issues, good fixes.
+- 60-74: Adequate - Basic identification of "Ninja" etc.
+- 40-59: Needs Work - Misses systemic issues like University bias.
+- 0-39: Poor - Fails to identify bias.
+
+Evaluate now.`
     },
     {
         id: 'game22',
@@ -826,18 +1566,66 @@ Evaluate now.`
         difficulty: 'easy' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("District Manager" OR "Regional Manager" OR "Area Manager" OR "Multi-Unit Manager") AND (retail OR "brick and mortar" OR stores) AND ("P&L" OR "profit and loss" OR "P&L responsibility" OR revenue) AND ("store performance" OR "sales improvement" OR "comp sales" OR "same-store sales") AND (Target OR Walmart OR "Best Buy" OR Nordstrom OR Macy\'s OR Gap OR "Home Depot" OR Lowe\'s OR CVS OR Walgreens)',
-        promptGenerator: (submission) => `
-            You are a retail recruiting specialist. A participant has written a Boolean search for District Managers with multi-unit and P&L experience.
+        promptGenerator: (submission) => `You are a Retail Recruiting Specialist. A participant has written a Boolean search for District Managers with multi-unit and P&L experience.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate for retail-specific terminology and targeting.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for retail talent searches.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Role: District Manager
+- Experience: Multi-unit management, P&L responsibility, Store performance
+- Target: Competitive retail brands
+
+## EVALUATION RUBRIC
+
+**1. Title Variations (25 points)**
+- "District Manager", "Regional Manager", "Area Manager"
+- Covers the hierarchy correctly
+
+**2. Industry Keywords (25 points)**
+- "Retail", "Store Operations", "Multi-unit"
+- "P&L", "Profit and Loss"
+
+**3. Performance Metrics (25 points)**
+- "Same store sales", "Comp sales", "KPIs"
+- Focuses on results
+
+**4. Competitor Targeting (25 points)**
+- Lists specific competitors (Target, Walmart, etc.)
+- Uses OR logic for companies
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Boolean String:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Comprehensive retail terminology and targeting.
+- 75-89: Good - Good search, minor missing keywords.
+- 60-74: Adequate - Basic title search.
+- 40-59: Needs Work - Misses P&L or key retail terms.
+- 0-39: Poor - Broken search.
+
+Evaluate now.`
     },
     {
         id: 'game23',
@@ -848,18 +1636,67 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Manufacturing Engineer" OR "Process Engineer" OR "Production Engineer" OR "Industrial Engineer") AND ("Lean Six Sigma" OR "Six Sigma" OR "Green Belt" OR "Black Belt" OR LSS) AND (automotive OR aerospace OR aviation OR "auto industry") AND (CAD OR AutoCAD OR SolidWorks OR "3D modeling" OR "CAD software") AND (Detroit OR Michigan OR Seattle OR Washington OR "Puget Sound")',
-        promptGenerator: (submission) => `
-            You are a manufacturing and engineering recruiter. A participant has written a Boolean search for Manufacturing Engineers with Lean Six Sigma and CAD skills.
+        promptGenerator: (submission) => `You are a Manufacturing & Engineering Recruiter. A participant has written a Boolean search for Manufacturing Engineers with Lean Six Sigma and CAD skills.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate for manufacturing-specific terminology and certifications.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for manufacturing talent searches.
-            4. Provide an improved version.
-            5. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Role: Manufacturing Engineer
+- Skills: Lean Six Sigma, CAD (AutoCAD/SolidWorks)
+- Industry: Automotive or Aerospace
+- Location: Detroit or Seattle
+
+## EVALUATION RUBRIC
+
+**1. Role Titles (25 points)**
+- "Manufacturing Engineer", "Process Engineer", "Industrial Engineer"
+- Covers relevant variations
+
+**2. Certifications (25 points)**
+- "Lean Six Sigma", "Green Belt", "Black Belt"
+- "LSS" abbreviation
+
+**3. Technical Skills (25 points)**
+- "CAD", "AutoCAD", "SolidWorks"
+- "3D Modeling"
+
+**4. Location/Industry (25 points)**
+- "Automotive", "Aerospace"
+- "Detroit", "Seattle" (and surrounding areas/states)
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Boolean String:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect technical and industry coverage.
+- 75-89: Good - Solid search, minor missing terms.
+- 60-74: Adequate - Basic search, might miss certifications.
+- 40-59: Needs Work - Wrong skills or location logic.
+- 0-39: Poor - Broken search.
+
+Evaluate now.`
     },
     {
         id: 'game24',
@@ -870,20 +1707,65 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Current Title: ("Sales Director" OR "Director of Sales" OR "VP Sales" OR "Head of Sales")\nKeywords: (SaaS OR "Software as a Service" OR "B2B software") AND (enterprise OR "Fortune 500" OR "enterprise sales" OR "strategic accounts")\nCompany Revenue: $10M-$50M, $50M-$100M\nIndustry: Computer Software, Information Technology & Services, Internet\nYears in Current Position: 0-1 years, 1-2 years\nFunction: Sales\nSeniority Level: Director, VP\nBoolean in Keywords field: (enterprise OR "Fortune 500") AND (SaaS OR "B2B software")',
-        promptGenerator: (submission) => `
-            You are a LinkedIn Recruiter power user and sales recruiting expert. A participant has written a LinkedIn Recruiter search for enterprise SaaS Sales Directors.
+        promptGenerator: (submission) => `You are a LinkedIn Recruiter Power User. A participant has written a LinkedIn Recruiter search for enterprise SaaS Sales Directors.
 
-            Requirements: SaaS, $10-100M revenue, enterprise/F500 sales, <2 years in role
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## REQUIREMENTS
+- Role: Sales Director (SaaS)
+- Company: $10-100M Revenue
+- Experience: Enterprise / Fortune 500 sales
+- Flight Risk: <2 years in role
 
-            Your task is to:
-            1. Evaluate use of LinkedIn-specific filters and Boolean syntax.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 advanced LinkedIn Recruiter tips.
-            4. Provide an optimized search strategy.
-            5. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Field Selection (25 points)**
+- Uses "Current Title", "Company Revenue", "Years in Current Position"
+- Doesn't dump everything into "Keywords"
+
+**2. Company Filters (25 points)**
+- Correctly targets $10M-$100M revenue (or proxy via company size)
+- Targets "Computer Software" / "Internet" industries
+
+**3. Tenure/Flight Risk Logic (25 points)**
+- Targets 0-2 years in current role
+- Explains the logic (optional but good)
+
+**4. Boolean Syntax (25 points)**
+- Correct Boolean in the Keywords field for (Enterprise OR "Fortune 500")
+- No syntax errors
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Search Strategy:**
+[Provide an optimized filter set]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Masterful use of Recruiter filters.
+- 75-89: Good - Solid search, maybe misses one filter.
+- 60-74: Adequate - Basic keyword search, ignores advanced filters.
+- 40-59: Needs Work - Missing revenue or tenure filters.
+- 0-39: Poor - Ineffective.
+
+Evaluate now.`
     },
     {
         id: 'game25',
@@ -894,17 +1776,64 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Army Logistics Officers (88A/92A MOS) and Navy Supply Corps Officers have direct operational and supply chain experience. 2) Marine Corps Operations Officers and Air Force Mission Support Officers bring coordination and team leadership skills. 3) Senior NCOs (E-7 to E-9) across all branches with logistics or operations backgrounds. Sourcing approach: Partner with veteran organizations (Hire Heroes USA, Veterati, FourBlock), attend veteran job fairs, use LinkedIn\'s Military Occupational Specialty feature, search for keywords like "veteran", "transitioning service member", "military leadership", "clearance holder". Create veteran-friendly JDs that translate requirements (avoid corporate jargon, highlight leadership and problem-solving). Offer MOS-to-civilian role translation guides and mentorship programs for smooth transition.',
-        promptGenerator: (submission) => `
-            You are a military veteran recruiting specialist. A participant has identified relevant MOS codes and created a veteran sourcing strategy.
+        promptGenerator: (submission) => `You are a Military Veteran Recruiting Specialist. A participant has identified relevant MOS codes and created a veteran sourcing strategy.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate for accuracy of MOS knowledge and effectiveness of sourcing approach.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for veteran recruitment.
-            4. Format your response in simple markdown.
-        `
+## REQUIREMENTS
+- Roles: Operations Manager, Logistics Coordinator
+- Goal: Hire veterans
+- Strategy: MOS translation + Sourcing
+
+## EVALUATION RUBRIC
+
+**1. MOS/Code Accuracy (30 points)**
+- Identifies correct codes (e.g., 92A, 88N for Army, Logistics Specialists for Navy/Marines)
+- Shows understanding of military hierarchy (Officer vs NCO roles)
+
+**2. Translation of Skills (25 points)**
+- Connects military duties to civilian requirements (e.g., "Supply Chain" -> "Logistics")
+- Avoids jargon in the explanation
+
+**3. Sourcing Channels (25 points)**
+- Suggests veteran-specific job boards (Hire Heroes, etc.)
+- Mentions "Transitioning Military" keywords
+
+**4. Support/Program Strategy (20 points)**
+- Mentions mentorship, translation guides, or ERGs
+- Focuses on retention, not just hiring
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Strategy:**
+[Provide a refined strategy]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Accurate codes, deep cultural understanding.
+- 75-89: Good - Good codes, standard sourcing ideas.
+- 60-74: Adequate - Generic "hire veterans" advice.
+- 40-59: Needs Work - Wrong MOS codes or superficial strategy.
+- 0-39: Poor - Irrelevant.
+
+Evaluate now.`
     },
     {
         id: 'game26',
@@ -915,19 +1844,64 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'ats' as const,
         exampleSolution: 'Step 1: Segment by role similarity - use ATS tags to match candidates to the 5 new openings by skills and level. Prioritize those who interviewed within the last 6 months (warmer leads). Step 2: Check candidate status - scrub LinkedIn to see who might have changed jobs (remove those recently promoted or moved). Step 3: Personalized outreach sequence - Email 1 (Day 0): "We\'re reaching out because we were impressed by you during your [role] interview. We have new opportunities that might be a better fit." Include specific role links. Email 2 (Day 5): Follow-up for non-responders with additional context about team/company updates. Step 4: Fast-track process - Offer expedited interviews (skip phone screen) since they\'re already vetted. Step 5: Track metrics - monitor response rate, conversion to interview, and time-to-hire vs. new candidates. Silver medalists should convert 20-30% to interviews.',
-        promptGenerator: (submission) => `
-            You are an ATS operations and candidate engagement expert. A participant has designed a silver medalist re-engagement campaign.
+        promptGenerator: (submission) => `You are an ATS Operations Expert. A participant has designed a silver medalist re-engagement campaign.
 
-            Context: 500 candidates from final rounds in past 12 months, 5 new openings available
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## SCENARIO
+- Pool: 500 "Silver Medalists" (Finalists)
+- Openings: 5 new roles
+- Goal: Re-engage
 
-            Your task is to:
-            1. Evaluate the campaign strategy for practicality and effectiveness.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for candidate re-engagement.
-            4. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Segmentation Strategy (25 points)**
+- Segments by role/skill match (don't blast everyone)
+- Prioritizes recent vs older candidates
+
+**2. Message Relevance (25 points)**
+- Acknowledges past relationship ("We met last year")
+- Personalized to the specific new opportunity
+
+**3. Process Efficiency (25 points)**
+- Fast-tracks them (skip phone screen)
+- Respects their time
+
+**4. Metrics/Tracking (25 points)**
+- Tracks response rates and conversion
+- A/B testing mentioned
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Campaign:**
+[Provide a better plan]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Strategic, personalized, and efficient.
+- 75-89: Good - Solid plan, maybe generic messaging.
+- 60-74: Adequate - "Blast email" approach.
+- 40-59: Needs Work - Disrespectful of candidate history.
+- 0-39: Poor - Spammy.
+
+Evaluate now.`
     },
     {
         id: 'game27',
@@ -938,17 +1912,64 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Obtain explicit consent before adding candidates to your ATS - you cannot store personal data without their permission. Use LinkedIn InMail or email to request consent first. 2) Provide clear privacy notice - inform candidates how their data will be used, stored, and for how long (typically 6-12 months for recruiting purposes). 3) Right to erasure - candidates can request deletion of their data at any time. Build ATS workflows to honor these requests within 30 days. 4) Data minimization - only collect necessary information (no sensitive data like race, religion, health unless legally required for diversity monitoring with consent). 5) Lawful basis - ensure you have legitimate interest or consent for processing. Don\'t share candidate data with third parties without explicit consent. 6) Cross-border transfer - if transferring data from EU to US, ensure your company has Standard Contractual Clauses or Privacy Shield equivalent. 7) Document compliance - maintain records of consent and data processing activities.',
-        promptGenerator: (submission) => `
-            You are a GDPR compliance and international recruiting expert. A participant has outlined GDPR requirements for EU candidate sourcing.
+        promptGenerator: (submission) => `You are a GDPR Compliance Expert. A participant has outlined GDPR requirements for EU candidate sourcing.
 
-            Submission: "${submission}"
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Your task is to:
-            1. Evaluate for accuracy and completeness of GDPR knowledge.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 additional GDPR recruiting tips.
-            4. Format your response in simple markdown.
-        `
+## SCENARIO
+- Region: EU
+- Role: Data Privacy Officer (Irony noted)
+- Action: Sourcing & Storing data
+
+## EVALUATION RUBRIC
+
+**1. Consent Mechanisms (25 points)**
+- "Explicit Consent" before storing data
+- "Legitimate Interest" vs Consent distinction
+
+**2. Data Rights (25 points)**
+- Right to Erasure ("Right to be forgotten")
+- Right to Access
+
+**3. Data Minimization (25 points)**
+- Only collecting necessary info
+- Retention periods defined
+
+**4. Documentation (25 points)**
+- Record of Processing Activities (ROPA)
+- Privacy Notice visibility
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Checklist:**
+[Provide a compliant list]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Accurate legal understanding, practical application.
+- 75-89: Good - Covers main points (Consent, Erasure).
+- 60-74: Adequate - Basic awareness, misses nuance.
+- 40-59: Needs Work - Incorrect legal advice.
+- 0-39: Poor - Dangerous/Non-compliant.
+
+Evaluate now.`
     },
     {
         id: 'game28',
@@ -959,20 +1980,64 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'GitHub X-ray: site:github.com ("Developer Advocate" OR "DevRel" OR "Developer Relations") AND (speaker OR conference OR "open source" OR contributor) -site:github.com/topics\n\nTwitter/X X-ray: site:twitter.com ("Developer Advocate" OR "DevRel") AND (backend OR "backend developer" OR API) AND (speaking OR conference OR "just spoke")\n\nLinkedIn Boolean: ("Developer Advocate" OR "DevRel Engineer" OR "Developer Relations") AND (speaker OR "conference speaker" OR "technical blog" OR blogger) AND (backend OR "backend development" OR Python OR Node OR Go)\n\nDev.to X-ray: site:dev.to (author OR "@") AND ("Developer Advocate" OR DevRel) AND (backend OR API OR "backend development")\n\nMedium X-ray: site:medium.com ("Developer Advocate" OR DevRel) AND (backend OR API OR microservices) AND (@)\n\nConference sites: site:sessionize.com ("Developer Advocate" OR DevRel) AND (backend OR API)',
-        promptGenerator: (submission) => `
-            You are a multi-platform sourcing expert specializing in developer relations roles. A participant has created a cross-platform sourcing strategy.
+        promptGenerator: (submission) => `You are a Multi-Platform Sourcing Expert. A participant has created a cross-platform sourcing strategy.
 
-            Requirements: DevRel/Developer Advocate, Twitter active, conference speakers, GitHub contributors, tech bloggers, backend experience
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Submission: "${submission}"
+## REQUIREMENTS
+- Role: DevRel / Developer Advocate
+- Platforms: Twitter, GitHub, Blogs, Conferences
+- Skills: Backend, Speaking, Writing
 
-            Your task is to:
-            1. Evaluate for coverage across platforms and Boolean accuracy.
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 advanced multi-platform sourcing tips.
-            4. Provide optimization suggestions.
-            5. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Platform Diversity (25 points)**
+- Uses at least 3 distinct platforms (GitHub, Twitter, Medium/Dev.to)
+- Tailors the search to each platform's strengths
+
+**2. X-Ray Syntax (25 points)**
+- Correct site: operators for each platform
+- Targets profiles/bios, not just content
+
+**3. Keyword Consistency (25 points)**
+- "Developer Advocate", "DevRel"
+- "Speaker", "Conference"
+
+**4. Community Knowledge (25 points)**
+- Knows where devs hang out (e.g., Dev.to, Hashnode, specific conferences)
+- Avoids generic platforms if better ones exist
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Strategy:**
+[Provide an optimized multi-channel plan]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Masterful use of X-Ray across multiple sites.
+- 75-89: Good - Good coverage, minor syntax errors.
+- 60-74: Adequate - Basic GitHub/LinkedIn only.
+- 40-59: Needs Work - Wrong syntax or irrelevant platforms.
+- 0-39: Poor - Broken searches.
+
+Evaluate now.`
     },
     {
         id: 'game29',
@@ -983,20 +2048,66 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Act as an expert technical sourcer. Write a Boolean search string for LinkedIn Recruiter to find Senior Site Reliability Engineers in London. Required skills: Terraform AND AWS. Exclude candidates currently working at consulting firms (like Accenture, Deloitte, KPMG, etc.). Please use standard Boolean operators (AND, OR, NOT) and group terms correctly with parentheses. Include common job title variations for SRE.',
-        promptGenerator: (submission) => `
-            You are a Prompt Engineering Instructor for Recruiters. A participant has written a prompt to ask an AI (like me) to generate a Boolean search string.
+        promptGenerator: (submission) => `You are a Prompt Engineering Instructor. A participant has written a prompt to ask an AI to generate a Boolean search string.
 
-            Goal: Find Senior SREs in London, with Terraform + AWS, excluding consulting firms.
+## CANDIDATE SUBMISSION
+"${submission}"
 
-            Participant's Prompt: "${submission}"
+## GOAL
+- Generate a Boolean string for Senior SREs in London
+- Must have Terraform + AWS
+- Exclude Consulting firms
 
-            Your task is to:
-            1. Evaluate the prompt's clarity, context, and constraints. Did they give the AI enough info to do a good job?
-            2. Provide a score out of 100. The score MUST be on its own line like this: SCORE: [number].
-            3. Give 3 tips for better prompting (e.g., assigning a persona, specifying output format, giving examples).
-            4. Show what the AI would likely have produced based on their prompt vs. what a perfect prompt would produce.
-            5. Format your response in simple markdown.
-        `
+## EVALUATION RUBRIC
+
+**1. Persona Definition (25 points)**
+- Assigns a role to the AI ("Act as a Sourcing Expert")
+- Sets the tone
+
+**2. Context & Constraints (25 points)**
+- Clearly lists the requirements (London, SRE, Terraform, AWS)
+- Clearly lists the exclusion (Consulting firms)
+
+**3. Output Specification (25 points)**
+- Asks for a "Boolean string" specifically
+- Asks for "Standard operators" or specific format
+
+**4. Clarity (25 points)**
+- Is the prompt unambiguous?
+- Can the AI misunderstand it?
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Prompt:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect prompt engineering technique.
+- 75-89: Good - Clear instructions, missing persona or output format.
+- 60-74: Adequate - Basic request, might get a generic answer.
+- 40-59: Needs Work - Vague or confusing.
+- 0-39: Poor - Unusable.
+
+Evaluate now.`
     },
     // PHASE 1: Advanced Engagement & AI (Games 30-37)
     {
@@ -1008,22 +2119,66 @@ Evaluate now.`
         difficulty: 'easy' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Act as a Senior Technical Recruiter. I will paste a resume below. Please extract the 3 most significant achievements related to "Cloud Migration" or "Digital Transformation". Format them as punchy bullet points that quantify the impact (cost savings, speed, scale). Ignore general responsibilities; focus on outcomes. Output ONLY the 3 bullets.',
-        promptGenerator: (submission) => `
-            You are an AI Efficiency Coach. A participant wants to use AI to summarize a resume.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they specify the role (Principal Architect)?
-            2. Did they ask for the specific output format (3 bullets)?
-            3. Did they focus on the key skill (Cloud Migration)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Always specify "Output ONLY..." to avoid chatter.
-            2. Ask for "quantifiable results" to get better bullets.
-            3. Define the persona (Technical Recruiter) for better tone.
-        `
+        promptGenerator: (submission) => `You are an AI Efficiency Coach. A participant wants to use AI to summarize a resume.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## GOAL
+- Summarize a Principal Architect resume
+- Focus on Cloud Migration
+- Output: 3 bullet points
+
+## EVALUATION RUBRIC
+
+**1. Role Specification (25 points)**
+- Assigns a persona (e.g., "Technical Recruiter")
+- Sets the context for the summary
+
+**2. Output Format (25 points)**
+- Explicitly asks for "3 bullet points"
+- Constraints length or style (e.g., "punchy", "quantified")
+
+**3. Key Skill Focus (25 points)**
+- Directs the AI to look for "Cloud Migration" specifically
+- Ignores irrelevant info
+
+**4. Constraint Handling (25 points)**
+- Uses negative constraints ("Output ONLY...", "No intro text")
+- Ensures clean output
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Prompt:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect prompting, strict constraints.
+- 75-89: Good - Clear request, maybe chatty output.
+- 60-74: Adequate - Basic summary request.
+- 40-59: Needs Work - Vague, misses the "Cloud Migration" focus.
+- 0-39: Poor - Unusable.
+
+Evaluate now.`
     },
     {
         id: 'game31',
@@ -1034,22 +2189,65 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Subject: Permission to close your file?\n\nHi Alex, I haven\'t heard back, so I assume you\'re not interested in the Head of Engineering role right now. I\'m going to close your file for this search so I don\'t keep bothering you. If things change, let me know. Best, [Name]',
-        promptGenerator: (submission) => `
-            You are a Sales Psychology Expert. A participant is writing a "break-up" email.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Is it truly a "take-away" (removing the offer)?
-            2. Is it polite but firm?
-            3. Is it short (under 50 words)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Use "Permission to close your file?" as a subject line - it has a high open rate.
-            2. Don't be passive-aggressive.
-            3. Leave the door slightly ajar ("If things change...").
-        `
+        promptGenerator: (submission) => `You are a Sales Psychology Expert. A participant is writing a "break-up" email.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## SCENARIO
+- 3rd attempt, no response
+- Goal: Close the loop / Trigger response via "Strip-line"
+
+## EVALUATION RUBRIC
+
+**1. "Take-Away" Technique (25 points)**
+- Clearly states "I'm closing your file" or "I assume you're not interested"
+- Removes the offer to chat
+
+**2. Politeness & Firmness (25 points)**
+- Professional, not passive-aggressive
+- Respects their decision to not reply
+
+**3. Brevity (25 points)**
+- Under 50 words
+- Scannable
+
+**4. Subject Line Strategy (25 points)**
+- Uses a high-open subject (e.g., "Permission to close file?", "Closing the loop")
+- Creates curiosity
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Email:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect execution of the strip-line.
+- 75-89: Good - Good message, maybe a bit soft.
+- 60-74: Adequate - Just a standard "checking in again".
+- 40-59: Needs Work - Guilt-tripping or rude.
+- 0-39: Poor - Unprofessional.
+
+Evaluate now.`
     },
     {
         id: 'game32',
@@ -1060,22 +2258,67 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'negotiation' as const,
         exampleSolution: 'I completely understand where you\'re coming from, and I appreciate you being open about your expectations. We arrived at $120k based on our internal equity and current market benchmarks for this specific level. However, I don\'t want money to be the only blocker if this is the right career move for you. Can we hop on a call to look at the total package (equity, benefits, bonus) and see if we can bridge the gap in other ways?',
-        promptGenerator: (submission) => `
-            You are a Negotiation Coach. A participant is handling a lowball objection.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they validate the candidate's feelings (Empathy)?
-            2. Did they anchor to data (Market/Internal Equity)?
-            3. Did they pivot to "Total Compensation" or a conversation?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Never say "No" immediately. Say "Let's look at the whole picture."
-            2. Use "Internal Equity" as a neutral reason.
-            3. Get them on the phone; don't negotiate numbers via email.
-        `
+        promptGenerator: (submission) => `You are a Negotiation Coach. A participant is handling a lowball objection.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## SCENARIO
+- Offer: $120k
+- Ask: $140k
+- Market: $125k
+- Goal: De-escalate, keep interested
+
+## EVALUATION RUBRIC
+
+**1. Empathy/Validation (30 points)**
+- Validates their feelings ("I understand", "Thanks for being open")
+- Does not get defensive
+
+**2. Data Anchoring (30 points)**
+- Uses "Internal Equity" or "Market Data" as the reason
+- Depersonalizes the "No"
+
+**3. Pivot to Total Comp (20 points)**
+- Shifts focus to Equity, Bonus, Benefits
+- Expands the pie
+
+**4. Tone (20 points)**
+- Collaborative ("Let's see what we can do")
+- Not a hard "Take it or leave it"
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Response:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Masterful de-escalation and pivot.
+- 75-89: Good - Good tone, explains the "Why".
+- 60-74: Adequate - Says "No" politely but offers no alternative.
+- 40-59: Needs Work - Defensive or dismissive.
+- 0-39: Poor - Hostile.
+
+Evaluate now.`
     },
     {
         id: 'game33',
@@ -1086,22 +2329,66 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Create a structured interview guide for a Growth Marketing Manager. I need 5 behavioral questions focusing on "Experimentation" (A/B testing) and "Data Analysis". For each question, provide a "Good Answer" vs. "Bad Answer" rubric to help me evaluate candidates. Tone: Professional and rigorous.',
-        promptGenerator: (submission) => `
-            You are an Interview Design Expert.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they ask for behavioral questions?
-            2. Did they request a rubric/evaluation guide (Crucial for structured interviewing)?
-            3. Did they specify the skills (Experimentation/Data)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Always ask AI for "Good vs Bad" answer examples.
-            2. Specify "Behavioral" or "Situational" questions.
-            3. Ask for follow-up probing questions.
-        `
+        promptGenerator: (submission) => `You are an Interview Design Expert. A participant is writing a prompt for interview questions.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## GOAL
+- 5 Behavioral Questions for Growth Marketing Manager
+- Focus: Experimentation & Data Analysis
+- Include Scoring Rubric
+
+## EVALUATION RUBRIC
+
+**1. Behavioral Question Focus (25 points)**
+- Asks for "Tell me about a time..." style questions
+- Avoids theoretical "How would you..." questions
+
+**2. Rubric Request (25 points)**
+- Explicitly asks for "Good Answer vs Bad Answer" examples
+- Essential for structured interviewing
+
+**3. Skill Specificity (25 points)**
+- Mentions "A/B Testing", "Experimentation", "Data"
+- Tailored to Growth Marketing
+
+**4. Follow-up Probes (25 points)**
+- Asks for probing questions to dig deeper
+- Ensures depth
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Prompt:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Comprehensive prompt, ensures high-quality output.
+- 75-89: Good - Asks for questions, maybe misses the rubric.
+- 60-74: Adequate - Basic "Give me interview questions".
+- 40-59: Needs Work - Vague or wrong role.
+- 0-39: Poor - Unusable.
+
+Evaluate now.`
     },
     {
         id: 'game34',
@@ -1112,22 +2399,66 @@ Evaluate now.`
         difficulty: 'easy' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Hey [Name], I know your inbox is probably exploding with recruiter spam, so I wanted to send a voice note to show there\'s a real human behind this profile. I saw your work on the [Project Name] repo and was genuinely impressed by your approach to concurrency. We\'re building something similar at [Company] and I\'d love to just geek out about it for 5 mins. No pitch, just engineering talk. Let me know.',
-        promptGenerator: (submission) => `
-            You are a Personal Branding Expert.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Does it sound conversational (not like a script)?
-            2. Is there a "pattern interrupt" (acknowledging the spam)?
-            3. Is the call to action low pressure?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Voice notes have 3x response rates. Use them!
-            2. Start with "I know you're busy..." or "I know this is random..."
-            3. Focus on "Human connection" over "Job pitch".
-        `
+        promptGenerator: (submission) => `You are a Personal Branding Expert. A participant is writing a LinkedIn voice note script.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## SCENARIO
+- Connection: Senior Java Engineer
+- Channel: LinkedIn Voice Note (30s)
+- Goal: Pattern Interrupt
+
+## EVALUATION RUBRIC
+
+**1. Conversational Tone (25 points)**
+- Sounds like a human, not a script
+- Uses "Um", "Just wanted to...", casual language
+
+**2. Pattern Interrupt (25 points)**
+- Acknowledges the "Recruiter Spam" or the "Randomness" of the voice note
+- Breaks the standard text pitch mold
+
+**3. Low Pressure CTA (25 points)**
+- "No pressure", "Just wanted to say hi"
+- Avoids "Can we get on a call?" hard sell
+
+**4. Length/Pacing (25 points)**
+- Under 80 words (fits in 30-45s)
+- Concise but warm
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Script:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Authentic, engaging, and perfect length.
+- 75-89: Good - Good script, maybe a bit "salesy".
+- 60-74: Adequate - Reads like a text message read aloud.
+- 40-59: Needs Work - Too long or too formal.
+- 0-39: Poor - Robot voice.
+
+Evaluate now.`
     },
     {
         id: 'game35',
@@ -1138,22 +2469,66 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'persona' as const,
         exampleSolution: 'Rewrite the following resume summary into a compelling, narrative-style executive bio suitable for presenting to a CEO. Highlight their leadership scale (team size), strategic impact (revenue growth), and technical vision. Tone: Impressive, confident, and executive. Keep it under 200 words.',
-        promptGenerator: (submission) => `
-            You are an Executive Search Researcher.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they ask for a "narrative" style?
-            2. Did they focus on "Strategic Impact" over tasks?
-            3. Is the audience defined (CEO)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. CEOs care about Revenue, Scale, and Speed.
-            2. Use words like "Visionary," "Transformational," "Proven."
-            3. Ask AI to "sell" the candidate.
-        `
+        promptGenerator: (submission) => `You are an Executive Search Researcher. A participant is writing a prompt to rewrite a resume summary.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## GOAL
+- Rewrite dry resume -> Compelling Executive Bio
+- Audience: CEO
+- Focus: Strategy & Scale
+
+## EVALUATION RUBRIC
+
+**1. Narrative Style (25 points)**
+- Asks for "Storytelling" or "Bio" format
+- Moves away from bullet points
+
+**2. Strategic Impact Focus (25 points)**
+- Highlights "Revenue", "Growth", "Transformation"
+- Downplays tactical tasks
+
+**3. Audience Awareness (25 points)**
+- Mentions "Presentation to CEO" or "Executive Summary"
+- Sets the appropriate tone (Confident, Polished)
+
+**4. "Selling" the Candidate (25 points)**
+- Asks the AI to be persuasive
+- Uses strong adjectives (Visionary, Proven)
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Prompt:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Perfect understanding of executive presence.
+- 75-89: Good - Good rewrite request, maybe misses the "CEO" angle.
+- 60-74: Adequate - Basic "rewrite this" request.
+- 40-59: Needs Work - Asks for more bullet points.
+- 0-39: Poor - Irrelevant.
+
+Evaluate now.`
     },
     {
         id: 'game36',
@@ -1164,22 +2539,67 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:kaggle.com/ (users OR "competitions") ("Computer Vision" OR CV OR "Image Processing") AND ("Grandmaster" OR "Master" OR "Expert" OR ranking) -site:kaggle.com/c -site:kaggle.com/code',
-        promptGenerator: (submission) => `
-            You are a Technical Sourcing Guru.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they target the right site (kaggle.com)?
-            2. Did they look for ranking keywords (Master, Grandmaster)?
-            3. Did they try to filter out competition pages?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Kaggle ranks are: Novice, Contributor, Expert, Master, Grandmaster. Use these!
-            2. Profiles often have "Competitions" and "Datasets" tabs.
-            3. Look for specific competition names if you know them.
-        `
+        promptGenerator: (submission) => `You are a Technical Sourcing Guru. A participant has written a Kaggle X-Ray search.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Site: Kaggle
+- Role: Machine Learning Engineer
+- Skill: Computer Vision
+- Goal: Find Top-tier profiles
+
+## EVALUATION RUBRIC
+
+**1. Site Targeting (25 points)**
+- Correct site:kaggle.com
+- Targets user profiles (not datasets/competitions)
+
+**2. Ranking Keywords (25 points)**
+- Uses "Grandmaster", "Master", "Expert"
+- Leverages Kaggle's specific hierarchy
+
+**3. Exclusion Logic (25 points)**
+- Excludes /c (competitions), /code, /discussion
+- Reduces noise
+
+**4. Skill Keywords (25 points)**
+- "Computer Vision", "CV", "Image Processing"
+- Relevant to the domain
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved X-Ray Search:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Pinpoint accuracy, leverages Kaggle rankings.
+- 75-89: Good - Finds profiles, maybe misses ranking terms.
+- 60-74: Adequate - Basic search, lots of noise.
+- 40-59: Needs Work - Wrong site or keywords.
+- 0-39: Poor - Broken search.
+
+Evaluate now.`
     },
     {
         id: 'game37',
@@ -1190,22 +2610,67 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:dribbble.com (minimalist OR clean OR "minimalism") AND ("UI Designer" OR "Product Designer") AND (location OR "hiring" OR "available") -site:dribbble.com/shots -site:dribbble.com/stories',
-        promptGenerator: (submission) => `
-            You are a Design Recruiting Specialist.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they target dribbble.com?
-            2. Did they include the aesthetic keywords (Minimalist/Clean)?
-            3. Did they exclude "shots" (individual images) to find profiles?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Dribbble profiles often have "Hire Me" buttons.
-            2. Search for "shots" if you want to see work, but "profiles" if you want people.
-            3. Use "site:behance.net" as an alternative.
-        `
+        promptGenerator: (submission) => `You are a Design Recruiting Specialist. A participant has written a Dribbble X-Ray search.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Site: Dribbble
+- Role: Senior UI Designer
+- Aesthetic: Minimalist / Clean
+- Goal: Find profiles
+
+## EVALUATION RUBRIC
+
+**1. Site Targeting (25 points)**
+- Correct site:dribbble.com
+- Targets profiles (not just shots)
+
+**2. Aesthetic Keywords (25 points)**
+- "Minimalist", "Clean", "Minimalism"
+- Captures the specific style requested
+
+**3. Exclusion Logic (25 points)**
+- Excludes /shots, /stories
+- Focuses on the "About" or "Profile" pages
+
+**4. Availability Signals (25 points)**
+- "Hire me", "Available", "Email"
+- Looks for contact info or status
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved X-Ray Search:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Finds exact aesthetic match and contact info.
+- 75-89: Good - Finds designers, maybe misses aesthetic nuance.
+- 60-74: Adequate - Basic search, lots of image results.
+- 40-59: Needs Work - Wrong site or keywords.
+- 0-39: Poor - Broken search.
+
+Evaluate now.`
     },
     // PHASE 2: Talent Intelligence & Strategy (Games 38-45)
     {
@@ -1295,22 +2760,66 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'screening' as const,
         exampleSolution: '1. "You\'ve had incredible impact in short stints. What specifically prompted your transition from Company A to Company B after only 9 months?" (Probes job hopping). 2. "Regarding the 500% growth - what was the starting revenue number, and what specific contribution was directly yours vs. the market trend?" (Probes attribution).',
-        promptGenerator: (submission) => `
-            You are an Executive Recruiter.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they ask about the transitions (Job hopping)?
-            2. Did they ask for the "Baseline" of the metrics (500% of what?)?
-            3. Is the tone curious, not accusatory?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Short stints at executive levels are a major risk. Dig deep.
-            2. "We" vs "I" - ask what *they* did specifically.
-            3. Ask for the "Why" behind every move.
-        `
+        promptGenerator: (submission) => `You are an Executive Recruiter. A participant has proposed probing questions for a phone screen.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## SCENARIO
+- Role: VP of Sales
+- Red Flags: 4 jobs in 3 years; high-impact claims (500% revenue, team of 50)
+- Goal: Write 2 probing questions to validate claims and address job hopping.
+
+## EVALUATION RUBRIC
+
+**1. Addresses Job Hopping (25 points)**
+- Does at least one question directly or indirectly probe the frequent job changes?
+- Seeks to understand the "why" behind the transitions.
+
+**2. Validates Impact Claims (25 points)**
+- Does at least one question seek to verify the magnitude or personal contribution to the stated achievements (e.g., 500% revenue growth)?
+- Asks for context or specifics to avoid inflated claims.
+
+**3. Open-Ended & Non-Leading (25 points)**
+- Are the questions designed to elicit detailed responses rather than simple yes/no answers?
+- Avoids accusatory language, maintaining a professional and curious tone.
+
+**4. Strategic & Insightful (25 points)**
+- Do the questions go beyond surface-level inquiries to uncover deeper motivations or underlying issues?
+- Are they designed to reveal potential risks or inconsistencies?
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Probing Questions:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Strategic, open-ended questions that effectively probe both job hopping and impact claims.
+- 75-89: Good - Questions address both areas but might be slightly less nuanced or direct.
+- 60-74: Adequate - Questions are too generic or only address one of the red flags effectively.
+- 40-59: Needs Work - Questions are leading, accusatory, or fail to address the core issues.
+- 0-39: Poor - Irrelevant questions or unprofessional approach.
+
+Evaluate now.`
     },
     {
         id: 'game42',
@@ -1321,22 +2830,66 @@ Evaluate now.`
         difficulty: 'easy' as const,
         skillCategory: 'job-description' as const,
         exampleSolution: 'Stop scrolling! 🛑 Do you spend more time on TikTok than you sleep? We need a Social Media Manager for [Brand] who actually gets it. You\'ll own our entire content calendar, work with top creators, and yes - you can work from your couch. 🛋️ No degree required, just show us your best viral video. Link in bio to apply! 🚀',
-        promptGenerator: (submission) => `
-            You are a Social Media Recruiter.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Is the hook strong (first 3 seconds)?
-            2. Is the tone right for Gen Z (Authentic, not corporate)?
-            3. Is there a clear Call to Action (Link in bio)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Don't say "We are looking for..." - say "You will..."
-            2. Focus on the "Vibe" and "Perks" (Remote, Creative freedom).
-            3. Keep it under 60 words for a 30s video.
-        `
+        promptGenerator: (submission) => `You are a Social Media Recruiter. A participant has written a video job description script.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Role: Gen Z Social Media Manager
+- Platform: TikTok/Reels (30-second video)
+- Tone: High-energy, authentic
+
+## EVALUATION RUBRIC
+
+**1. Strong Hook (25 points)**
+- Captures attention within the first 3-5 seconds.
+- Uses language or a call-out relevant to the target audience (Gen Z).
+
+**2. Authentic & Engaging Tone (25 points)**
+- Sounds natural and conversational, not corporate jargon.
+- Resonates with Gen Z's communication style and values.
+
+**3. Clear Role & Value Proposition (25 points)**
+- Briefly explains what the role entails and why it's appealing (e.g., impact, perks, flexibility).
+- Highlights aspects important to Gen Z (e.g., creativity, work-life balance, purpose).
+
+**4. Clear Call to Action (25 points)**
+- Explicitly tells viewers what to do next (e.g., "Link in bio," "Apply now").
+- Makes the application process easy and clear.
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Video Script:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Viral potential, perfectly tailored to Gen Z, clear and compelling.
+- 75-89: Good - Strong script, but might miss a nuance in tone or call to action.
+- 60-74: Adequate - Gets the message across, but lacks the "spark" for TikTok/Reels.
+- 40-59: Needs Work - Sounds too corporate or fails to engage the target audience.
+- 0-39: Poor - Irrelevant or completely misses the platform/audience.
+
+Evaluate now.`
     },
     {
         id: 'game43',
@@ -1347,22 +2900,65 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '(filetype:pdf OR filetype:doc OR filetype:docx) "Data Scientist" AND (Python OR R) AND ("machine learning" OR ML) AND (resume OR cv OR vitae) -job -sample -template',
-        promptGenerator: (submission) => `
-            You are a Google Search Hacker.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they use the filetype: operator?
-            2. Did they include keywords for "Resume" (CV, Vitae)?
-            3. Did they exclude templates/samples (-sample)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. University sites often host these. Add "site:.edu" for US schools.
-            2. People name files "firstname_lastname_resume.pdf" - try "intitle:resume".
-            3. Exclude "job description" to avoid false positives.
-        `
+        promptGenerator: (submission) => `You are a Google Search Hacker. A participant has written a Google Boolean string to find resumes.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Goal: Find publicly hosted resumes of "Data Scientists" on university websites.
+- File Types: PDF or Word docs.
+
+## EVALUATION RUBRIC
+
+**1. Filetype Operator Usage (25 points)**
+- Correctly uses "filetype:" operator for PDF, DOC, DOCX.
+- Includes multiple relevant file types.
+
+**2. Resume/CV Keywords (25 points)**
+- Includes terms like "resume", "CV", "curriculum vitae", or "vitae".
+- Ensures the search targets actual resumes, not just documents.
+
+**3. Role & Skill Keywords (25 points)**
+- Includes "Data Scientist" and relevant skills (e.g., Python, R, ML, "machine learning").
+- Balances specificity with breadth to capture relevant profiles.
+
+**4. Exclusion Logic (25 points)**
+- Uses negative keywords ("-") to exclude irrelevant results (e.g., -job, -sample, -template, -description).
+- Focuses the search on actual candidate documents.
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Boolean String:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Comprehensive, precise, and highly effective Boolean string.
+- 75-89: Good - Strong string, but might miss a few key operators or exclusions.
+- 60-74: Adequate - Basic search, likely to return some relevant results but also noise.
+- 40-59: Needs Work - Missing critical operators or includes too much noise.
+- 0-39: Poor - Broken or irrelevant search string.
+
+Evaluate now.`
     },
     {
         id: 'game44',
@@ -1373,22 +2969,64 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Past Company: Airbnb\nCurrent Company: NOT Airbnb\nYears of Experience: 5+ (Targeting seniors)\nKeywords: "Software Engineer" OR "Product Manager"\nInMail Strategy: "Miss you!"',
-        promptGenerator: (submission) => `
-            You are a LinkedIn Power User.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they set Past Company correctly?
-            2. Did they EXCLUDE the Current Company (Crucial!)?
-            3. Is the logic sound?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Boomerangs have 2x retention rates.
-            2. If you don't exclude Current Company, you'll just find current employees.
-            3. Look for people who left 2+ years ago (vesting cliffs).
-        `
+        promptGenerator: (submission) => `You are a LinkedIn Power User. A participant has outlined LinkedIn Recruiter filters for finding "Boomerang" employees.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Goal: Find "Boomerang" employees (past employees who left and might return).
+- Platform: LinkedIn Recruiter
+- Example Company: "Airbnb"
+
+## EVALUATION RUBRIC
+
+**1. Past Company Filter (25 points)**
+- Correctly identifies and uses the "Past Company" filter for the target company.
+- Ensures accuracy in company name.
+
+**2. Current Company Exclusion (25 points)**
+- Crucially excludes the target company from "Current Company" to avoid current employees.
+- Demonstrates understanding of how to filter out active staff.
+
+**3. Relevant Keywords/Skills (25 points)**
+- Includes appropriate keywords or skills for the desired roles (e.g., "Software Engineer", "Product Manager").
+- Balances broadness with specificity.
+
+**4. Strategic Additional Filters (25 points)**
+- Incorporates other relevant filters like "Years of Experience", "Location", or "Seniority Level".
+- Shows a thoughtful approach to narrowing down the candidate pool.
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved LinkedIn Filters:**
+[Provide optimized LinkedIn Recruiter filters]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Precise, comprehensive, and strategically uses LinkedIn Recruiter filters for boomerangs.
+- 75-89: Good - Effectively uses core filters, but might miss some advanced refinements.
+- 60-74: Adequate - Identifies past employees, but might include current staff or too broad a search.
+- 40-59: Needs Work - Fails to correctly exclude current employees or uses irrelevant filters.
+- 0-39: Poor - Irrelevant or broken filter strategy.
+
+Evaluate now.`
     },
     {
         id: 'game45',
@@ -1399,22 +3037,63 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'ats' as const,
         exampleSolution: '1. Match by Email Address (Unique Identifier): Run a script to group profiles with the exact same email. 2. Match by Name + Phone: For those with different emails, look for exact name AND phone matches. 3. Merge Rule: Always keep the "Most Recently Updated" profile as the master, but append notes/attachments from the older profile. Archive the old one.',
-        promptGenerator: (submission) => `
-            You are an Ops Manager.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they identify a Unique Identifier (Email)?
-            2. Did they have a secondary check (Phone/Name)?
-            3. Did they define a "Master" record rule (Recency)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Never delete; always Merge or Archive.
-            2. Email is the gold standard for uniqueness.
-            3. Be careful with common names (John Smith).
-        `
+        promptGenerator: (submission) => `You are an ATS Administrator. A participant has proposed a 3-step process for merging duplicate profiles in an ATS.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Goal: Identify and merge 3,000 duplicate ATS profiles safely.
+- Task: Describe a 3-step process without losing data.
+
+## EVALUATION RUBRIC
+
+**1. Primary Unique Identifier (25 points)**
+- Identifies a reliable primary unique identifier (e.g., email address) for initial matching.
+- Recognizes its importance for high-confidence matches.
+
+**2. Secondary Matching Criteria (25 points)**
+- Proposes secondary criteria for matching when the primary identifier is insufficient or missing (e.g., Name + Phone, Name + Date of Birth).
+- Addresses the complexity of real-world data.
+
+**3. Data Preservation & Master Record Rule (25 points)**
+- Clearly defines a rule for which record becomes the "master" (e.g., most recently updated, most complete).
+- Explains how to consolidate or preserve data from the non-master records (e.g., append notes, archive).
+
+**4. Safety & Scalability (25 points)**
+- Considers the safety of the process (e.g., avoiding accidental data loss).
+- Implies a method that can handle a large volume of duplicates (e.g., "run a script").
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Duplicate Merging Process:**
+[Provide an optimized 3-step process]
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Robust, data-safe, scalable, and clearly defined process.
+- 75-89: Good - Solid process, but might lack some detail on edge cases or data preservation.
+- 60-74: Adequate - Basic matching, but risks data loss or is not scalable.
+- 40-59: Needs Work - Incomplete process or relies on unreliable matching.
+- 0-39: Poor - Irrelevant or harmful suggestions.
+
+Evaluate now.`
     },
     // PHASE 3: The Closer & Strategy (Games 46-52)
     {
@@ -1426,22 +3105,66 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'negotiation' as const,
         exampleSolution: 'It\'s completely normal to feel torn—that counter-offer is a sign they value you. But let\'s go back to our first conversation. You mentioned you were feeling stagnant and wanted to move into AI-driven products, which your current role can\'t offer. Does a $20k raise solve that stagnation? Or does it just make the golden handcuffs tighter? I want you to make the best decision for your *career*, not just your wallet.',
-        promptGenerator: (submission) => `
-            You are a Career Coach.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they acknowledge the compliment (The raise)?
-            2. Did they pivot back to the "Pain" (Why they looked)?
-            3. Did they avoid being pushy/salesy?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Counter-offers rarely fix the root problem. Remind them of that.
-            2. Use "Future Pacing" - "In 6 months, will you be happy?"
-            3. Be willing to walk away. It builds trust.
-        `
+        promptGenerator: (submission) => `You are a Closing Expert. A participant is conducting a pre-close call.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## GOAL
+- Uncover objections before the offer
+- Confirm timeline and decision makers
+- "Trial Close"
+
+## EVALUATION RUBRIC
+
+**1. Trial Close Questions (25 points)**
+- "If we offered X today, would you accept?"
+- "On a scale of 1-10, where are we?"
+
+**2. Objection Discovery (25 points)**
+- Asks "What would stop you from joining?"
+- Probes for hidden concerns (Spouse, Commute, Brand)
+
+**3. Decision Maker Mapping (25 points)**
+- "Who else are you consulting with?"
+- "Does your partner have any concerns?"
+
+**4. Timeline Control (25 points)**
+- Confirms start dates and notice periods
+- Aligns expectations
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Script:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Masterful discovery, leaves no stone unturned.
+- 75-89: Good - Asks good questions, maybe misses the spouse factor.
+- 60-74: Adequate - Basic "Are you interested?" check.
+- 40-59: Needs Work - Too passive.
+- 0-39: Poor - Pushes too hard without listening.
+
+Evaluate now.`
     },
     {
         id: 'game47',
@@ -1452,48 +3175,190 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'negotiation' as const,
         exampleSolution: 'Think of the cash ($160k) as your rent and bills money—it\'s guaranteed. But the equity is your wealth-building money. If we hit our growth targets and the stock price doubles over 4 years, that equity grant isn\'t just a bonus; it could be worth more than your salary. You\'re not just an employee here; you\'re an owner. You get to benefit from the value you help create.',
-        promptGenerator: (submission) => `
-            You are a Startup Advisor.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they use an analogy (Rent vs Wealth)?
-            2. Did they explain the "Upside" potential?
-            3. Did they use the word "Owner"?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Non-tech people fear risk. Frame equity as "Ownership," not "Gambling."
-            2. Show the math: "If we grow 2x, this is worth $X."
-            3. Don't overpromise - say "potential."
-        `
+        promptGenerator: (submission) => `You are a Startup Advisor. A participant is explaining the value of equity to a candidate.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## SCENARIO
+- Candidate: Non-tech background, risk-averse
+- Offer: Lower cash, high equity
+- Goal: Explain the "Upside" simply
+
+## EVALUATION RUBRIC
+
+**1. Analogy Usage (25 points)**
+- Uses a clear analogy (e.g., "Rent vs Wealth", "Owning the house")
+- Makes the abstract concept concrete
+
+**2. Upside Explanation (25 points)**
+- Explains the math simply (e.g., "If we grow 2x...")
+- Shows the potential value over 4 years
+
+**3. Ownership Mindset (25 points)**
+- Uses words like "Owner", "Partner", "Shareholder"
+- Shifts the frame from "Employee" to "Owner"
+
+**4. Simplicity (25 points)**
+- Avoids jargon like "Strike price", "Vesting cliff" (unless explained)
+- Easy to understand for a non-tech person
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Explanation:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Crystal clear analogy, exciting upside explanation.
+- 75-89: Good - Good explanation, maybe a bit technical.
+- 60-74: Adequate - "It's stock options."
+- 40-59: Needs Work - Confusing or too risky sounding.
+- 0-39: Poor - Scares the candidate away.
+
+Evaluate now.`
+
     },
     {
         id: 'game48',
         title: 'Game 48: The Culture Add',
-        description: 'You are interviewing a candidate who is very different from your current team (introverted, different background). The team says "not a culture fit." You think they are a "Culture Add."',
-        task: 'Your task: Write a note to the Hiring Manager explaining why "Culture Fit" is dangerous and why this candidate adds value.',
+        description:
+            'You are interviewing a candidate who is very different from your current team (introverted, different background). The team says "not a culture fit." You think they are a "Culture Add."',
+        task:
+            'Your task: Write a note to the Hiring Manager explaining why "Culture Fit" is dangerous and why this candidate adds value.',
         placeholder: 'e.g., I noticed the team feedback...',
         difficulty: 'hard' as const,
         skillCategory: 'screening' as const,
-        exampleSolution: 'I noticed the feedback on "culture fit," but I want to challenge us to look for "Culture Add" instead. "Fit" often just means "more of the same," which leads to groupthink. This candidate brings a rigorous, thoughtful approach that balances our team\'s high-energy, rapid-fire style. We need that diversity of thought to avoid blind spots. If they can do the job and share our values, their different personality is an asset, not a risk.',
-        promptGenerator: (submission) => `
-            You are a DE&I Leader.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they distinguish "Fit" (Sameness) vs "Add" (New perspective)?
-            2. Did they mention the business risk of "Groupthink"?
-            3. Did they advocate for the candidate's specific strength?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. "Culture Fit" is often unconscious bias. Call it out gently.
-            2. Focus on "Values Alignment" instead of personality.
-            3. Use business logic: Diverse teams build better products.
-        `
+        exampleSolution:
+            'I noticed the feedback on "culture fit," but I want to challenge us to look for "Culture Add" instead. "Fit" often just means "more of the same," which leads to groupthink. This candidate brings a rigorous, thoughtful approach that balances our team\'s high-energy, rapid-fire style. We need that diversity of thought to avoid blind spots. If they can do the job and share our values, their different personality is an asset, not a risk.',
+        promptGenerator: (submission: string) => `
+You are a DE & I Leader evaluating a recruiter's written note to a Hiring Manager.
+This is a HARD difficulty challenge.Be STRICT and RIGOROUS in your evaluation.
+
+IMPORTANT CONSTRAINTS:
+- You must evaluate the EXACT text in the submission.
+- Do NOT assume or invent arguments, examples, or phrases that are not explicitly written.
+- If a concept is not clearly present in the submission, score that criterion as 0.
+    - Keep your reasoning grounded in the candidate's actual words.
+
+SUBMISSION:
+"""${submission}"""
+
+STEP 1 – WORD COUNT
+First, estimate the word count of the submission.
+
+    STEP 2 – RAW CRITERIA SCORING(0–25 each, before deductions)
+Use this SCORING GUIDE as a baseline(before automatic deductions):
+
+- 0–25 total: Vague statements, missing most criteria, or < 30 words
+    - 26–50 total: Touches on 1–2 criteria but lacks depth or specifics
+        - 51–70 total: Addresses 3 criteria with some detail, but missing key elements
+            - 71–85 total: Addresses all 4 criteria with good detail and examples
+                - 86–100 total: Exceptional response with all criteria, specific examples, and compelling business case
+
+REQUIRED CRITERIA(Each worth 0–25 RAW points):
+
+1. DISTINCTION(0–25):
+- Did they clearly distinguish "Culture Fit"(sameness / homogeneity) from "Culture Add"(diversity of thought / new perspectives) ?
+    - Simply saying "culture fit is dangerous" is NOT enough; they must EXPLAIN why.
+   - Score 0 if this distinction is not clearly made in the text.
+
+2. BUSINESS RISK(0–25):
+- Did they explicitly mention business risks like "groupthink", "blind spots", "echo chamber", or "lack of diverse perspectives" ?
+    - Generic or vague statements like "it’s bad for the business" WITHOUT clear explanation should score low.
+   - Score 0 if no real business risk is described.
+
+3. SPECIFIC STRENGTH(0–25):
+- Did they identify a SPECIFIC strength this candidate brings(e.g., "analytical approach", "different problem-solving style", "unique industry experience", "calmer and more structured communication") ?
+    - Generic statements like "they add value" or "they are good" = 0.
+        - Score 0 if no concrete candidate strength is identified.
+
+4. BUSINESS BENEFIT(0–25):
+- Did they tie the candidate's difference to a CONCRETE business outcome (e.g., "better risk assessment", "more innovative solutions", "reaching diverse customers", "avoiding blind spots", "improved decision-making")?
+    - Score 0 if there is no clear link from the candidate’s difference to business impact.
+
+        STEP 3 – AUTOMATIC DEDUCTIONS & CAPS
+
+Apply these AUTOMATIC RULES after calculating the raw total(sum of the 4 criteria):
+
+- If wordCount < 30:
+- maxScoreByLength = 40(cap the final score at 40)
+    - ELSE IF wordCount < 50:
+- maxScoreByLength = 60
+    - ELSE:
+- maxScoreByLength = 100
+
+    - If the submission contains NO specific examples or concrete details(e.g., strengths, situations, outcomes are all generic):
+- noSpecificExamplesPenalty = -20
+    - Otherwise:
+- noSpecificExamplesPenalty = 0
+
+    - If the submission is purely theoretical(talks about diversity or culture in abstract terms, but gives no actionable note to the Hiring Manager):
+- theoreticalOnlyPenalty = -15
+    - Otherwise:
+- theoreticalOnlyPenalty = 0
+
+STEP 4 – FINAL SCORE CALCULATION
+
+1. rawTotal = distinction + businessRisk + specificStrength + businessBenefit
+2. adjustedScore = rawTotal + noSpecificExamplesPenalty + theoreticalOnlyPenalty
+3. cappedScore = min(adjustedScore, maxScoreByLength)
+4. finalScore = clamp cappedScore to the 0–100 range(not below 0, not above 100)
+
+STEP 5 – FEEDBACK
+
+Provide SHORT, focused feedback:
+- 1–2 sentences summarizing overall quality
+    - 2–3 bullet - style points: what they did well
+        - 2–3 bullet - style points: what to improve next time
+
+OUTPUT FORMAT(VERY IMPORTANT):
+Return ONLY a valid JSON object with this exact structure and no extra commentary:
+
+{
+    "wordCount": number,
+        "criteria": {
+        "distinction": number,
+            "businessRisk": number,
+                "specificStrength": number,
+                    "businessBenefit": number
+    },
+    "autoAdjustments": {
+        "maxScoreByLength": number,
+            "noSpecificExamplesPenalty": number,
+                "theoreticalOnlyPenalty": number
+    },
+    "rawTotal": number,
+        "finalScore": number,
+            "feedback": {
+        "summary": string,
+            "strengths": string[],
+                "improvements": string[]
+    }
+}
+
+Remember:
+- Do NOT invent arguments or details that are not in the submission.
+- If the submission is extremely short or generic, most criteria should be close to 0.
+`
     },
     {
         id: 'game49',
@@ -1504,22 +3369,67 @@ Evaluate now.`
         difficulty: 'medium' as const,
         skillCategory: 'talent-intelligence' as const,
         exampleSolution: 'While SF and London have top talent, they are the most competitive and expensive markets in the world. I recommend looking at Poland or Brazil. Both have massive supplies of high-quality Data Engineers (strong STEM education) at 40-60% of the cost. Plus, retention rates in these emerging hubs are significantly higher because we can be a top-tier employer there, rather than just another startup in SF.',
-        promptGenerator: (submission) => `
-            You are a Global Talent Strategist.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they mention Cost/Competition?
-            2. Did they mention Quality/Supply (STEM education)?
-            3. Did they mention Retention (Big fish in small pond)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. Data speaks louder than opinions.
-            2. "Follow the sun" support is another benefit of global hubs.
-            3. Mention specific success stories (e.g., "Google hires in Warsaw").
-        `
+        promptGenerator: (submission) => `You are a Global Talent Strategist.A participant has proposed an alternative location for a new engineering hub.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## SCENARIO
+    - Role: Data Engineers
+        - CTO's Suggestion: San Francisco or London
+            - Participant's Suggestion: Poland or Brazil
+                - Goal: Write a brief pitch(3 - 4 sentences) for the alternative location.
+
+## EVALUATION RUBRIC
+
+    ** 1. Addresses Cost / Competition(25 points) **
+        - Explicitly contrasts the cost or competitive landscape of the proposed alternative vs.the CTO's suggestions.
+            - Highlights the financial or talent acquisition advantages.
+
+** 2. Talent Supply & Quality(25 points) **
+    - Mentions the availability and quality of talent in the alternative location(e.g., strong STEM education, large talent pool).
+- Provides a compelling reason for talent density.
+
+** 3. Retention / Employer Branding(25 points) **
+        - Discusses potential benefits for retention or employer branding in the alternative location(e.g., being a top - tier employer, less churn).
+- Focuses on long - term talent strategy.
+
+** 4. Conciseness & Persuasiveness(25 points) **
+    - Delivers the pitch effectively within the specified length(3 - 4 sentences).
+- The argument is clear, logical, and persuasive to a CTO.
+
+** Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+    ** Analysis:**
+        [Analyze the submission against the rubric]
+
+        ** SCORE: [X] **
+
+** Strengths:**
+- [List specific strengths]
+
+    ** Areas for Improvement:**
+        1.[Specific tip]
+2.[Specific tip]
+
+** Improved Location Pitch:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Concise, data-driven, and highly persuasive pitch covering all key strategic points.
+- 75-89: Good - Strong pitch, but might miss one strategic element or be slightly less concise.
+- 60-74: Adequate - Identifies a good alternative but lacks depth in reasoning or persuasiveness.
+- 40-59: Needs Work - Fails to make a compelling case or misses key comparative points.
+- 0-39: Poor - Irrelevant or unconvincing pitch.
+
+Evaluate now.`
     },
     {
         id: 'game50',
@@ -1530,22 +3440,65 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'You are a Boolean Search Generator. Your ONLY purpose is to output valid Boolean search strings. Rules: 1. Receive a job description or list of skills. 2. Output a Boolean string inside a code block. 3. Do NOT explain the string. 4. Do NOT say "Here is your string." 5. Use standard operators (AND, OR, NOT). 6. If the user input is vague, ask ONE clarifying question. Otherwise, just generate.',
-        promptGenerator: (submission) => `
-            You are an AI Developer.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did they define the Persona (Boolean Generator)?
-            2. Did they set negative constraints (Do NOT explain)?
-            3. Did they handle edge cases (Vague input)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. The more constraints, the better the bot.
-            2. "Output ONLY" is the most important command.
-            3. Instruct it on how to handle errors.
-        `
+        promptGenerator: (submission) => `You are an AI Developer. A participant has written a system prompt for a Sourcing Bot.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Goal: Create a custom GPT that ONLY generates Boolean strings.
+- Task: Write the system instructions.
+
+## EVALUATION RUBRIC
+
+**1. Clear Persona & Core Function (25 points)**
+- Clearly defines the AI's role (e.g., "Boolean Search Generator").
+- States its *sole* purpose (e.g., "ONLY output valid Boolean search strings").
+
+**2. Negative Constraints (25 points)**
+- Explicitly instructs the AI *what not to do* (e.g., "Do NOT explain," "Do NOT say 'Here is your string'").
+- Prevents unwanted conversational filler or explanations.
+
+**3. Input Handling & Output Format (25 points)**
+- Specifies how the AI should receive input (e.g., "Receive a job description or list of skills").
+- Defines the exact output format (e.g., "Output a Boolean string inside a code block").
+
+**4. Edge Case Handling (25 points)**
+- Provides instructions for ambiguous or vague user input (e.g., "If the user input is vague, ask ONE clarifying question").
+- Ensures robustness and user-friendliness.
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved System Prompt:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Precise, comprehensive, and robust system prompt that effectively controls AI behavior.
+- 75-89: Good - Strong prompt, but might miss some negative constraints or edge case handling.
+- 60-74: Adequate - Defines the core function but allows for too much conversational filler.
+- 40-59: Needs Work - Vague instructions, leading to unpredictable AI behavior.
+- 0-39: Poor - Irrelevant or harmful instructions.
+
+Evaluate now.`
     },
     {
         id: 'game51',
@@ -1556,22 +3509,66 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: 'Boolean: (Rust OR RustLang) AND (Cryptography OR Crypto OR "Zero Knowledge" OR ZK) AND (Japanese OR "JLPT" OR "Japanese speaker"). Platform: GitHub (search for Rust crypto repos), LinkedIn (filter by Language: Japanese), and Rust Community Discords. Outreach Angle: "Your unique blend of Rust + Crypto + Japanese is exactly what we need for our Tokyo-Zurich bridge team. We offer full relocation support to Switzerland."',
-        promptGenerator: (submission) => `
-            You are a Master Sourcer.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Did the Boolean cover all 3 niche skills?
-            2. Did they pick the right platforms (GitHub/Discord)?
-            3. Was the outreach hyper-personalized to the "Purple Squirrel" nature?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. For impossible roles, look for the "Intersection" of communities.
-            2. Relocation is a huge selling point - lead with it.
-            3. Don\'t rely on just one channel.
-        `
+        promptGenerator: (submission) => `You are a Master Sourcer. A participant has designed a "Purple Squirrel" sourcing strategy.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## REQUIREMENTS
+- Role: Rust Engineer + Cryptography + Japanese Speaker
+- Location: Relocate to Switzerland
+- Strategy: Boolean + Platform + Outreach
+
+## EVALUATION RUBRIC
+
+**1. Boolean Precision (30 points)**
+- Covers all 3 niche skills: (Rust) AND (Crypto/ZK) AND (Japanese)
+- Uses correct syntax for the chosen platform
+
+**2. Platform Selection (25 points)**
+- Targets where these people hang out (GitHub, Rust Discords, specialized forums)
+- Doesn't just rely on LinkedIn
+
+**3. Outreach Personalization (25 points)**
+- Acknowledges the rarity of their profile ("Unicorn", "Perfect match")
+- Connects the dots between their skills and the role
+
+**4. Relocation Hook (20 points)**
+- Leads with the "Switzerland" lifestyle/support
+- Makes the move sound exciting, not daunting
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Strategy:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Finds the needle in the haystack, perfect pitch.
+- 75-89: Good - Good search, maybe generic outreach.
+- 60-74: Adequate - Basic LinkedIn search.
+- 40-59: Needs Work - Misses one of the key skills (e.g., Japanese).
+- 0-39: Poor - Irrelevant.
+
+Evaluate now.`
     },
     {
         id: 'game52',
@@ -1582,21 +3579,65 @@ Evaluate now.`
         difficulty: 'hard' as const,
         skillCategory: 'talent-intelligence' as const,
         exampleSolution: 'Tools: Use free LinkedIn (optimize network), GitHub X-Ray (free), and a simple Trello/Notion board as an ATS. Process: Implement "Founder Sourcing" blocks (Founder sends 10 emails/week). Set up a generous Employee Referral Program (cash bonus). Brand: Write 1 high-quality engineering blog post per month to drive inbound. Focus on "High Touch" candidate experience to win against big tech.',
-        promptGenerator: (submission) => `
-            You are a VC Talent Partner.
-            Submission: "${submission}"
-            
-            Evaluate:
-            1. Was the tool stack truly free/low-cost?
-            2. Did they leverage the Founders (Best free resource)?
-            3. Did they focus on Referrals (Highest ROI)?
-            
-            SCORE: [number]
-            
-            Tips:
-            1. At Series A, the Founder is your best recruiter. Use them.
-            2. Referrals are the lifeblood of early-stage hiring.
-            3. You don't need a $20k LinkedIn license to hire great people.
-        `
+        promptGenerator: (submission) => `You are a VC Talent Partner. A participant has outlined a "Guerrilla Recruiting" strategy.
+
+## CANDIDATE SUBMISSION
+"${submission}"
+
+## SCENARIO
+- Budget: $0
+- Goal: Hire 20 Engineers in 6 months
+- Strategy: Tools, Process, Brand
+
+## EVALUATION RUBRIC
+
+**1. Zero-Budget Tools (25 points)**
+- Suggests free tools (Free LinkedIn, GitHub X-Ray, Trello/Notion ATS)
+- Avoids paid licenses
+
+**2. Founder Involvement (25 points)**
+- Leverages the Founder for sourcing/closing (High ROI)
+- "Founder Sourcing Blocks"
+
+**3. Referral Strategy (25 points)**
+- Incentivizes the team (Cash bonuses, dinners)
+- Makes referrals the #1 source
+
+**4. Brand/Inbound (25 points)**
+- Content marketing (Engineering Blog)
+- "High Touch" candidate experience as a differentiator
+
+**Total: /100 points**
+
+## REQUIRED OUTPUT FORMAT
+
+**Analysis:**
+[Analyze the submission against the rubric]
+
+**SCORE: [X]**
+
+**Strengths:**
+- [List specific strengths]
+
+**Areas for Improvement:**
+1. [Specific tip]
+2. [Specific tip]
+
+**Improved Strategy:**
+\`\`\`
+[Optimized version]
+\`\`\`
+
+**Why This Works Better:**
+[Explanation]
+
+## SCORING GUIDELINES
+- 90-100: Excellent - Creative, scrappy, and highly effective.
+- 75-89: Good - Good ideas, maybe relies too much on one channel.
+- 60-74: Adequate - Basic "Post on job boards".
+- 40-59: Needs Work - Suggests paid tools.
+- 0-39: Poor - Unrealistic.
+
+Evaluate now.`
     }
 ];

@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { games } from './_lib/data/games.js';
 import { Attempt, Player } from '../types.js';
 import { checkNewAchievements } from './_lib/data/achievements.js';
+import { rubricByDifficulty } from '../utils/rubrics.js';
 
 const GEMINI_MAX_OUTPUT_TOKENS = 120;
 const GEMINI_PROMPT_CHAR_LIMIT = 2800;
@@ -131,10 +132,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { sessionToken, gameId, submission } = (req.body ?? {}) as {
+    const { sessionToken, gameId, submission, validation } = (req.body ?? {}) as {
       sessionToken?: string;
       gameId?: string;
       submission?: string;
+      validation?: any; // ValidationResult
     };
 
     if (!sessionToken || typeof sessionToken !== 'string') {
@@ -229,8 +231,31 @@ Example Response:
 
 Do not include any text outside the JSON object. Do not use markdown code blocks. Respond with valid JSON only.`;
 
-    const promptBase = override?.prompt_template || game.promptGenerator(submission);
-    const prompt = `${promptBase}\n\n${systemInstruction}`;
+    const promptBase = override?.prompt_template || game.promptGenerator(submission, validation);
+
+    // Append validation context if available
+    let validationContext = '';
+    if (validation) {
+      validationContext = `
+## AUTOMATED VALIDATION RESULTS
+The system ran some basic checks on this submission:
+- Automated Score: ${validation.score}/100
+- Automated Feedback: ${validation.feedback.length > 0 ? validation.feedback.join('; ') : 'No issues found.'}
+- Checks Passed: ${JSON.stringify(validation.checks)}
+
+Please take these automated checks into account. If the automated score is low, your final score should reflect that.
+`;
+    }
+
+    // Append generic rubric context
+    const genericRubric = rubricByDifficulty[game.difficulty];
+    const rubricContext = `
+## GENERAL SCORING GUIDELINES (${game.difficulty.toUpperCase()} DIFFICULTY)
+In addition to the specific game requirements, evaluate based on these general criteria:
+${genericRubric.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n')}
+`;
+
+    const prompt = `${promptBase}${validationContext}${rubricContext}\n\n${systemInstruction}`;
     const trimmedPrompt = prompt.slice(0, GEMINI_PROMPT_CHAR_LIMIT + 500); // Allow extra for our instruction
 
     // Use the Gemini SDK
@@ -264,7 +289,22 @@ Do not include any text outside the JSON object. Do not use markdown code blocks
     } catch (parseError: any) {
       console.error('Failed to parse AI response:', parseError?.message);
       console.error('Raw AI response text:', responseText);
-      return sendError(res, 500, 'invalid_model_json', 'AI feedback was not returned in the expected format. Please try again.');
+
+      // Fallback to automated validation if available
+      if (validation) {
+        console.warn('Using fallback validation score due to AI parsing error');
+        score = validation.score;
+        feedbackText = `
+<p><strong>AI Feedback Unavailable</strong></p>
+<p>We couldn't get a detailed analysis from the AI coach right now, but here is your automated evaluation:</p>
+<ul>
+    <li><strong>Automated Score:</strong> ${validation.score}/100</li>
+    <li><strong>Issues Found:</strong> ${validation.feedback.length > 0 ? validation.feedback.join('; ') : 'None'}</li>
+</ul>
+<p><em>Please try again later for full AI coaching.</em></p>`;
+      } else {
+        return sendError(res, 500, 'invalid_model_json', 'AI feedback was not returned in the expected format. Please try again.');
+      }
     }
 
     // Enhance feedback for high scores (85%+)

@@ -22,6 +22,14 @@ export interface ChatMessage {
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+
+export interface ValidationResult {
+  score: number;
+  checks: Record<string, boolean>;
+  feedback: string[];
+  similarityScore?: number;
+}
+
 export interface Game {
   id: string;
   title: string;
@@ -29,7 +37,7 @@ export interface Game {
   task: string;
   context?: string;
   placeholder: string;
-  promptGenerator: (submission: string) => string;
+  promptGenerator: (submission: string, validation?: ValidationResult) => string;
   exampleSolution?: string;
   difficulty: Difficulty;
   skillCategory: SkillCategory;
