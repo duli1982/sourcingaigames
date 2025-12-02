@@ -11,12 +11,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const supabase = getAdminSupabase();
-    const { data, error } = await supabase
-      .from('players')
-      .select('id, name, progress')
-      .modify(query => {
-        if (playerId) query.eq('id', playerId);
-      });
+    let query = supabase.from('players').select('id, name, progress');
+
+    if (playerId) {
+      query = query.eq('id', playerId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return res.status(500).json({ error: { code: 'supabase_error', message: 'Failed to fetch attempts', details: error.message } });
