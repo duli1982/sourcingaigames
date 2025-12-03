@@ -36,6 +36,20 @@ export interface ValidationResult {
   similarityScore?: number;
 }
 
+export interface ValidationConfig {
+  minWords?: number;
+  maxWords?: number;
+  minChars?: number;
+  minSentences?: number;
+  recommendedMinWords?: number;
+  keywords?: string[];
+  location?: string;
+  requiresBoolean?: boolean;
+  requiresParentheses?: boolean;
+  requiresSite?: boolean;
+  forbiddenPhrases?: string[];
+}
+
 export interface Game {
   id: string;
   title: string;

@@ -89,7 +89,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
         } else if (game.skillCategory === 'outreach') {
             validation = validateOutreach(submission);
         } else {
-            validation = validateGeneral(submission);
+            validation = validateGeneral(submission, game.validation as any);
         }
 
         // Calculate similarity score if example solution exists

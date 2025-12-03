@@ -1,5 +1,5 @@
 import { compareTwoStrings } from 'string-similarity';
-import { ValidationResult } from '../types';
+import { ValidationConfig, ValidationResult } from '../types';
 
 export function validateSimilarity(
     submission: string,
@@ -95,19 +95,44 @@ export function validateOutreach(
     };
 }
 
-export function validateGeneral(submission: string): ValidationResult {
-    const wordCount = submission.trim().split(/\s+/).length;
+export function validateGeneral(submission: string, config: ValidationConfig = {}): ValidationResult {
+    const text = submission.trim();
+    const wordCount = text ? text.split(/\s+/).length : 0;
+    const sentenceCount = (text.match(/[.!?]/g) || []).length;
+
+    const minWords = config.minWords ?? 25;
+    const recommendedMinWords = config.recommendedMinWords ?? Math.max(45, (config.minWords ?? 0) + 5);
+    const minSentences = config.minSentences ?? 2;
+    const minChars = config.minChars ?? 0;
+
     const feedback: string[] = [];
     let score = 100;
 
-    if (wordCount < 5) {
-        feedback.push('Submission is too short.');
-        score = 20;
+    if (minChars > 0 && text.length < minChars) {
+        feedback.push(`Too short; add more detail (at least ${minChars} characters).`);
+        score = Math.min(score, 30);
+    }
+
+    if (wordCount < minWords) {
+        feedback.push(`Too short; aim for at least ${minWords} words so we can evaluate your reasoning.`);
+        score = Math.min(score, 25);
+    } else if (wordCount < recommendedMinWords) {
+        feedback.push(`Add more depth (aim for ~${recommendedMinWords} words) to cover the key points.`);
+        score -= 15;
+    }
+
+    if (sentenceCount < minSentences) {
+        feedback.push(`Provide at least ${minSentences} sentences (e.g., set up the issue + your recommendation).`);
+        score -= 20;
     }
 
     return {
-        score,
-        checks: { lengthOK: wordCount >= 5 },
+        score: Math.max(0, score),
+        checks: {
+            lengthOK: wordCount >= minWords,
+            hasStructure: sentenceCount >= minSentences,
+            meetsCharFloor: minChars === 0 || text.length >= minChars,
+        },
         feedback
     };
 }
