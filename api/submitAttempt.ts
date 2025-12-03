@@ -309,6 +309,29 @@ ${genericRubric.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).
       }
     }
 
+    // Blend with automated validation to prevent inflated scores on weak submissions
+    if (validation) {
+      const validationScore = typeof validation.score === 'number' ? validation.score : null;
+      if (validationScore !== null && validationScore < 80) {
+        const blended = Math.round((score + validationScore) / 2);
+        if (blended < score) {
+          score = blended;
+        }
+      }
+
+      if (Array.isArray(validation.feedback) && validation.feedback.length > 0) {
+        const escapeHtml = (value: string) =>
+          value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const validationSummary = `
+<div style="background:#0f172a;padding:12px;border-radius:8px;border:1px solid #1d4ed8;margin-bottom:8px;">
+  <p><strong>Automated checks flagged:</strong></p>
+  <ul>${validation.feedback.map((f: string) => `<li>${escapeHtml(f)}</li>`).join('')}</ul>
+  <p style="margin-top:6px;color:#93c5fd;">Automated score: ${validation.score}/100 (used to adjust final score).</p>
+</div>`;
+        feedbackText = validationSummary + feedbackText;
+      }
+    }
+
     // Enhance feedback for high scores (85%+)
     const enhancedFeedback = enhanceFeedbackForHighScores(feedbackText, score, game.title);
 

@@ -111,3 +111,46 @@ export function validateGeneral(submission: string): ValidationResult {
         feedback
     };
 }
+
+export function validateCultureAddNote(submission: string): ValidationResult {
+    const text = submission.trim();
+    const wordCount = text ? text.split(/\s+/).length : 0;
+
+    const checks: Record<string, boolean> = {
+        hasEnoughDetail: wordCount >= 60,
+        hasStructure: (text.match(/[.!?]/g) || []).length >= 2,
+        callsOutRisk: /(danger|risk|bias|groupthink|homogen|exclusion)/i.test(text),
+        explainsValue: /(value|benefit|strength|adds?\s+value|complement|diversity)/i.test(text),
+        referencesCandidate: /(candidate|they|their|this person)/i.test(text),
+    };
+
+    const feedback: string[] = [];
+    let score = 100;
+
+    if (!checks.hasEnoughDetail) {
+        feedback.push('Too short; aim for ~60-150 words with a clear argument.');
+        score -= 60;
+    }
+    if (!checks.hasStructure) {
+        feedback.push('Provide at least two sentences (risk + value) instead of a fragment.');
+        score -= 15;
+    }
+    if (!checks.callsOutRisk) {
+        feedback.push('Call out why over-indexing on "culture fit" is risky (bias, groupthink, sameness).');
+        score -= 25;
+    }
+    if (!checks.explainsValue) {
+        feedback.push('Explain the specific value this candidate adds to the team (skills, balance, outcomes).');
+        score -= 20;
+    }
+    if (!checks.referencesCandidate) {
+        feedback.push('Refer directly to the candidate and their strengths, not just abstract ideas.');
+        score -= 10;
+    }
+
+    return {
+        score: Math.max(0, score),
+        checks,
+        feedback,
+    };
+}

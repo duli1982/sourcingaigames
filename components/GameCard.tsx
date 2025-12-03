@@ -5,7 +5,13 @@ import { useUIContext } from '../context/UIContext';
 import { Game, Player } from '../types';
 import { Spinner } from './Spinner';
 import { formatFeedback } from '../utils/feedbackFormatter';
-import { validateBooleanSearch, validateOutreach, validateGeneral, validateSimilarity } from '../utils/answerValidators';
+import {
+    validateBooleanSearch,
+    validateOutreach,
+    validateGeneral,
+    validateSimilarity,
+    validateCultureAddNote,
+} from '../utils/answerValidators';
 import { ValidationResult } from '../types';
 import { rubricByDifficulty } from '../utils/rubrics';
 import '../styles/feedback.css';
@@ -76,7 +82,9 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
 
         // Run client-side validation
         let validation: ValidationResult | undefined;
-        if (game.skillCategory === 'boolean' || game.skillCategory === 'xray') {
+        if (game.id === 'game48') {
+            validation = validateCultureAddNote(submission);
+        } else if (game.skillCategory === 'boolean' || game.skillCategory === 'xray') {
             validation = validateBooleanSearch(submission);
         } else if (game.skillCategory === 'outreach') {
             validation = validateOutreach(submission);
