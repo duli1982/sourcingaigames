@@ -33,6 +33,7 @@ export interface ValidationResult {
   score: number;
   checks: Record<string, boolean>;
   feedback: string[];
+  strengths: string[];
   similarityScore?: number;
 }
 

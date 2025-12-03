@@ -33,6 +33,9 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
     const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showRubric, setShowRubric] = useState(false);
+    const [lastSubmissionText, setLastSubmissionText] = useState<string>('');
+    const [lastScore, setLastScore] = useState<number | null>(null);
+    const [recentValidation, setRecentValidation] = useState<ValidationResult | null>(null);
 
     // Calculate previous attempts for this specific game
     const gameAttempts = useMemo(() => {
@@ -46,6 +49,46 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
         if (gameAttempts.length === 0) return null;
         return gameAttempts.reduce((best, curr) => curr.score > best.score ? curr : best);
     }, [gameAttempts]);
+    const latestAttempt = gameAttempts.length > 0 ? gameAttempts[0] : null;
+    const firstAttempt = gameAttempts.length > 0 ? gameAttempts[gameAttempts.length - 1] : null;
+    const improvementFromFirst = latestAttempt && firstAttempt ? latestAttempt.score - firstAttempt.score : null;
+
+    const skillLevel = useMemo<'beginner' | 'intermediate' | 'expert'>(() => {
+        const scores = (player?.attempts || []).slice(-6).map(a => a.score);
+        if (scores.length === 0) return 'beginner';
+        const avg = scores.reduce((acc, val) => acc + val, 0) / scores.length;
+        if (avg >= 85) return 'expert';
+        if (avg >= 65) return 'intermediate';
+        return 'beginner';
+    }, [player?.attempts]);
+
+    const dailyStreak = useMemo(() => {
+        const attempts = (player?.attempts || [])
+            .map(a => new Date(a.ts))
+            .filter(d => !Number.isNaN(d.getTime()))
+            .sort((a, b) => b.getTime() - a.getTime());
+
+        if (attempts.length === 0) return 0;
+
+        let streak = 1;
+        const today = new Date();
+        let prev = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        prev.setHours(0, 0, 0, 0);
+
+        for (const date of attempts) {
+            const current = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const diffDays = Math.round((prev.getTime() - current.getTime()) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) {
+                continue;
+            } else if (diffDays === 1) {
+                streak += 1;
+                prev = current;
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }, [player?.attempts]);
 
     // Cooldown timer effect
     useEffect(() => {
@@ -67,7 +110,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
     };
 
     const handleConfirmedSubmit = async () => {
-        if (!submission.trim() || !player) return;
+        const trimmedSubmission = submission.trim();
+        if (!trimmedSubmission || !player) return;
         if (!player.sessionToken) {
             addToast('Session expired. Please refresh the page.', 'error');
             return;
@@ -83,18 +127,19 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
         // Run client-side validation
         let validation: ValidationResult | undefined;
         if (game.id === 'game48') {
-            validation = validateCultureAddNote(submission);
+            validation = validateCultureAddNote(trimmedSubmission);
         } else if (game.skillCategory === 'boolean' || game.skillCategory === 'xray') {
-            validation = validateBooleanSearch(submission);
+            validation = validateBooleanSearch(trimmedSubmission);
         } else if (game.skillCategory === 'outreach') {
-            validation = validateOutreach(submission);
+            validation = validateOutreach(trimmedSubmission);
         } else {
-            validation = validateGeneral(submission, game.validation as any);
+            validation = validateGeneral(trimmedSubmission, game.validation as any);
         }
+        setRecentValidation(validation || null);
 
         // Calculate similarity score if example solution exists
         if (game.exampleSolution && validation) {
-            const similarity = validateSimilarity(submission, game.exampleSolution);
+            const similarity = validateSimilarity(trimmedSubmission, game.exampleSolution);
             validation.similarityScore = similarity;
 
             // If similarity is very high (>0.9), boost the score or add feedback
@@ -114,7 +159,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                 body: JSON.stringify({
                     sessionToken: player.sessionToken,
                     gameId: game.id,
-                    submission,
+                    skillLevel,
+                    submission: trimmedSubmission,
                     validation // Pass validation result to server
                 })
             });
@@ -136,6 +182,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
 
             const feedbackHtml = formatFeedback(data.feedback, data.score ?? 0);
             setFeedback(feedbackHtml);
+            setLastSubmissionText(trimmedSubmission);
+            setLastScore(data.score ?? null);
             setLastSubmitTime(Date.now());
 
         } catch (error) {
@@ -170,6 +218,72 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
     // Scoring rubric based on difficulty
     const currentRubric = rubricByDifficulty[game.difficulty];
 
+    const hintMessages = useMemo(() => {
+        const sourceText = `${game.task} ${game.placeholder} ${game.exampleSolution ?? ''}`.toLowerCase();
+        const hints: string[] = [];
+
+        if (game.skillCategory === 'boolean' || game.skillCategory === 'xray') {
+            hints.push('Tip: Use parentheses to group OR terms, then connect groups with AND.');
+            if (sourceText.includes('vienna') || sourceText.includes('wien')) {
+                hints.push('Tip: Vienna can also be written as "Wien" in German.');
+            }
+            if (sourceText.includes('kubernetes') || sourceText.includes('k8s')) {
+                hints.push('Tip: Kubernetes is often shortened to "K8s" in profiles.');
+            }
+        }
+
+        if (game.skillCategory === 'outreach') {
+            hints.push('Tip: Lead with one line of personalization before your ask.');
+            hints.push('Tip: End with a clear yes/no call-to-action.');
+        }
+
+        if (hints.length === 0 && sourceText.includes('kubernetes')) {
+            hints.push('Tip: Kubernetes = K8s (common abbreviation in resumes).');
+        }
+
+        return hints;
+    }, [game.exampleSolution, game.placeholder, game.skillCategory, game.task]);
+
+    const comparisonSets = useMemo(() => {
+        if (!game.exampleSolution || !lastSubmissionText) return null;
+        const toWordSet = (text: string) =>
+            new Set((text.match(/\b[\w'-]+\b/g) || []).map(w => w.toLowerCase()));
+        const userWords = toWordSet(lastSubmissionText);
+        const exampleWords = toWordSet(game.exampleSolution);
+
+        const missingInUser = new Set<string>();
+        exampleWords.forEach(word => {
+            if (!userWords.has(word)) missingInUser.add(word);
+        });
+
+        const extraFromUser = new Set<string>();
+        userWords.forEach(word => {
+            if (!exampleWords.has(word)) extraFromUser.add(word);
+        });
+
+        return { missingInUser, extraFromUser };
+    }, [game.exampleSolution, lastSubmissionText]);
+
+    const renderHighlightedText = (text: string, highlightSet?: Set<string>, highlightClass?: string) => {
+        return text.split(/(\b[\w'-]+\b)/).map((segment, idx) => {
+            if (!highlightSet || highlightSet.size === 0) {
+                return <React.Fragment key={idx}>{segment}</React.Fragment>;
+            }
+            const normalized = segment.toLowerCase();
+            if (highlightSet.has(normalized)) {
+                return (
+                    <mark key={idx} className={highlightClass ?? 'bg-yellow-800 text-yellow-100 px-1 rounded'}>
+                        {segment}
+                    </mark>
+                );
+            }
+            return <React.Fragment key={idx}>{segment}</React.Fragment>;
+        });
+    };
+
+    const missingHighlights = comparisonSets ? Array.from(comparisonSets.missingInUser).slice(0, 12) : [];
+    const extraHighlights = comparisonSets ? Array.from(comparisonSets.extraFromUser).slice(0, 12) : [];
+
     return (
         <div className="bg-gray-800 rounded-lg p-8 shadow-xl">
             <div className="flex items-start justify-between mb-2">
@@ -180,6 +294,17 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                 </span>
             </div>
             <p className="text-gray-400 mb-4">{game.description}</p>
+
+            {dailyStreak > 1 && (
+                <div className="mb-4 p-3 bg-gray-900 rounded-md border border-orange-700 text-sm text-orange-200">
+                    {dailyStreak} days in a row! Keep the streak going.
+                </div>
+            )}
+
+            <div className="mb-4 p-3 bg-gray-900 rounded-md border border-gray-700 text-sm text-gray-200 flex items-center justify-between">
+                <span>Skill level (auto-estimated): <strong className="text-white capitalize">{skillLevel}</strong></span>
+                <span className="text-xs text-gray-400">Higher scores over last games shift you to expert.</span>
+            </div>
 
             {/* Scoring Rules - Only show in Challenge Mode */}
             {mode === 'challenge' && (
@@ -207,6 +332,17 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                 </div>
             )}
 
+            {mode === 'challenge' && hintMessages.length > 0 && (
+                <div className="mb-4 p-4 bg-gray-900 rounded-md border border-blue-800">
+                    <h4 className="text-sm font-bold text-blue-300 mb-2">Quick tips for this game</h4>
+                    <ul className="text-xs text-gray-200 space-y-1 list-disc list-inside">
+                        {hintMessages.map((hint, idx) => (
+                            <li key={idx}>{hint}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
             {/* Previous Attempts Stats */}
             {gameAttempts.length > 0 && (
                 <div className="mb-4 p-4 bg-gray-900 rounded-md border border-cyan-900">
@@ -221,6 +357,17 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                             <span className="ml-2 text-cyan-400 font-bold">{bestAttempt?.score}/100</span>
                         </div>
                     </div>
+                    {firstAttempt && latestAttempt && (
+                        <div className="mt-3 text-xs text-gray-300 space-y-1">
+                            <p>First attempt: {firstAttempt.score}/100</p>
+                            <p>Latest attempt: {latestAttempt.score}/100</p>
+                            {improvementFromFirst !== null && (
+                                <p className={improvementFromFirst >= 0 ? 'text-green-300' : 'text-yellow-300'}>
+                                    Improvement: {improvementFromFirst >= 0 ? '+' : ''}{improvementFromFirst} points
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -326,6 +473,17 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                 )}
             </form>
 
+            {mode === 'challenge' && recentValidation?.strengths?.length ? (
+                <div className="mt-4 p-4 bg-gray-900 rounded-md border border-green-700">
+                    <h4 className="text-sm font-bold text-green-300 mb-2">What You Did Well (automated checks)</h4>
+                    <ul className="text-xs text-gray-200 list-disc list-inside space-y-1">
+                        {recentValidation.strengths.map((item, idx) => (
+                            <li key={idx}>{item}</li>
+                        ))}
+                    </ul>
+                </div>
+            ) : null}
+
             {/* Only show AI feedback in Challenge Mode */}
             {mode === 'challenge' && (
                 <div className="mt-6" aria-live="polite" aria-busy={isLoading}>
@@ -338,12 +496,47 @@ const GameCard: React.FC<GameCardProps> = ({ game, mode = 'challenge' }) => {
                     {feedback && (
                         <>
                             {!isLoading && <h4 className="text-2xl font-bold text-cyan-400 mb-4">AI Coach Feedback</h4>}
+                            {lastScore !== null && !isLoading && (
+                                <p className="text-sm text-gray-300 mb-2">This attempt: {lastScore}/100</p>
+                            )}
                             <div
                                 className="feedback-content bg-gray-700 p-6 rounded-lg max-w-none"
                                 dangerouslySetInnerHTML={{ __html: feedback }}
                             />
                         </>
                     )}
+                </div>
+            )}
+
+            {mode === 'challenge' && comparisonSets && game.exampleSolution && lastSubmissionText && (
+                <div className="mt-6">
+                    <h4 className="text-xl font-bold text-cyan-400 mb-2">Compare with Example</h4>
+                    <p className="text-xs text-gray-400 mb-3">Highlights show what is different. Red = content you used that is not in the example. Yellow = content from the example that is missing in your answer.</p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-gray-900 p-4 rounded-md border border-gray-700">
+                            <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">Your answer</div>
+                            <p className="text-sm text-gray-100 leading-relaxed whitespace-pre-wrap break-words">
+                                {renderHighlightedText(lastSubmissionText, comparisonSets.extraFromUser, 'bg-red-900 text-red-100 px-1 rounded')}
+                            </p>
+                        </div>
+                        <div className="bg-gray-900 p-4 rounded-md border border-gray-700">
+                            <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">Example solution</div>
+                            <p className="text-sm text-gray-100 leading-relaxed whitespace-pre-wrap break-words">
+                                {renderHighlightedText(game.exampleSolution, comparisonSets.missingInUser, 'bg-yellow-800 text-yellow-100 px-1 rounded')}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-300 space-y-1">
+                        {missingHighlights.length > 0 && (
+                            <p><strong>Missing focus areas:</strong> {missingHighlights.join(', ')}</p>
+                        )}
+                        {extraHighlights.length > 0 && (
+                            <p><strong>Extra terms you added:</strong> {extraHighlights.join(', ')}</p>
+                        )}
+                        {missingHighlights.length === 0 && extraHighlights.length === 0 && (
+                            <p>Your answer closely matches the example content.</p>
+                        )}
+                    </div>
                 </div>
             )}
 

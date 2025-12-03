@@ -1,6 +1,12 @@
 import { compareTwoStrings } from 'string-similarity';
 import { ValidationConfig, ValidationResult } from '../types';
 
+const ensureFeedback = (feedback: string[]) => {
+    if (feedback.length === 0) {
+        feedback.push('Automated checks passed; AI will handle nuanced scoring.');
+    }
+};
+
 export function validateSimilarity(
     submission: string,
     exampleSolution?: string
@@ -13,24 +19,57 @@ export function validateBooleanSearch(
     submission: string,
     requirements: { keywords?: string[]; location?: string } = {}
 ): ValidationResult {
+    const strengths: string[] = [];
+    const operatorCount = (submission.match(/\b(AND|OR|NOT)\b/gi) || []).length;
     const checks: Record<string, boolean> = {
         hasParentheses: /\([^)]+\)/.test(submission),
         hasAND: /\bAND\b/.test(submission), // Case sensitive usually for Boolean, but let's be strict
         hasOR: /\bOR\b/.test(submission),
         hasNot: /\bNOT\b/.test(submission) || /-/.test(submission),
+        hasProximity: /\b(NEAR|AROUND\/?\d*)\b/i.test(submission),
+        isOverlyComplex: operatorCount > 12,
     };
 
     const feedback: string[] = [];
     let score = 100;
 
     if (!checks.hasParentheses && (checks.hasOR || checks.hasAND)) {
-        feedback.push('Missing parentheses for grouping logic.');
+        feedback.push(
+            'Missing parentheses for grouping logic. Parentheses control operator precedence. Example: (React OR Vue) AND (senior OR lead) ensures you get React OR Vue candidates who are ALSO senior or lead level.'
+        );
         score -= 15;
+    } else if (checks.hasParentheses) {
+        strengths.push('Good use of parentheses for grouping');
     }
 
-    if (!checks.hasAND && !checks.hasOR) {
+    if (checks.hasAND && checks.hasOR) {
+        strengths.push('Combines AND/OR operators effectively');
+    } else if (!checks.hasAND && !checks.hasOR) {
         feedback.push('Search string lacks basic boolean operators (AND, OR).');
         score -= 20;
+    }
+
+    if (checks.hasProximity) {
+        strengths.push('Uses proximity operators (NEAR/AROUND) to keep terms close');
+    } else if (submission.length > 0) {
+        feedback.push('Consider adding proximity operators (NEAR/AROUND) to keep critical terms closer together.');
+        score -= 5;
+    }
+
+    if (checks.isOverlyComplex) {
+        feedback.push(`Search might be overly complex with ${operatorCount} operators. Simplify groups to avoid platform limits and noise.`);
+        score -= 10;
+    }
+
+    if (requirements.location) {
+        const hasLocation = new RegExp(requirements.location, 'i').test(submission);
+        checks.hasLocation = hasLocation;
+        if (!hasLocation) {
+            feedback.push(`Missing required location targeting (${requirements.location}). Include it to focus results.`);
+            score -= 10;
+        } else {
+            strengths.push(`Includes location targeting (${requirements.location})`);
+        }
     }
 
     // Keyword checks
@@ -44,13 +83,16 @@ export function validateBooleanSearch(
             score -= 10 * missingKeywords.length;
         } else {
             checks.hasKeywords = true;
+            strengths.push('Covers all required keywords');
         }
     }
 
+    ensureFeedback(feedback);
     return {
         score: Math.max(0, score),
         checks,
         feedback,
+        strengths,
     };
 }
 
@@ -58,10 +100,14 @@ export function validateOutreach(
     submission: string,
     maxWords: number = 150
 ): ValidationResult {
-    const wordCount = submission.trim().split(/\s+/).length;
+    const trimmed = submission.trim();
+    const wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
+    const strengths: string[] = [];
     const checks: Record<string, boolean> = {
         lengthOK: wordCount <= maxWords && wordCount > 10,
         hasSubjectLine: /Subject:/i.test(submission),
+        hasCallToAction: /(call|chat|connect|interested|open to|schedule|time to talk|let (?:me|us) know|reply)/i.test(submission),
+        hasPersonalization: /\b(hi|hello|hey)\s+\w+/i.test(submission) || /\[(name|candidate)\]/i.test(submission) || /\{name\}/i.test(submission),
     };
 
     const feedback: string[] = [];
@@ -73,6 +119,8 @@ export function validateOutreach(
     } else if (wordCount > maxWords) {
         feedback.push(`Message is too long (${wordCount} words). Aim for under ${maxWords}.`);
         score -= 10;
+    } else {
+        strengths.push('Clear, concise length for outreach');
     }
 
     const cliches = ['just checking in', 'circling back', 'per my last email'];
@@ -86,12 +134,53 @@ export function validateOutreach(
         score -= 5 * foundCliches.length;
     } else {
         checks.hasCliches = false;
+        strengths.push('Avoids common outreach cliches');
     }
 
+    if (!checks.hasPersonalization) {
+        feedback.push('Message lacks personalization (name/company). Add a specific hook to increase replies.');
+        score -= 15;
+    } else {
+        strengths.push('Personalizes with a name/company hook');
+    }
+
+    const genericTemplates = ['hope you are well', 'to whom it may concern', 'I am reaching out to you because', 'dear sir or madam'];
+    const foundGeneric = genericTemplates.filter(p => new RegExp(p, 'i').test(submission));
+    if (foundGeneric.length > 0) {
+        checks.isGeneric = true;
+        feedback.push(`Message feels generic (${foundGeneric.join(', ')}). Swap in specific details or proof of research.`);
+        score -= 10;
+    } else {
+        checks.isGeneric = false;
+    }
+
+    if (!checks.hasCallToAction) {
+        feedback.push('Add a clear call-to-action (e.g., quick call this week, reply yes/no).');
+        score -= 12;
+    } else {
+        strengths.push('Includes a clear call-to-action');
+    }
+
+    if (!checks.hasSubjectLine) {
+        feedback.push('Add a subject line to catch attention and set context.');
+        score -= 8;
+    } else {
+        const subjectMatch = submission.match(/Subject:\s*(.+)/i);
+        const subject = subjectMatch?.[1]?.trim() ?? '';
+        if (subject.length < 8 || /^(hi|hello|follow up)$/i.test(subject)) {
+            feedback.push('Subject line is weak or too short. Make it specific and benefit-driven.');
+            score -= 8;
+        } else {
+            strengths.push('Uses a specific subject line');
+        }
+    }
+
+    ensureFeedback(feedback);
     return {
         score: Math.max(0, score),
         checks,
         feedback,
+        strengths,
     };
 }
 
@@ -106,6 +195,7 @@ export function validateGeneral(submission: string, config: ValidationConfig = {
     const minChars = config.minChars ?? 0;
 
     const feedback: string[] = [];
+    const strengths: string[] = [];
     let score = 100;
 
     if (minChars > 0 && text.length < minChars) {
@@ -119,13 +209,18 @@ export function validateGeneral(submission: string, config: ValidationConfig = {
     } else if (wordCount < recommendedMinWords) {
         feedback.push(`Add more depth (aim for ~${recommendedMinWords} words) to cover the key points.`);
         score -= 15;
+    } else {
+        strengths.push('Provides enough detail to evaluate reasoning');
     }
 
     if (sentenceCount < minSentences) {
         feedback.push(`Provide at least ${minSentences} sentences (e.g., set up the issue + your recommendation).`);
         score -= 20;
+    } else {
+        strengths.push('Structured response with clear sentences');
     }
 
+    ensureFeedback(feedback);
     return {
         score: Math.max(0, score),
         checks: {
@@ -133,7 +228,8 @@ export function validateGeneral(submission: string, config: ValidationConfig = {
             hasStructure: sentenceCount >= minSentences,
             meetsCharFloor: minChars === 0 || text.length >= minChars,
         },
-        feedback
+        feedback,
+        strengths,
     };
 }
 
@@ -150,6 +246,7 @@ export function validateCultureAddNote(submission: string): ValidationResult {
     };
 
     const feedback: string[] = [];
+    const strengths: string[] = [];
     let score = 100;
 
     if (!checks.hasEnoughDetail) {
@@ -171,11 +268,18 @@ export function validateCultureAddNote(submission: string): ValidationResult {
     if (!checks.referencesCandidate) {
         feedback.push('Refer directly to the candidate and their strengths, not just abstract ideas.');
         score -= 10;
+    } else {
+        strengths.push('References the candidate directly');
     }
+    if (checks.callsOutRisk) strengths.push('Flags culture-fit risk (bias/groupthink)');
+    if (checks.explainsValue) strengths.push("Explains the candidate's unique value");
+    if (checks.hasStructure) strengths.push('Uses at least two sentences (risk + value)');
 
+    ensureFeedback(feedback);
     return {
         score: Math.max(0, score),
         checks,
         feedback,
+        strengths,
     };
 }

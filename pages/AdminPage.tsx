@@ -16,6 +16,7 @@ const AdminPage: React.FC = () => {
   const [gameOverrides, setGameOverrides] = useState<GameOverride[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'players' | 'attempts' | 'games'>('overview');
+  const isAuthorized = Boolean(adminToken);
 
   // New feature states
   const [playerSearchQuery, setPlayerSearchQuery] = useState('');
@@ -299,10 +300,18 @@ const AdminPage: React.FC = () => {
 
   const renderGames = () => (
     <div className="space-y-3">
+      {!isAuthorized && (
+        <div className="bg-yellow-900 bg-opacity-40 border border-yellow-600 text-yellow-100 p-4 rounded">
+          Enter an admin token to edit games. All fields are locked until you load with a valid token.
+        </div>
+      )}
       {baseGames.map(game => {
         const override = overridesMap.get(game.id) || { id: game.id, featured: false, active: true };
         return (
-          <div key={game.id} className="bg-gray-800 rounded-lg p-4">
+          <div key={game.id} className="bg-gray-800 rounded-lg p-4 opacity-100 relative">
+            {!isAuthorized && (
+              <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg cursor-not-allowed" />
+            )}
             <div className="flex justify-between items-start gap-4">
               <div>
                 <p className="text-white font-semibold">{game.title}</p>
@@ -314,6 +323,7 @@ const AdminPage: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={override.active !== false}
+                    disabled={!isAuthorized}
                     onChange={e => setGameOverrides(prev => {
                       const next = [...prev.filter(o => o.id !== game.id), { ...override, id: game.id, active: e.target.checked }];
                       return next;
@@ -325,6 +335,7 @@ const AdminPage: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={Boolean(override.featured)}
+                    disabled={!isAuthorized}
                     onChange={e => setGameOverrides(prev => {
                       const next = [...prev.filter(o => o.id !== game.id), { ...override, id: game.id, featured: e.target.checked }];
                       return next;
@@ -341,6 +352,7 @@ const AdminPage: React.FC = () => {
                 rows={4}
                 placeholder="Optional: replace prompt"
                 value={override.prompt_template || ''}
+                disabled={!isAuthorized}
                 onChange={e => setGameOverrides(prev => {
                   const next = [...prev.filter(o => o.id !== game.id), { ...override, id: game.id, prompt_template: e.target.value }];
                   return next;
@@ -349,8 +361,9 @@ const AdminPage: React.FC = () => {
             </div>
             <div className="flex justify-end mt-3">
               <button
-                className="px-3 py-1 bg-cyan-600 text-white rounded text-sm"
-                onClick={() => handleSaveOverride(override)}
+                className={`px-3 py-1 rounded text-sm ${isAuthorized ? 'bg-cyan-600 text-white' : 'bg-gray-600 text-gray-300 cursor-not-allowed'}`}
+                onClick={() => isAuthorized && handleSaveOverride(override)}
+                disabled={!isAuthorized}
               >
                 Save Override
               </button>
@@ -406,7 +419,7 @@ const AdminPage: React.FC = () => {
         <TabButton label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
         <TabButton label="Players" active={activeTab === 'players'} onClick={() => setActiveTab('players')} />
         <TabButton label="Submissions" active={activeTab === 'attempts'} onClick={() => setActiveTab('attempts')} />
-        <TabButton label="Games" active={activeTab === 'games'} onClick={() => setActiveTab('games')} />
+        <TabButton label="Games" active={activeTab === 'games'} onClick={() => setActiveTab('games')} disabled={!isAuthorized} />
       </div>
 
       {activeTab === 'overview' && renderOverview()}
@@ -443,10 +456,11 @@ const StatCard: React.FC<{ label: string; value: number | string }> = ({ label, 
   </div>
 );
 
-const TabButton: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ label, active, onClick }) => (
+const TabButton: React.FC<{ label: string; active: boolean; onClick: () => void; disabled?: boolean }> = ({ label, active, onClick, disabled }) => (
   <button
-    onClick={onClick}
-    className={`px-3 py-2 rounded text-sm font-semibold ${active ? 'bg-cyan-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+    onClick={() => !disabled && onClick()}
+    disabled={disabled}
+    className={`px-3 py-2 rounded text-sm font-semibold ${disabled ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : active ? 'bg-cyan-600 text-white' : 'bg-gray-800 text-gray-300'}`}
   >
     {label}
   </button>

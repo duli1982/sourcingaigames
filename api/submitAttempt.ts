@@ -8,6 +8,8 @@ import { rubricByDifficulty } from '../utils/rubrics.js';
 
 const GEMINI_MAX_OUTPUT_TOKENS = 120;
 const GEMINI_PROMPT_CHAR_LIMIT = 2800;
+const GEMINI_FALLBACK_MODEL = 'gemini-1.5-flash';
+const promptCache = new Map<string, string>();
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -118,6 +120,17 @@ const enhanceFeedbackForHighScores = (feedback: string, score: number, gameTitle
   return feedback;
 };
 
+const computePeerStats = (scores: number[], currentScore: number) => {
+  if (scores.length === 0) return null;
+  const sorted = [...scores].sort((a, b) => a - b);
+  const idx = sorted.findIndex(s => s > currentScore);
+  const rankIndex = idx === -1 ? sorted.length - 1 : idx;
+  const percentile = Math.round(((rankIndex + 1) / sorted.length) * 100);
+  const p15 = sorted[Math.max(0, Math.floor(0.15 * (sorted.length - 1)))];
+  const p85 = sorted[Math.min(sorted.length - 1, Math.ceil(0.85 * (sorted.length - 1)))];
+  return { percentile, p15, p85, count: sorted.length };
+};
+
 const sendError = (
   res: VercelResponse,
   status: number,
@@ -132,11 +145,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { sessionToken, gameId, submission, validation } = (req.body ?? {}) as {
+    const { sessionToken, gameId, submission, validation, skillLevel } = (req.body ?? {}) as {
       sessionToken?: string;
       gameId?: string;
       submission?: string;
       validation?: any; // ValidationResult
+      skillLevel?: 'beginner' | 'intermediate' | 'expert';
     };
 
     if (!sessionToken || typeof sessionToken !== 'string') {
@@ -147,6 +161,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     if (!submission || typeof submission !== 'string' || !submission.trim()) {
       return sendError(res, 400, 'missing_submission', 'Submission text is required to score your attempt.');
+    }
+    const MAX_SUBMISSION_LENGTH = 10000; // guardrail against oversized payloads
+    if (submission.length > MAX_SUBMISSION_LENGTH) {
+      return sendError(
+        res,
+        400,
+        'submission_too_long',
+        `Submission must be under ${MAX_SUBMISSION_LENGTH} characters.`
+      );
     }
 
     const game = games.find(g => g.id === gameId);
@@ -193,6 +216,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (attempts.length > 0) {
       const lastAttempt = attempts[attempts.length - 1];
       const lastAttemptTime = new Date(lastAttempt.ts).getTime();
+      if (Number.isNaN(lastAttemptTime)) {
+        console.error('Invalid timestamp in last attempt:', lastAttempt?.ts);
+        return sendError(res, 429, 'cooldown_active', 'Please wait 30 seconds before submitting again.');
+      }
       const now = Date.now();
       const cooldownMs = 30000; // 30 seconds
 
@@ -212,28 +239,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return sendError(res, 500, 'missing_gemini_key', 'AI feedback is temporarily unavailable. Please try again later.');
     }
 
+    const userSkillLevel: 'beginner' | 'intermediate' | 'expert' = skillLevel ?? 'intermediate';
+
     const ai = new GoogleGenAI({ apiKey });
 
     // Append strict JSON instruction to override any game-specific formatting
     const systemInstruction = `
 *** CRITICAL INSTRUCTION ***
-Ignore any previous instructions about the response format or score range (e.g., [1-5]).
-You must evaluate the submission and return a STRICT JSON object.
+You are an encouraging but critical AI coach for sourcing professionals.
+The player's self-calculated skill level is "${userSkillLevel}".
+
+Adjust detail and tone based on skill:
+- Beginner: explain basics, show short templates or examples.
+- Intermediate: push for optimization and alternatives.
+- Expert: critique edge cases, suggest advanced techniques/efficiency gains.
+
+Your feedback must:
+1. Start with 1-2 specific things the user did well (even if score is low)
+2. Explain the "why" behind each issue, not just identify it
+3. Provide concrete examples showing wrong vs. right approaches
+4. End with 2-3 specific, actionable next steps
+5. Use an encouraging but honest tone - celebrate wins, be direct about gaps
 
 Required JSON Structure:
 {
   "score": number, // Integer between 0 and 100
-  "feedback": "string" // Detailed feedback in HTML format. Use <ul>, <li>, <strong>, <p> tags. Do NOT use Markdown or code fences.
+  "feedback": "string" // HTML format with <strong>, <ul>, <li>, <p>. Structure:
+                        // 1. What worked well (even if only 1-2 things)
+                        // 2. What needs improvement (specific issues)
+                        // 3. Why it matters (context/impact)
+                        // 4. How to improve (concrete examples)
+                        // 5. Next steps (2-3 actionable items)
 }
 
 Example Response:
-{"score": 85, "feedback": "<p><strong>Great job!</strong></p><ul><li>You correctly identified...</li><li>Consider adding...</li></ul>"}
+{
+  "score": 65,
+  "feedback": "<p><strong>What worked well:</strong></p><ul><li>You included key skills (React, Node.js)</li><li>You used AND/OR operators</li></ul><p><strong>What needs improvement:</strong></p><ul><li>Missing parentheses around OR groups - this can return unintended results</li><li>No location targeting - you'll get global results instead of Vienna-specific</li></ul><p><strong>Why this matters:</strong> Without parentheses, 'React OR Vue AND developer' searches for (React) OR (Vue AND developer), not (React OR Vue) AND (developer).</p><p><strong>How to fix:</strong><br/>❌ React OR Vue AND developer<br/>✅ (React OR Vue) AND developer</p><p><strong>Next steps:</strong></p><ul><li>Add parentheses around all OR groups</li><li>Include location: (Vienna OR Wien)</li><li>Test your search and refine</li></ul>"
+}
 
-Do not include any text outside the JSON object. Do not use markdown code blocks. Respond with valid JSON only.`;
+Respond with valid JSON only. Do not include text outside the JSON object or any markdown fences.`;
 
     const promptBase =
       override?.prompt_template ||
       game.promptGenerator(submission, rubricByDifficulty[game.difficulty], validation);
+
+    const skillContext = `
+## PLAYER SKILL CONTEXT
+- Skill level: ${userSkillLevel}
+- Tailor depth: beginners need fundamentals and templates; intermediates need optimization ideas; experts need edge-case critiques and advanced tactics.
+`;
 
     // Append validation context if available
     let validationContext = '';
@@ -244,6 +299,7 @@ The system ran some basic checks on this submission:
 - Automated Score: ${validation.score}/100
 - Automated Feedback: ${validation.feedback.length > 0 ? validation.feedback.join('; ') : 'No issues found.'}
 - Checks Passed: ${JSON.stringify(validation.checks)}
+- Strengths: ${Array.isArray(validation.strengths) && validation.strengths.length > 0 ? validation.strengths.join('; ') : 'No automated strengths captured.'}
 
 Please take these automated checks into account. If the automated score is low, your final score should reflect that.
 `;
@@ -257,13 +313,28 @@ In addition to the specific game requirements, evaluate based on these general c
 ${genericRubric.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n')}
 `;
 
-    const prompt = `${promptBase}${validationContext}${rubricContext}\n\n${systemInstruction}`;
-    const trimmedPrompt = prompt.slice(0, GEMINI_PROMPT_CHAR_LIMIT + 500); // Allow extra for our instruction
+    const maxPromptLength = GEMINI_PROMPT_CHAR_LIMIT + 500;
+    const promptHead = `${promptBase}${skillContext}${validationContext}${rubricContext}`;
+    let prompt = `${promptHead}\n\n${systemInstruction}`;
+
+    if (prompt.length > maxPromptLength) {
+      console.warn(`Prompt too long (${prompt.length} chars), truncating non-critical context.`);
+      const availableForHead = Math.max(0, maxPromptLength - systemInstruction.length - 2); // account for \n\n
+      const trimmedHead = promptHead.slice(0, availableForHead);
+      prompt = `${trimmedHead}\n\n${systemInstruction}`;
+    }
+
+    const trimmedPrompt = prompt.slice(0, maxPromptLength); // final safety slice
 
     // Use the Gemini SDK
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: trimmedPrompt,
+      contents: [{ role: 'user', parts: [{ text: trimmedPrompt }] }],
+      config: {
+        temperature: 0.35,
+        maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        candidateCount: 1,
+      },
     } as any);
 
     console.log('Gemini full response:', JSON.stringify(response, null, 2));
@@ -283,57 +354,150 @@ ${genericRubric.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).
     // Strict JSON parsing with schema validation
     let score: number;
     let feedbackText: string;
+    let usedAutomatedOnly = false;
 
     try {
       const parsed = parseAiResponse(responseText);
       score = parsed.score;
       feedbackText = parsed.feedback;
+      promptCache.set(game.id, trimmedPrompt);
     } catch (parseError: any) {
       console.error('Failed to parse AI response:', parseError?.message);
       console.error('Raw AI response text:', responseText);
 
-      // Fallback to automated validation if available
-      if (validation) {
-        console.warn('Using fallback validation score due to AI parsing error');
-        score = validation.score;
-        feedbackText = `
-<p><strong>AI Feedback Unavailable</strong></p>
-<p>We couldn't get a detailed analysis from the AI coach right now, but here is your automated evaluation:</p>
-<ul>
-    <li><strong>Automated Score:</strong> ${validation.score}/100</li>
-    <li><strong>Issues Found:</strong> ${validation.feedback.length > 0 ? validation.feedback.join('; ') : 'None'}</li>
-</ul>
-<p><em>Please try again later for full AI coaching.</em></p>`;
-      } else {
-        return sendError(res, 500, 'invalid_model_json', 'AI feedback was not returned in the expected format. Please try again.');
-      }
-    }
+      try {
+        const fallbackPrompt = promptCache.get(game.id) || `
+You are an AI coach. Skill level: ${userSkillLevel}.
+Submission: """${submission}"""
+Automated score: ${validation?.score ?? 'n/a'}
+Automated feedback: ${Array.isArray(validation?.feedback) ? validation?.feedback.join('; ') : 'n/a'}
 
-    // Blend with automated validation to prevent inflated scores on weak submissions
-    if (validation) {
-      const validationScore = typeof validation.score === 'number' ? validation.score : null;
-      if (validationScore !== null && validationScore < 80) {
-        const blended = Math.round((score + validationScore) / 2);
-        if (blended < score) {
-          score = blended;
+Return JSON only: {"score": <0-100 integer>, "feedback": "<HTML feedback>"}.
+Keep feedback concise, structured, and in HTML (no markdown fences).
+`;
+        const retryResponse = await ai.models.generateContent({
+          model: GEMINI_FALLBACK_MODEL,
+          contents: [{ role: 'user', parts: [{ text: fallbackPrompt }] }],
+          config: {
+            temperature: 0.2,
+            maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+            candidateCount: 1,
+          },
+        } as any);
+        const retryText = (retryResponse as any).text
+          || (retryResponse as any).candidates?.[0]?.content?.parts?.[0]?.text
+          || (retryResponse as any).candidates?.[0]?.text
+          || (retryResponse as any).response?.text;
+
+        if (!retryText) {
+          throw new Error('Empty retry response');
+        }
+
+        const parsedRetry = parseAiResponse(retryText);
+        score = parsedRetry.score;
+        feedbackText = parsedRetry.feedback;
+        promptCache.set(game.id, fallbackPrompt);
+      } catch (retryError) {
+        console.error('Simplified retry failed:', retryError);
+
+        // Fallback to automated validation if available
+        if (validation) {
+          console.warn('Using fallback validation score due to AI parsing error');
+          usedAutomatedOnly = true;
+          score = validation.score;
+
+          const issues = validation.feedback.length > 0 ? validation.feedback : ['No automated issues found.'];
+          const issuesList = issues.map((f: string) => `<li>${normalizeFeedbackHtml(f)}</li>`).join('');
+
+          // Render validation checks if present
+          let checksList = '';
+          if (validation.checks && typeof validation.checks === 'object') {
+            const entries = Object.entries(validation.checks);
+            if (entries.length > 0) {
+              const items = entries.map(([k, v]) => `<li>${normalizeFeedbackHtml(k)}: ${v ? 'Passed' : 'Failed'}</li>`).join('');
+              checksList = `<div style="margin-top:6px;"><p><strong>Validation checks:</strong></p><ul>${items}</ul></div>`;
+            }
+          }
+
+          let strengthsBlock = '';
+          if (Array.isArray(validation.strengths) && validation.strengths.length > 0) {
+            const strengthsList = validation.strengths.map((s: string) => `<li>${normalizeFeedbackHtml(s)}</li>`).join('');
+            strengthsBlock = `<div style="background:#064e3b;padding:10px;border-radius:8px;border:1px solid #10b981;margin-bottom:10px;">
+    <p><strong>✓ What You Did Well</strong></p>
+    <ul>${strengthsList}</ul>
+  </div>`;
+          }
+
+          const actionSteps = [
+            'Address the items above (e.g., 2+ sentences covering risk and value).',
+            'Review the game requirements and example solution.',
+            'Resubmit when ready; full AI feedback will return on your next attempt.'
+          ];
+          if (validation.score < 50) {
+            actionSteps.push('Scores below 50 usually miss core requirements - ensure you cover every required element.');
+          }
+          const actionList = actionSteps.map(step => `<li>${normalizeFeedbackHtml(step)}</li>`).join('');
+
+          feedbackText = `
+  ${strengthsBlock}
+<div style="background:#0f172a;padding:12px;border-radius:8px;border:1px solid #1d4ed8;margin-bottom:8px;">
+  <p><strong>Automated evaluation (AI coach unavailable)</strong></p>
+  <p><strong>Score:</strong> ${validation.score}/100 (automated)</p>
+  <p style="margin-top:6px;"><strong>Issues detected:</strong></p>
+  <ul>${issuesList}</ul>
+  ${checksList}
+  <div style="margin-top:8px;">
+    <p><strong>What to do next:</strong></p>
+    <ul>${actionList}</ul>
+  </div>
+  <p style="margin-top:8px;color:#93c5fd;">Full AI feedback will return on your next submission.</p>
+</div>`;
+        } else {
+          return sendError(res, 500, 'invalid_model_json', 'AI feedback was not returned in the expected format. Please try again.');
         }
       }
-
-      if (Array.isArray(validation.feedback) && validation.feedback.length > 0) {
-        const escapeHtml = (value: string) =>
-          value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const validationSummary = `
-<div style="background:#0f172a;padding:12px;border-radius:8px;border:1px solid #1d4ed8;margin-bottom:8px;">
-  <p><strong>Automated checks flagged:</strong></p>
-  <ul>${validation.feedback.map((f: string) => `<li>${escapeHtml(f)}</li>`).join('')}</ul>
-  <p style="margin-top:6px;color:#93c5fd;">Automated score: ${validation.score}/100 (used to adjust final score).</p>
-</div>`;
-        feedbackText = validationSummary + feedbackText;
-      }
     }
-
     // Enhance feedback for high scores (85%+)
     const enhancedFeedback = enhanceFeedbackForHighScores(feedbackText, score, game.title);
+
+    let feedbackWithPeer = enhancedFeedback;
+    try {
+      const { data: peerRows } = await supabase.from('players').select('progress');
+      const peerScores: number[] = [];
+      peerRows?.forEach(row => {
+        const attemptsArr = row?.progress?.attempts || [];
+        attemptsArr.forEach((a: any) => {
+          if (a?.gameId === game.id && typeof a.score === 'number') {
+            peerScores.push(a.score);
+          }
+        });
+      });
+
+      const peerStats = computePeerStats(peerScores, score);
+      if (peerStats && peerStats.count >= 5) {
+        const peerBlock = `
+<div style="background:#0b1220;padding:10px;border-radius:8px;border:1px solid #0ea5e9;margin-bottom:10px;">
+  <p><strong>Peer comparison</strong></p>
+  <p>Most players score between ${peerStats.p15}-${peerStats.p85} on this game (n=${peerStats.count}).</p>
+  <p>Your score: ${score} - around the ${peerStats.percentile}th percentile.</p>
+</div>`;
+        feedbackWithPeer = peerBlock + feedbackWithPeer;
+      }
+    } catch (peerErr) {
+      console.warn('Peer stats lookup failed', peerErr);
+    }
+
+    // Historical delta vs last attempt on this game
+    const gameAttempts = currentPlayer.attempts.filter(a => a.gameId === gameId);
+    if (gameAttempts.length > 0) {
+      const lastScore = gameAttempts[gameAttempts.length - 1].score;
+      const delta = score - lastScore;
+      const icon = delta > 0 ? '📈' : delta < 0 ? '📉' : '➡️';
+      const msg = delta !== 0
+        ? `${icon} ${delta > 0 ? '+' : ''}${delta} points from last attempt (${lastScore}→${score})`
+        : `Same score as last attempt (${score}/100)`;
+      feedbackWithPeer = `<p style="color:#a78bfa;"><strong>${msg}</strong></p>` + feedbackWithPeer;
+    }
 
     const currentPlayer = mapPlayer(playerRow);
     const attempt: Attempt = {
@@ -343,7 +507,7 @@ ${genericRubric.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).
       score,
       skill: game.skillCategory,
       ts: new Date().toISOString(),
-      feedback: enhancedFeedback,
+      feedback: feedbackWithPeer,
     };
 
     const updatedAttempts = [...(currentPlayer.attempts || []), attempt];
@@ -399,7 +563,7 @@ ${genericRubric.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).
 
     return res.status(200).json({
       score,
-      feedback: enhancedFeedback,
+      feedback: feedbackWithPeer,
       player: mapPlayer(savedPlayer),
     });
   } catch (error: any) {
