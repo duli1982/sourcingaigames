@@ -1,4 +1,28 @@
-import { Game } from '../types';
+import { Game, RubricItem } from '../types';
+
+/**
+ * Standard rubric templates by difficulty level
+ */
+export const rubricByDifficulty: Record<'easy' | 'medium' | 'hard', RubricItem[]> = {
+    easy: [
+        { criteria: 'Relevant Keywords', points: 30, description: 'Includes key terms related to the role/skill' },
+        { criteria: 'Basic Boolean Operators', points: 25, description: 'Uses AND, OR to combine search terms' },
+        { criteria: 'Search Syntax', points: 25, description: 'Proper use of quotes, parentheses, or platform syntax' },
+        { criteria: 'Completeness', points: 20, description: 'Addresses all requirements in the task description' }
+    ],
+    medium: [
+        { criteria: 'Advanced Keywords', points: 25, description: 'Includes synonyms, variations, and related terms' },
+        { criteria: 'Complex Boolean Logic', points: 30, description: 'Uses AND, OR, NOT with proper grouping/nesting' },
+        { criteria: 'Platform-Specific Features', points: 25, description: 'Leverages advanced search operators (site:, intitle:, etc.)' },
+        { criteria: 'Optimization & Precision', points: 20, description: 'Balanced between broad and specific, avoids noise' }
+    ],
+    hard: [
+        { criteria: 'Expert Keyword Strategy', points: 25, description: 'Comprehensive terms including industry jargon, certifications' },
+        { criteria: 'Sophisticated Boolean Logic', points: 30, description: 'Multi-level nesting, excludes false positives effectively' },
+        { criteria: 'Advanced Search Techniques', points: 25, description: 'Uses proximity operators, wildcards, regex where applicable' },
+        { criteria: 'Strategic Optimization', points: 20, description: 'Highly targeted, considers edge cases, minimal false positives' }
+    ]
+};
 
 /**
  * This is the central repository for all game challenges.
@@ -16,60 +40,54 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Senior Backend Engineer" OR "Backend Developer" OR "Software Engineer") AND (Go OR Golang) AND (Kubernetes OR K8s OR "container orchestration") AND (Vienna OR Wien) AND ("open source" OR "open-source" OR GitHub OR "contributor")',
-        promptGenerator: (submission) => `
-            You are a Technical Sourcing Coach evaluating a Boolean search string for Senior Backend Engineers in Vienna with Go + Kubernetes + Open Source signals. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        validation: {
+            keywords: ['engineer', 'go', 'golang', 'kubernetes', 'k8s'],
+            location: 'vienna',
+            requiresBoolean: true,
+            requiresParentheses: true,
+            minChars: 30
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Technical Sourcing Coach evaluating a Boolean search string submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count of the query.
-               - If W < 10, cap FINAL SCORE at 40.
-               - If 10 <= W < 18, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find Senior Backend Engineers in Vienna with Go + Kubernetes + Open Source contributions.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. JOB TITLES (0-20)
-                 0: No relevant titles.
-                 10: One title only, no OR grouping.
-                 15: Multiple titles but weak grouping/quotes.
-                 20: Strong OR group with variations (Backend Engineer, Software Engineer, Developer) and correct quoting.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. REQUIRED SKILLS (0-30)
-                 0: Missing Go or Kubernetes.
-                 15: Mentions both but no variants or poor grouping.
-                 25: Mentions Go/Golang and Kubernetes/K8s with AND and grouping.
-                 30: Adds related variants (container orchestration) with clean grouping.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. LOCATION (0-20)
-                 0: No Vienna reference.
-                 10: Mentions Vienna only.
-                 15: Vienna/Wien OR Austria backup.
-                 20: Multiple variants with proper OR grouping.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. OPEN SOURCE SIGNAL (0-20)
-                 0: No OS indicator.
-                 10: Single weak mention.
-                 15: Includes GitHub/contributor/open-source.
-                 20: Multiple OS indicators or profile hints.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. BOOLEAN LOGIC QUALITY (0-10)
-                 0: Broken syntax, no parentheses.
-                 5: Basic logic but missing quotes/parentheses.
-                 8: Grouped OR blocks and AND between pillars.
-                 10: Flawless syntax; balanced breadth (not <10 or >1000 likely results).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If missing Go OR Kubernetes entirely, set RawScore = min(RawScore, 40).
-               - If no parentheses for OR groups, set RawScore = min(RawScore, 60).
-               - If no location mention, set RawScore = min(RawScore, 50).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 9+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - Compute FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact shape, no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they include core role titles with OR variations (Backend Engineer, Software Engineer)?
+            2. Did they include BOTH required skills (Go/Golang AND Kubernetes/K8s)?
+            3. Did they target the location correctly (Vienna/Wien)?
+            4. Did they include open source signals (GitHub, contributor, open-source)?
+            5. Is the Boolean logic properly structured with parentheses for grouping?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -82,59 +100,52 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'persona' as const,
         exampleSolution: 'A seasoned UX leader with 7-10 years in B2B SaaS environments who thrives on mentoring junior designers and building design systems. Expert in Figma and translating complex business requirements into clean user experiences. Passionate about data-driven design decisions and has experience with analytics dashboards or data visualization. Values collaborative, user-centered cultures and has managed small design teams while maintaining hands-on involvement.',
-        promptGenerator: (submission) => `
-            You are a Talent Strategy Consultant evaluating a candidate persona for a Lead UX Designer. Use this strict algorithm on the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        validation: {
+            minWords: 50,
+            maxWords: 150,
+            minChars: 200
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Talent Strategy Consultant evaluating a candidate persona submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 20, cap FINAL SCORE at 30.
-               - If 20 <= W < 35, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Create a candidate persona for Lead UX Designer (B2B SaaS, 7+ yrs, Figma, Data Viz).
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. EXPERIENCE LEVEL (0-20)
-                 0: No seniority/years.
-                 10: Mentions lead/senior OR 7+ years.
-                 15: Mentions both seniority and 7+ years.
-                 20: Seniority + 7+ years + context (team leadership).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. TECHNICAL SKILLS (0-20)
-                 0: No skills.
-                 10: Mentions Figma only.
-                 15: Figma + design portfolio complexity.
-                 20: Figma + Data Visualization or analytics dashboards.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. MOTIVATIONS (0-25)
-                 0: No motivations.
-                 10: Generic motivation (growth).
-                 18: Mentions mentoring or user-centered culture or complex problem-solving.
-                 25: Two or more clear motivators tied to this role (mentoring, design systems, complex workflows).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. SOURCING CHANNELS (0-20)
-                 0: None.
-                 10: Generic platforms (LinkedIn).
-                 15: At least one correct channel (Dribbble, Behance, Figma Community).
-                 20: Multiple specific channels relevant to UX.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. PERSONALIZATION/OUTREACH ANGLE (0-15)
-                 0: None.
-                 8: Vague outreach influence.
-                 12: States how persona guides outreach content/tone.
-                 15: Clear outreach implications (what to highlight, tone, motivation hooks).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If Figma is not mentioned, set RawScore = min(RawScore, 40).
-               - If no sourcing channels are mentioned, set RawScore = min(RawScore, 50).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 13+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON exactly as:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they capture the experience level (7+ years/Lead)?
+            2. Did they include the specific technical skills (Figma, Data Viz)?
+            3. Did they identify motivations (Mentoring, User-Centered Culture)?
+            4. Is the persona 3-dimensional (Skills, Traits, Motivations)?
+            5. Is it concise (3-4 sentences) yet comprehensive?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -146,54 +157,52 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Hi Sarah, I came across your presentation on "Scaling CI/CD Pipelines" at DevOps Summit—really insightful approach to infrastructure automation. I\'m reaching out because we\'re building out the platform engineering team at TechCorp and looking for someone with deep CI/CD expertise like yours. The role involves architecting deployment pipelines for our microservices platform. I\'d love to share more about the technical challenges and team. Would you be open to a brief call this week? No pressure—just exploring if there\'s mutual interest.',
-        promptGenerator: (submission) => `
-            You are a Candidate Engagement Specialist evaluating an outreach message to a Senior DevOps Engineer (5 yrs tenure, conference speaker on "Scaling CI/CD Pipelines"). Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        validation: {
+            maxWords: 100,
+            minWords: 30,
+            forbiddenPhrases: ['just checking in', 'circling back', 'touching base']
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Candidate Engagement Specialist evaluating an outreach message submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 50.
-               - If 40 <= W < 60, cap FINAL SCORE at 80.
-               - If W > 120, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Write a personalized outreach message (under 100 words) to a Senior DevOps Engineer who spoke at a conference about "Scaling CI/CD Pipelines".
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. PERSONALIZATION (0-30)
-                 0: No personalization.
-                 10: Generic DevOps mention only.
-                 20: Mentions CI/CD or tenure vaguely.
-                 30: Explicitly references the "Scaling CI/CD Pipelines" talk and 5-year tenure to tailor the note.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. LENGTH DISCIPLINE (0-20)
-                 0: >120 words or meandering.
-                 10: 100-120 words.
-                 15: 75-99 words.
-                 20: 45-75 words (concise and readable).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. CALL TO ACTION (0-25)
-                 0: No CTA.
-                 10: Vague/high-friction CTA ("interview", "process").
-                 20: Clear low-friction CTA (quick chat, brief call, explore fit).
-                 25: Low-friction CTA plus flexibility on timing or medium.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. TONE & RESPECT (0-25)
-                 0: Pushy/assumptive.
-                 10: Neutral but stiff.
-                 18: Professional, polite, acknowledges current role.
-                 25: Warm, respectful, recognizes their autonomy and current commitments.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-            3) CRITICAL CAPS
-               - If no specific mention of the CI/CD talk or conference, set RawScore = min(RawScore, 60).
-               - If no CTA at all, set RawScore = min(RawScore, 50).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 22+ (or 18+ for C2). Otherwise set score to 85.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact shape, no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
+
+            **EVALUATION CRITERIA:**
+            1. Did they mention the specific conference talk ("Scaling CI/CD Pipelines")?
+            2. Is the message under 100 words?
+            3. Is the Call to Action low friction (e.g., "brief call" vs "formal interview")?
+            4. Is the tone respectful, specific, and not pushy?
+            5. Does it avoid generic recruiter clichés?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -205,61 +214,52 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:github.com (Python OR Django) AND Berlin AND ("repositories" OR "projects") -site:github.com/topics -site:github.com/explore',
-        promptGenerator: (submission) => `
-            You are a Google X-Ray Search Expert evaluating a GitHub profile search for Python + Django developers in Berlin. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        validation: {
+            keywords: ['python', 'django', 'berlin'],
+            requiresSite: true,
+            minChars: 30
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Google X-Ray Search Expert evaluating a GitHub profile search submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 10, cap FINAL SCORE at 45.
-               - If 10 <= W < 18, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find Python + Django developers in Berlin using Google X-ray search for GitHub profiles.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SITE TARGETING (0-20)
-                 0: No site targeting.
-                 10: site:github.com present but not focused on profiles.
-                 15: site:github.com with some profile intent.
-                 20: site:github.com plus profile focus (users/inurl/profile).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. SKILLS COVERAGE (0-25)
-                 0: Missing Python or Django.
-                 15: Mentions both but no variants.
-                 20: Mentions both with OR grouping/variants.
-                 25: Strong grouping and variants (Python OR Py, Django framework).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. LOCATION (0-20)
-                 0: No Berlin/Germany.
-                 10: Berlin only.
-                 15: Berlin + Germany variation.
-                 20: Multiple location variants or quotes for exact match.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. PROFILE FILTERING (0-25)
-                 0: No exclusions.
-                 10: One exclusion only.
-                 18: Excludes common noise (-topics, -explore).
-                 25: Multiple exclusions targeting non-profile pages (topics, explore, trending, discussions).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. ADVANCED TECHNIQUE (0-10)
-                 0: None.
-                 5: Basic AND/OR only.
-                 8: Uses intitle/inurl or activity signals ("repositories", "projects").
-                 10: Combines operators to bias to active profiles and clean results.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If missing either Python or Django, set RawScore = min(RawScore, 40).
-               - If missing site:github.com, set RawScore = min(RawScore, 35).
-               - If no exclusions, set RawScore = min(RawScore, 60).
-               - If no location, set RawScore = min(RawScore, 50).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they use "site:github.com" to target the domain?
+            2. Did they filter out non-profile pages (e.g., -site:github.com/topics, -site:github.com/explore)?
+            3. Did they include the location (Berlin)?
+            4. Did they include both Python AND Django?
+            5. Is the search optimized to minimize false positives?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     // NEW GAMES - Expanded Library
@@ -272,59 +272,52 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'title:(Marketing Director OR Head of Marketing OR VP Marketing) AND ("product launch" OR "go-to-market" OR "GTM") AND location:"San Francisco Bay Area" AND company_size:(11-50 OR 51-200) AND past_company:(funded startup OR Series A OR Series B)',
-        promptGenerator: (submission) => `
-            You are a LinkedIn Recruiter Coach evaluating a search query for Marketing Directors at Series A/B startups in the SF Bay Area with product launch experience. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        validation: {
+            keywords: ['marketing', 'director'],
+            location: 'san francisco',
+            minChars: 30
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a LinkedIn Recruiter Coach evaluating a search query submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 12, cap FINAL SCORE at 45.
-               - If 12 <= W < 20, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find Marketing Directors at Series A/B startups in SF Bay Area with product launch experience.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. TITLE TARGETING (0-25)
-                 0: No title targeting.
-                 10: Single title, no OR.
-                 20: Multiple titles but weak grouping/no title: syntax.
-                 25: Strong OR group (Director/Head/VP Marketing) with LinkedIn title: usage.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. STAGE/STARTUP SIGNALS (0-20)
-                 0: None.
-                 10: Vague "startup".
-                 15: Mentions Series A/B or small company_size.
-                 20: Uses company_size or past_company/keywords to target Series A/B.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. PRODUCT LAUNCH KEYWORDS (0-20)
-                 0: None.
-                 10: Single term only.
-                 15: Includes "product launch" or "go-to-market"/GTM.
-                 20: Multiple variants grouped with OR.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. LOCATION (0-20)
-                 0: No location.
-                 10: San Francisco only.
-                 15: Bay Area phrasing.
-                 20: Precise location filter syntax for "San Francisco Bay Area".
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. QUERY BALANCE/SYNTAX (0-15)
-                 0: Broken syntax or extreme breadth.
-                 8: Basic AND/OR but ungrouped.
-                 12: Grouped pillars, likely workable results.
-                 15: Balanced, avoids over/under-filtering; uses LinkedIn operators cleanly.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no location specified, set RawScore = min(RawScore, 50).
-               - If no title OR no product launch keywords, set RawScore = min(RawScore, 50).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they use the "Title" filter correctly with OR variations?
+            2. Did they use "Company Size" or keywords for startups?
+            3. Did they include "Product Launch" keywords?
+            4. Did they include the location (SF Bay Area)?
+            5. Will this query likely give a focused but not over-narrow pool?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -336,59 +329,52 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Partner with organizations like Code2040, Women Who Code, and Black Girls Code to tap into diverse talent pools. 2) Source from HBCUs, women\'s colleges, and universities with strong diversity programs. 3) Use inclusive language in job descriptions and avoid gendered/biased terms. 4) Search for candidates who participate in diversity-focused tech communities, conferences (Grace Hopper, AfroTech), and ERGs.',
-        promptGenerator: (submission) => `
-            You are a DE&I Recruitment Strategist evaluating diversity sourcing strategies for a Senior Software Engineer pipeline. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        validation: {
+            minWords: 50,
+            maxWords: 300,
+            minChars: 200
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a DE&I Recruitment Strategist evaluating sourcing strategies. A participant has proposed strategies to build a diverse pipeline.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 30, cap FINAL SCORE at 40.
-               - If 30 <= W < 50, cap FINAL SCORE at 65.
+            **CHALLENGE GOAL:**
+            Create ethical sourcing strategies to build a diverse pipeline for Senior Software Engineer role without using discriminatory search terms.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SPECIFIC PARTNERSHIPS (0-25)
-                 0: None.
-                 10: One vague group.
-                 18: Names one specific org.
-                 25: Names two or more (Code2040, Women Who Code, Black Girls Code, Techqueria, /dev/color).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. DIVERSE INSTITUTIONS (0-25)
-                 0: None.
-                 10: Generic "universities".
-                 18: Mentions HBCUs or women's colleges.
-                 25: Lists specific examples of HBCUs/HSIs/women's colleges.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. INCLUSIVE LANGUAGE PRACTICES (0-20)
-                 0: Not mentioned.
-                 10: Mentions inclusive JD language generally.
-                 15: Mentions removing gendered terms or accessibility adjustments.
-                 20: Provides concrete language changes or process to audit JDs.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. COMMUNITY ENGAGEMENT (0-20)
-                 0: None.
-                 10: Mentions events/communities vaguely.
-                 15: Names one relevant conference/community (Grace Hopper, AfroTech, ERGs).
-                 20: Names two or more specific communities/events.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. COMPLIANCE (0-10)
-                 0: Suggests illegal filtering or protected-class targeting.
-                 5: Implies compliance but vague.
-                 8: States focus on broadening pipelines ethically.
-                 10: Explicitly rejects demographic filtering and centers equity/values fit.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If any step suggests illegal demographic filtering, set FINAL SCORE = 0 immediately.
-               - If no specific organization is named, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they suggest specific partnerships (e.g., Code2040, Women Who Code, distinct orgs)?
+            2. Did they mention sourcing from diverse institutions (HBCUs, women's colleges)?
+            3. Did they focus on inclusive job description language to avoid gendered/biased terms?
+            4. Did they avoid illegal filtering (e.g., "search only for women")?
+            5. Does the strategy ensure compliance with protected characteristics and focus on expanding the pool?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -400,53 +386,52 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'screening' as const,
         exampleSolution: 'This candidate has strong technical fundamentals with a PhD in Statistics and relevant tools (Python/R/SQL), but falls short of the 5+ years industry experience requirement with only 3 years in consulting. The consulting background likely provided exposure to A/B testing and modeling, but there\'s no evidence of ML deployment or production systems experience. Recommend a phone screen to assess if their consulting work involved tech companies and to probe for any ML deployment experience not listed on the resume. If deployment experience is minimal, they may be better suited for a mid-level rather than senior role.',
-        promptGenerator: (submission) => `
-            You are a Technical Recruiter evaluating a resume screening for a Data Scientist (5+ yrs required, ML deployment required). Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        validation: {
+            minWords: 40,
+            maxWords: 150,
+            minChars: 150
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Technical Recruiter evaluating a screening assessment. A participant has assessed a candidate for a Data Scientist role.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 25, cap FINAL SCORE at 40.
-               - If 25 <= W < 40, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Evaluate a Data Scientist candidate with PhD in Statistics, 3 years consulting experience, Python/R/SQL skills, but the role requires 5+ years in tech company and ML deployment experience.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. EXPERIENCE GAP (0-25)
-                 0: Does not mention years gap.
-                 10: Mentions 3 vs 5 years gap.
-                 18: Mentions gap and nuance of consulting vs tech.
-                 25: Mentions gap, considers PhD research as partial experience, and contextualizes relevance.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. MISSING SKILL (ML DEPLOYMENT) (0-30)
-                 0: Ignores deployment.
-                 15: Mentions but downplays deployment gap.
-                 25: Flags lack of deployment as critical.
-                 30: Flags deployment gap and frames it as must-probe requirement.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. RECOMMENDATION/NEXT STEP (0-25)
-                 0: Flat reject without probe.
-                 10: Vague next step.
-                 18: Suggests phone screen to probe gaps.
-                 25: Balanced: phone screen with specific probes; or redirect to mid-level if gaps persist.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. CALIBRATION & MUST-HAVES (0-20)
-                 0: Treats all signals equally.
-                 10: Distinguishes must-have vs nice-to-have somewhat.
-                 15: Notes ML deployment and 5+ yrs as must-haves; others as nice-to-have.
-                 20: Clear prioritization plus alternative level suggestion if deployment absent.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-            3) CRITICAL CAPS
-               - If ML deployment gap is not mentioned, set RawScore = min(RawScore, 40).
-               - If no next step/recommendation provided, set RawScore = min(RawScore, 50).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 15+ for C4). Otherwise set score to 85.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
+
+            **EVALUATION CRITERIA:**
+            1. Did they identify the gap in industry experience (3 vs 5 years)?
+            2. Did they spot the missing "ML Deployment" skill?
+            3. Did they suggest a "Phone Screen" to probe (rather than flat reject)?
+            4. Did they differentiate "nice to have" vs "must have"?
+            5. Did they consider that PhDs often count as years of experience?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -458,59 +443,52 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'job-description' as const,
         exampleSolution: 'As our Customer Success Manager, you\'ll be the trusted advisor to our mid-market clients, ensuring they achieve maximum value from our platform. You\'ll own the full customer lifecycle post-sale, from onboarding through renewal and expansion. Working closely with Sales, Product, and Support teams, you\'ll advocate for customer needs while driving adoption and identifying growth opportunities. This role requires a consultative mindset, analytical skills to track health metrics, and the ability to build strong relationships with C-level stakeholders. You\'ll directly impact our 90%+ retention rate and help shape our customer success playbook as we scale. If you thrive on solving complex problems, love turning customers into advocates, and want to make a measurable impact in a fast-growing SaaS company, this role is for you.',
-        promptGenerator: (submission) => `
-            You are a Talent Brand Expert evaluating a Customer Success Manager "About the Role" section. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        validation: {
+            minWords: 100,
+            maxWords: 200,
+            forbiddenPhrases: ['rockstar', 'ninja', 'guru', 'wizard']
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Talent Brand Expert evaluating a job description. A participant has written an "About the Role" section for a Customer Success Manager position.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 90 or W > 170, cap FINAL SCORE at 60.
-               - If 90 <= W < 100 or 150 < W <= 170, cap FINAL SCORE at 80.
+            **CHALLENGE GOAL:**
+            Write an engaging "About the Role" section (100-150 words) for a Customer Success Manager at a B2B SaaS company, covering 3-5 years experience, customer retention ownership, and cross-functional collaboration.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. CANDIDATE-CENTRIC TONE (0-25)
-                 0: Company-centric ("we need") only.
-                 10: Mixed but mostly company-centric.
-                 18: Uses "you" language, somewhat inviting.
-                 25: Clearly candidate-centric and engaging throughout.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. KEY REQUIREMENTS COVERAGE (0-25)
-                 0: Omits key duties.
-                 10: Mentions retention or collaboration only.
-                 18: Covers retention and collaboration but shallow.
-                 25: Explicitly covers retention/ownership and cross-functional collaboration with clarity.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. LENGTH & CONCISENESS (0-20)
-                 0: <75 or >200 words.
-                 10: 75-90 or 170-200 words.
-                 15: 100-150 words but some fluff.
-                 20: 100-150 words, concise and smooth.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. IMPACT-FOCUSED (0-20)
-                 0: Pure task list.
-                 10: Some impact hints.
-                 15: States outcomes (retention, adoption, playbook).
-                 20: Clear business impact and metrics/examples.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. INCLUSIVE LANGUAGE (0-10)
-                 0: Uses exclusionary jargon ("rockstar", "ninja", "work hard play hard").
-                 5: Neutral but bland.
-                 8: Professional and welcoming.
-                 10: Explicitly inclusive/accessible tone and avoids bias.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no mention of customer retention/ownership OR no mention of cross-functional collaboration, set RawScore = min(RawScore, 60).
-               - If exclusionary jargon is used, set RawScore = min(RawScore, 50).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Is the tone engaging and candidate-centric ("You will..." rather than "We need...")?
+            2. Did they cover the key requirements (Retention, Cross-functional collaboration)?
+            3. Is it concise (100-150 words)?
+            4. Did they use inclusive language (no hype/bro culture terms like "rockstar")?
+            5. Did they focus on impact (what they will achieve), not just tasks?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -522,59 +500,52 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'ats' as const,
         exampleSolution: '1) Years of PM experience: Must have 3+ years in a product management role, not just "project" management. 2) B2B SaaS experience: Strong preference for candidates from similar industries/business models. 3) Technical background: Look for engineering degrees, CS minors, or demonstrated ability to work with engineering teams. 4) Ownership of product launches: Evidence of taking products from 0-1 or managing a full product lifecycle. 5) Analytical skills: Mentions of data-driven decision making, A/B testing, or metrics ownership. Filter order: Hard requirements first (years exp), then industry match, then differentiators (technical background, ownership). Review top 15-20 manually to account for non-traditional backgrounds.',
-        promptGenerator: (submission) => `
-            You are a Recruiting Ops Manager evaluating an ATS filtering strategy to go from 50 PM candidates to the top 10. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        validation: {
+            minWords: 50,
+            maxWords: 300,
+            minChars: 200
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Recruiting Ops Manager evaluating an ATS filtering strategy. A participant has created a strategy to filter 50 Product Manager candidates to identify the top 10.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 30, cap FINAL SCORE at 40.
-               - If 30 <= W < 50, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Create a filtering strategy to identify top 10 Product Manager candidates from 50 in the ATS, focusing on 4-5 key factors like experience, technical background, and ownership.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. HARD REQUIREMENTS (0-25)
-                 0: No hard requirements.
-                 10: Mentions experience but vague.
-                 18: Specifies years of PM (not project) or other knockouts.
-                 25: Clear thresholds (>=3 yrs PM), knockout questions.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. DIFFERENTIATORS (0-25)
-                 0: None.
-                 10: Vague "industry fit".
-                 18: Mentions B2B SaaS or technical background or launches.
-                 25: Includes multiple differentiators (B2B SaaS, tech background, product launches, analytics).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. FILTERING ORDER/FUNNEL (0-25)
-                 0: No order.
-                 10: Some ordering implied.
-                 18: States sequence (hard reqs -> industry -> differentiators).
-                 25: Clear funnel with numbers or stages to reach 10.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. AUTOMATION BALANCE (0-15)
-                 0: Fully manual or fully automated.
-                 8: Mentions filters but no human review.
-                 12: Uses knockout/filters plus manual review.
-                 15: Balanced automation + human review with rationale.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. EFFICIENCY/QUALITY SAFEGUARDS (0-10)
-                 0: Ignores risk of false negatives.
-                 5: Mentions avoiding over-filtering.
-                 8: Includes manual check for non-traditional profiles.
-                 10: Explicit safeguard (review silver medalists/past applicants) to keep strong candidates.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no hard requirements are stated, set RawScore = min(RawScore, 40).
-               - If no filtering order/sequence is described, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 10+ for C4/C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they prioritize "Hard Requirements" (e.g., Years of PM Experience)?
+            2. Did they look for "Differentiators" (B2B SaaS, Technical background)?
+            3. Is the process efficient (e.g., Knockout questions, structured filter order)?
+            4. Do they balance automation vs manual review (not 100% filter-driven)?
+            5. Did they consider non-traditional backgrounds and account for edge cases?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -586,67 +557,53 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Machine Learning Engineer" OR "ML Engineer" OR "Applied Scientist") AND (TensorFlow OR PyTorch OR "deep learning framework") AND (Google OR Amazon OR Microsoft OR FAANG) AND (Seattle OR "Seattle area" OR Bellevue OR Redmond) AND ("published research" OR "research paper" OR "conference paper" OR arxiv OR "peer reviewed")',
-        promptGenerator: (submission) => `
-            You are a Boolean Logic Master evaluating a complex search string for ML Engineers in Seattle with TensorFlow/PyTorch, Google/Amazon/Microsoft experience, and published research. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        validation: {
+            keywords: ['engineer', 'machine learning', 'ml', 'seattle'],
+            requiresBoolean: true,
+            requiresParentheses: true,
+            minChars: 50
+        },
+        promptGenerator: (submission, rubric) => `
+            You are a Boolean Logic Master evaluating an advanced search string. A participant has written a complex Boolean search to find Machine Learning Engineers.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 12, cap FINAL SCORE at 40.
-               - If 12 <= W < 20, cap FINAL SCORE at 70.
-               - If W > 50, cap FINAL SCORE at 80 (overly verbose for a query).
+            **CHALLENGE GOAL:**
+            Find Machine Learning Engineers in Seattle with TensorFlow OR PyTorch experience, who have worked at Google, Amazon, or Microsoft, AND have published research papers.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ROLE TITLE VARIATIONS (0-20)
-                 0: No relevant titles.
-                 10: Single title only.
-                 15: Multiple titles but weak grouping.
-                 20: Strong OR group (ML Engineer, Applied Scientist, Machine Learning Engineer, Research Scientist) with quotes as needed.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. TECH STACK (0-25)
-                 0: Missing TensorFlow or PyTorch.
-                 15: Mentions both but no variants/grouping.
-                 20: Proper OR group for TensorFlow/PyTorch.
-                 25: Adds variants like "deep learning framework" with correct grouping.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. COMPANY TARGETING (0-20)
-                 0: Missing target companies.
-                 10: One target company.
-                 15: Google + Amazon + Microsoft grouped.
-                 20: Includes FAANG/Big Tech variants grouped correctly.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. RESEARCH PUBLICATIONS (0-20)
-                 0: Not mentioned.
-                 10: Single keyword.
-                 15: Multiple terms (published research, research paper, conference paper).
-                 20: Broad coverage (arxiv, peer reviewed, conferences like NeurIPS/ICML).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. LOCATION (0-10)
-                 0: Missing location.
-                 5: Seattle only.
-                 8: Seattle + one nearby (Bellevue/Redmond).
-                 10: Multiple variants (Seattle area, Bellevue, Redmond, Puget Sound).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-               C6. BOOLEAN SYNTAX QUALITY (0-5)
-                 0: Broken syntax/no parentheses.
-                 2: Basic AND/OR but ungrouped.
-                 4: Grouped pillars with parentheses.
-                 5: Flawless nesting and clean operator use.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            3) CRITICAL CAPS
-               - If missing any of the four pillars (Tech stack, Company, Research, Location), set RawScore = min(RawScore, 40).
-               - If no parentheses are used for OR groups, set RawScore = min(RawScore, 60).
-               - If role titles are missing, set RawScore = min(RawScore, 50).
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 4+ for C6). Otherwise set score to 85.
+            **EVALUATION CRITERIA:**
+            1. Did they use nested parentheses correctly for the OR groups?
+            2. Did they include all 3 constraints (Tech frameworks, Company, Research)?
+            3. Did they target the location (Seattle and surrounding areas)?
+            4. Did they cover role title variations (ML Eng, Applied Scientist)?
+            5. Did they use proper Boolean structure with AND to combine different requirement categories?
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -658,60 +615,47 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:stackoverflow.com/users (Swift OR SwiftUI OR "Swift UI") AND (iOS OR iPhone) AND ("reputation" OR "top user" OR "answers") -site:stackoverflow.com/questions',
-        promptGenerator: (submission) => `
-            You are a Technical Sourcing Expert evaluating an X-ray search for Stack Overflow iOS/Swift developers. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Technical Sourcing Expert evaluating an X-ray search. A participant has written a Google X-ray search to find iOS developers on Stack Overflow.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 8, cap FINAL SCORE at 40.
-               - If 8 <= W < 14, cap FINAL SCORE at 65.
+            **CHALLENGE GOAL:**
+            Find iOS developers who are active on Stack Overflow with Swift UI expertise using a Google X-ray search targeting Stack Overflow profiles.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SITE TARGETING (0-25)
-                 0: No site targeting.
-                 10: site:stackoverflow.com only.
-                 18: site:stackoverflow.com with some profile intent.
-                 25: Explicit site:stackoverflow.com/users or inurl:users for profile structure.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. SKILL KEYWORDS (0-20)
-                 0: Missing Swift/iOS.
-                 10: One term only.
-                 15: Swift + iOS variants grouped.
-                 20: Swift, SwiftUI/"Swift UI", iOS/iPhone variants with OR grouping.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. EXCLUSIONS (0-30)
-                 0: None.
-                 10: One exclusion.
-                 20: Two exclusions (e.g., -questions -tags).
-                 30: Three or more exclusions targeting non-profiles (-questions, -tags, -jobs, -companies).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. ACTIVITY INDICATORS (0-15)
-                 0: None.
-                 8: One activity term.
-                 12: Two activity terms (reputation, answers, top user).
-                 15: Multiple activity signals to bias to active contributors.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. QUERY OPTIMIZATION (0-10)
-                 0: Overly broad/narrow or broken syntax.
-                 5: Basic AND/OR but unbalanced.
-                 8: Balanced terms likely to return profiles.
-                 10: Well-balanced with profile structure awareness.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If missing "/users" (or equivalent profile targeting), set RawScore = min(RawScore, 60).
-               - If no exclusions, set RawScore = min(RawScore, 55).
-               - If missing Swift or iOS keywords, set RawScore = min(RawScore, 40).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they target "site:stackoverflow.com/users" to find profiles specifically?
+            2. Did they include the skills (Swift/SwiftUI/iOS) with appropriate variations?
+            3. Did they exclude non-profile pages (e.g., -questions, -tags)?
+            4. Did they look for activity signals (reputation, answers, top user)?
+            5. Is the query optimized to exclude noise while finding active contributors?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -723,54 +667,47 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Hi Jennifer, I wanted to follow up on my message from last week about the Senior Data Engineer role at DataCorp. I know you\'re likely busy, but wanted to make sure it didn\'t get lost in your inbox. If the timing isn\'t right or you\'re not interested, no worries at all—just let me know and I won\'t bother you again. Thanks!',
-        promptGenerator: (submission) => `
-            You are a Candidate Engagement Specialist evaluating a follow-up email to a Senior Data Engineer after 5 days of silence. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        promptGenerator: (submission, rubric) => `
+            You are a Candidate Engagement Specialist evaluating a follow-up email. A participant has written a follow-up to a Senior Data Engineer who hasn't responded after 5 days.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 30, cap FINAL SCORE at 50.
-               - If 30 <= W <= 75, no cap from length.
-               - If W > 90, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Write a brief, professional follow-up message (under 75 words) for a first follow-up after 5 days of no response.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. BREVITY (0-25)
-                 0: >120 words.
-                 10: 90-120 words.
-                 18: 60-89 words.
-                 25: 35-60 words (concise, mobile-friendly).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. TONE (0-25)
-                 0: Pushy/guilt-tripping.
-                 10: Neutral but stiff or clich?d ("just checking in").
-                 18: Professional and polite.
-                 25: Warm, respectful, avoids pressure.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. CLEAR OUT (0-30)
-                 0: No exit path.
-                 10: Implicit/weak out.
-                 20: Clear opt-out statement.
-                 30: Clear opt-out plus reassurance about no further pings if uninterested.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. REFERENCE TO PRIOR EMAIL (0-20)
-                 0: No reference to prior outreach.
-                 10: Vague mention.
-                 15: References prior note without re-pitching.
-                 20: References prior note succinctly and keeps focus on reply.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-            3) CRITICAL CAPS
-               - If no clear "out"/opt-out language, set RawScore = min(RawScore, 60).
-               - If tone is pushy or guilt-tripping, set RawScore = min(RawScore, 50).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 15+ for C4). Otherwise set score to 85.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
+
+            **EVALUATION CRITERIA:**
+            1. Is it brief (under 75 words)?
+            2. Is the tone professional yet polite (not generic "just checking in")?
+            3. Is there a clear "out" (e.g., "let me know if not interested")?
+            4. Does it reference the previous email without re-pitching everything?
+            5. Does it avoid guilt-tripping or being pushy?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -782,61 +719,47 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:github.com (React OR ReactJS OR "front end" OR "frontend developer") AND (Austin OR "Austin, TX" OR Texas) AND ("repositories" OR "contributions") AND ("open source" OR "open-source") -site:github.com/topics -site:github.com/trending',
-        promptGenerator: (submission) => `
-            You are a Technical Sourcer evaluating a GitHub X-ray search for React developers in Austin with open-source signals. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Technical Sourcer evaluating a GitHub X-ray search. A participant has written a Google X-ray search to find front-end developers on GitHub.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 10, cap FINAL SCORE at 45.
-               - If 10 <= W < 16, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find front-end developers in Austin, Texas who contribute to open-source React projects with active GitHub profiles.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SITE TARGETING (0-20)
-                 0: No site targeting.
-                 10: site:github.com present.
-                 15: site:github.com with some profile intent.
-                 20: site:github.com plus profile bias (e.g., users/inurl, profile terms).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. SKILL KEYWORDS (0-25)
-                 0: Missing React/frontend terms.
-                 15: One React mention.
-                 20: React/ReactJS/front-end variants grouped.
-                 25: Strong grouping with synonyms ("front end", frontend developer).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. LOCATION (0-20)
-                 0: No location.
-                 10: Austin only.
-                 15: Austin + TX or Texas.
-                 20: Multiple variants (Austin, Austin TX, ATX, Texas).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. OPEN SOURCE SIGNALS (0-20)
-                 0: None.
-                 10: One OS term.
-                 15: Repositories/contributions/open source.
-                 20: Multiple signals indicating active contributors.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. EXCLUSIONS (0-15)
-                 0: None.
-                 8: One exclusion.
-                 12: Two exclusions (-topics, -trending).
-                 15: Three or more relevant exclusions to bias to profiles (-topics, -trending, -explore).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If missing site:github.com, set RawScore = min(RawScore, 35).
-               - If no location terms, set RawScore = min(RawScore, 50).
-               - If no React/frontend terms, set RawScore = min(RawScore, 40).
-               - If no exclusions, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they include the location (Austin/Austin, TX/Texas) with variations?
+            2. Did they include "React" keywords and front-end developer variations?
+            3. Did they filter for activity ("contributions" or "repositories")?
+            4. Did they try to reduce noise by excluding generic pages (-topics, -trending)?
+            5. Did they use proper site: operator and structure the query effectively?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -848,59 +771,47 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'persona' as const,
         exampleSolution: 'A proven enterprise sales leader with 10-15 years of experience, including at least 5 years selling cybersecurity or infrastructure solutions to Fortune 500 companies. Likely has an MBA and has managed teams of 10-20 AEs/SEs, with a track record of consistently exceeding $10M+ quotas. Motivated by equity upside and the opportunity to build a sales organization from the ground up at a high-growth startup. Has probably worked at established cybersecurity vendors (Palo Alto Networks, CrowdStrike, Okta) and is ready to take on more strategic responsibility. May be active on LinkedIn sharing thought leadership about enterprise sales or cybersecurity trends. Can be found at RSA Conference, Black Hat, or through referrals from VPs at competitor companies.',
-        promptGenerator: (submission) => `
-            You are an Executive Search Researcher evaluating a VP of Sales persona for cybersecurity. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are an Executive Search Researcher evaluating a candidate persona. A participant has created a detailed persona for a VP of Sales at a cybersecurity company.
 
-            1) WORD COUNT / SENTENCE CHECK
-               - Let W = word count; S = sentence count (approx by periods).
-               - If W < 60 or S < 4, cap FINAL SCORE at 50.
-               - If 60 <= W < 90, cap FINAL SCORE at 75.
+            **CHALLENGE GOAL:**
+            Write a comprehensive candidate persona (5-6 sentences) for a VP of Sales at a cybersecurity company, covering background, motivations, and where to find them. Must include enterprise sales experience, cybersecurity domain knowledge, and team leadership skills.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. DOMAIN EXPERTISE (0-20)
-                 0: No security mention.
-                 10: Mentions cybersecurity/security/infosec.
-                 15: Mentions domain plus 1 specific company.
-                 20: Mentions domain plus multiple named vendors (e.g., Palo Alto, CrowdStrike, Okta, Zscaler).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. ENTERPRISE SALES SPECIFICS (0-25)
-                 0: No enterprise context.
-                 10: Vague enterprise mention.
-                 18: Mentions Fortune 500/enterprise and quotas or cycles.
-                 25: Includes deal size/cycle details (e.g., $10M+, 6-12 month cycles).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. SENIORITY MARKERS (0-20)
-                 0: No seniority signals.
-                 10: Mentions years or team size.
-                 15: Mentions years (10-15) and team size.
-                 20: Years, team size, plus track record (quota attainment, leadership scope).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. SOURCING CHANNELS (0-25)
-                 0: None.
-                 10: Generic LinkedIn only.
-                 18: Mentions one relevant channel (RSA, Black Hat, competitor companies).
-                 25: Multiple specific channels/events/companies where they are likely found.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. MOTIVATIONS (0-10)
-                 0: None.
-                 5: Generic growth/impact.
-                 8: Mentions equity or building/scaling.
-                 10: Ties motivations to role stage (equity upside, building org, strategic scope).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no cybersecurity domain mention, set RawScore = min(RawScore, 50).
-               - If no sourcing channels, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they identify the specific domain experience (Cybersecurity/Security)?
+            2. Did they mention the target market (Enterprise/Fortune 500)?
+            3. Did they suggest where to find them (e.g., RSA Conference, Black Hat, Competitors)?
+            4. Did they reflect realistic seniority (10-15 yrs, quota ownership, team size)?
+            5. Did they cover motivations and career trajectory for this executive level role?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -912,53 +823,47 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'job-description' as const,
         exampleSolution: '1) "Rockstar developer" - Use "experienced developer" or "skilled engineer" to avoid gendered/exclusionary jargon. 2) "Top-tier university" - This excludes candidates from non-traditional backgrounds; change to "relevant degree or equivalent experience." 3) "Young, hungry talent" - Age discrimination red flag; use "motivated professionals" or "passionate engineers." 4) "Work-hard-play-hard culture" - Can deter candidates with caregiving responsibilities; replace with "collaborative, results-driven environment with work-life balance."',
-        promptGenerator: (submission) => `
-            You are a DE&I Consultant evaluating inclusive JD revisions for the given biased excerpt. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a DE&I Consultant evaluating a job description review. A participant has identified problematic phrases in a biased job description and suggested inclusive alternatives.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 60.
-               - If 40 <= W < 60, cap FINAL SCORE at 75.
+            **CHALLENGE GOAL:**
+            Review a biased job description excerpt and identify 3-4 problematic phrases ("rockstar developer", "top-tier university", "young, hungry talent", "work-hard-play-hard culture"), then suggest inclusive alternatives.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. "ROCKSTAR" ISSUE (0-25)
-                 0: Not addressed.
-                 10: Identified but weak alternative.
-                 18: Identified as exclusionary jargon with reasonable alternative.
-                 25: Clear bias explanation + strong inclusive alternatives (experienced/skilled engineer).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. "TOP-TIER UNIVERSITY" ISSUE (0-25)
-                 0: Not addressed.
-                 10: Identified but vague alternative.
-                 18: Identified as elitist; suggests equivalent experience.
-                 25: Clear exclusion rationale + inclusive alternative (relevant degree or equivalent experience).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. "YOUNG/HUNGRY" ISSUE (0-25)
-                 0: Not addressed.
-                 10: Identified but weak alternative.
-                 18: Flags age bias and suggests neutral replacements.
-                 25: Explicit ageism risk + strong alternatives ("motivated professionals", etc.).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. "WORK-HARD-PLAY-HARD" ISSUE (0-25)
-                 0: Not addressed.
-                 10: Identified but vague alternative.
-                 18: Notes burnout/caregiver concern.
-                 25: Explicit risk + balanced alternative (collaborative, results-driven, work-life balance).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-            3) CRITICAL CAPS
-               - For each of the four issues missed entirely, set RawScore = RawScore - 20 (min 0).
-               - If fewer than 3 issues are addressed, set RawScore = min(RawScore, 60).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 20+. Otherwise set score to 85.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
+
+            **EVALUATION CRITERIA:**
+            1. Did they catch "Rockstar" (Gendered/exclusionary jargon)?
+            2. Did they catch "Top-tier university" (Elitist/excludes non-traditional backgrounds)?
+            3. Did they catch "Young/Hungry" (Ageist language)?
+            4. Did they address "Work-hard-play-hard" (Burnout signal/deters caregivers)?
+            5. Are the suggested alternatives inclusive while still selling the role effectively?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -970,64 +875,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Current Title: (CTO OR "Chief Technology Officer" OR "VP Engineering" transitioning to CTO)\nKeywords: ("scaled team" OR "grew team" OR "10 to 100" OR "team growth" OR "built engineering team")\nCompany Type: Venture-backed startup OR funded startup\nCompany Size: 51-200, 201-500, 501-1000 (companies that have scaled)\nPast Company Keywords: (Series B OR Series C OR Series D OR growth stage OR scale-up)\nYears at Current Company: 2+ (looking for people who stayed through scaling phase)\nFunction: Engineering\nSeniority Level: CXO, VP',
-        promptGenerator: (submission) => `
-            You are a LinkedIn Recruiter Power User evaluating advanced filters to find CTOs who scaled teams from 10 to 100 at venture-backed startups. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a LinkedIn Recruiter Power User evaluating filter selections. A participant has selected filters.
 
-            1) WORD/FILTER COUNT CHECK
-               - Let F = number of distinct filters/settings listed.
-               - If F < 5, cap FINAL SCORE at 55.
+            **CHALLENGE GOAL:**
+            Find CTOs who scaled engineering teams from 10 to 100+ people at venture-backed startups.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. TITLE FILTERS (0-15)
-                 0: No title filter.
-                 8: Single title only.
-                 12: Multiple titles but weak OR logic.
-                 15: Strong title OR group (CTO/Chief Technology Officer/VP Eng).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. SCALING KEYWORDS (0-25)
-                 0: No scaling language.
-                 10: Vague growth terms.
-                 18: Mentions scaling teams explicitly.
-                 25: Clear growth indicators ("10 to 100", "scaled team", "grew team", "built engineering team") with grouping.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. COMPANY SIZE FILTERS (0-20)
-                 0: None.
-                 10: One range only.
-                 15: Multiple ranges relevant to scaling (51-200, 201-500, 501-1000).
-                 20: Size filters used strategically as scaling proxy.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. FUNDING/VENTURE INDICATORS (0-20)
-                 0: None.
-                 10: Mentions startup vaguely.
-                 15: Mentions Series B/C or VC-backed.
-                 20: Uses funding/company type filters/keywords to target venture-backed.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. TENURE FILTERS (0-15)
-                 0: None.
-                 8: Mentions tenure but vague.
-                 12: Uses 2+ years in role/company.
-                 15: Clear tenure filter to prove they stayed through scaling.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-               C6. FUNCTION/SENIORITY (0-5)
-                 0: Missing function/seniority.
-                 3: Mentions one.
-                 5: Function: Engineering + Seniority: CXO/VP applied.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            3) CRITICAL CAPS
-               - If no scaling keywords, set RawScore = min(RawScore, 50).
-               - If no company size or funding indicators, set RawScore = min(RawScore, 60).
-               - If no tenure filter, set RawScore = min(RawScore, 65).
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 12+ (or 4+ for C6). Otherwise set score to 85.
+            **EVALUATION CRITERIA:**
+            1. Did they use the "Company Size" filter (or keywords for growth)?
+            2. Did they use "Past Company" keywords for "Venture/Series"?
+            3. Did they use "Years in Position" to find seasoned leaders?
+            4. Did they combine Function: Engineering + Seniority: CXO/VP?
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     // INDUSTRY-SPECIFIC EXPANSION
@@ -1040,60 +927,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Registered Nurse" OR RN OR "Critical Care Nurse") AND (ICU OR "Intensive Care Unit" OR "Critical Care") AND (CCRN OR "CCRN certified" OR "Critical Care Registered Nurse") AND (Chicago OR "Chicago area" OR Illinois OR IL) AND ("travel nurse" OR "travel nursing" OR "open to relocation" OR "willing to travel")',
-        promptGenerator: (submission) => `
-            You are a Healthcare Recruiter evaluating a Boolean search for ICU RNs with CCRN in Chicago who are travel-ready. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Healthcare Recruiter evaluating a Boolean search string submission. A participant has written a Boolean search.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 12, cap FINAL SCORE at 50.
-               - If 12 <= W < 18, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find Registered Nurses with ICU experience, CCRN certification, in Chicago, open to travel nursing.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ROLE & LICENSE (0-20)
-                 0: No RN terms.
-                 10: RN or Registered Nurse mentioned.
-                 15: RN + Registered Nurse + Critical Care Nurse grouping.
-                 20: Strong OR group for RN/Registered Nurse/Critical Care Nurse.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. CERTIFICATION (0-30)
-                 0: No CCRN.
-                 15: CCRN mentioned once.
-                 25: CCRN with variants ("CCRN certified", "Critical Care Registered Nurse").
-                 30: Multiple certification variants grouped.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ICU EXPERIENCE (0-20)
-                 0: No ICU terms.
-                 10: Mentions ICU.
-                 15: ICU + Intensive Care Unit variants.
-                 20: ICU/Critical Care grouped with OR.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. LOCATION (0-15)
-                 0: No location.
-                 8: Chicago only.
-                 12: Chicago + IL/Illinois.
-                 15: Multiple variants (Chicago, Chicago area, IL, Illinois).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. TRAVEL READINESS (0-15)
-                 0: No travel terms.
-                 8: One travel/relocation term.
-                 12: Two travel readiness terms.
-                 15: Multiple terms ("travel nurse", "travel nursing", "open to relocation", "willing to travel").
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If CCRN is missing, set RawScore = min(RawScore, 40).
-               - If no location, set RawScore = min(RawScore, 50).
-               - If no travel readiness terms, set RawScore = min(RawScore, 55).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C4/C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they include the certification (CCRN)?
+            2. Did they include "Travel" or "Relocation" keywords?
+            3. Did they target the location (Chicago/IL)?
+            4. Did they include ICU synonyms (critical care, intensive care)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1105,60 +978,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'screening' as const,
         exampleSolution: 'The candidate has the right licenses (Series 7 and 63) and relevant compliance experience, but fintech and traditional banking compliance can differ significantly in regulatory scope. The 4 years of experience meets the minimum, but the lack of traditional banking or regulatory agency background is a gap. Recommend a phone screen to assess: 1) Their specific experience with banking regulations (BSA/AML, FDIC, OCC requirements), 2) Whether their fintech exposure included any banking partnerships or bank-like regulations, 3) Their understanding of the regulatory examination process. If they have strong transferable knowledge and are coachable, they could be a culture fit given fintech\'s innovative approach to compliance.',
-        promptGenerator: (submission) => `
-            You are a Financial Services Recruiter & Compliance Screener evaluating a candidate assessment for a banking Compliance Officer. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Financial Services Recruiter & Compliance Screener evaluating a candidate assessment. A participant has screened a candidate.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 30, cap FINAL SCORE at 55.
-               - If 30 <= W < 50, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Screen a Compliance Officer candidate with fintech experience for a banking role requiring banking experience.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. LICENSE RECOGNITION (0-15)
-                 0: Misses Series 7/63.
-                 8: Mentions licenses but minimal insight.
-                 12: Notes relevance to role.
-                 15: Clearly values Series 7/63 for compliance context.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. FINTECH VS BANKING GAP (0-30)
-                 0: No gap noted.
-                 15: Mentions gap vaguely.
-                 25: Explicitly distinguishes fintech vs banking regulatory frameworks.
-                 30: Names banking regs (FDIC/OCC/BSA/AML) vs fintech and highlights scope difference.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. PROBING QUESTIONS (0-25)
-                 0: None.
-                 12: Generic questions.
-                 20: Specific probes (BSA/AML, FDIC/OCC exams, partnerships with banks).
-                 25: Multiple targeted probes tied to banking compliance depth.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. RECOMMENDATION CLARITY (0-20)
-                 0: Flat reject with no nuance.
-                 10: Vague next step.
-                 15: Recommends phone screen with rationale.
-                 20: Clear balanced recommendation (screen, not reject; or redirect) with reasoning.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. TRANSFERABILITY/COACHABILITY (0-10)
-                 0: Ignores transferability.
-                 5: Mentions potential transfer.
-                 8: Considers fintech experience applicability.
-                 10: Explicit on coachability/learning curve and conditions.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If fintech vs banking regulatory difference not mentioned, set RawScore = min(RawScore, 60).
-               - If no probing questions, set RawScore = min(RawScore, 55).
-               - If flat reject with no screen suggested, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they acknowledge the licenses (Series 7/63 are good)?
+            2. Did they flag the "Fintech vs Banking" gap (Regulatory difference)?
+            3. Did they suggest probing for specific banking reg knowledge (BSA/AML)?
+            4. Did they recommend a next step (phone screen vs reject vs HM consult) clearly?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1170,65 +1029,47 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Provide interview questions and format details in advance to reduce anxiety and allow preparation. 2) Offer alternative interview formats: written responses, take-home assignments, or skills-based assessments instead of only verbal interviews. 3) Create a sensory-friendly interview environment: quiet room, option to turn off cameras in virtual interviews, minimal distractions. 4) Allow extra time for processing questions and formulating responses; avoid rapid-fire questioning. 5) Focus on skills-based evaluation over culture fit, and train interviewers to recognize different communication styles. 6) Partner with neurodiversity employment organizations like Specialisterne or Integrate Autism Employment Advisors. 7) Provide clear, structured onboarding with written documentation.',
-        promptGenerator: (submission) => `
-            You are an Inclusive Hiring Expert evaluating neurodiversity accommodations for QA hiring. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are an Inclusive Hiring Expert evaluating an accommodation design. A participant has designed accommodations.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 50, cap FINAL SCORE at 55.
-               - If 50 <= W < 70, cap FINAL SCORE at 75.
+            **CHALLENGE GOAL:**
+            Design a neurodiversity-friendly recruitment and interview process for software QA and testing roles.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. INTERVIEW TRANSPARENCY (0-20)
-                 0: Not mentioned.
-                 10: Mentions sharing format.
-                 15: Mentions questions/agenda in advance.
-                 20: Clear advance transparency to reduce anxiety.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. ALTERNATIVE FORMATS (0-25)
-                 0: None.
-                 10: Vague flexibility.
-                 18: Offers written/take-home options.
-                 25: Multiple alternatives tied to skills (written, take-home, practical QA tasks).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. SENSORY ACCOMMODATIONS (0-20)
-                 0: None.
-                 10: Mentions quieter setting.
-                 15: Adds camera-off/lighting/noise controls.
-                 20: Comprehensive sensory-friendly setup.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. TIME & PROCESSING (0-15)
-                 0: None.
-                 8: Mentions extra time or avoiding rapid-fire.
-                 12: Clear allowance for processing time and pacing adjustments.
-                 15: Explicit timing accommodations plus structured pauses.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. SKILLS-BASED EVALUATION (0-15)
-                 0: Focus on culture fit.
-                 8: Mentions skills vaguely.
-                 12: Skills-based tasks (QA scenarios, bug reports).
-                 15: Strong skills-first framing tied to accommodations.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-               C6. AVOIDING STEREOTYPES (0-5)
-                 0: Uses stereotypes.
-                 3: Neutral language.
-                 5: Explicitly respectful and stereotype-free.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            3) CRITICAL CAPS
-               - If stereotypes like "superpowers" appear, set FinalScore = 0.
-               - If fewer than 3 specific accommodations, set RawScore = min(RawScore, 60).
-               - If no tie to skills-based evaluation, set RawScore = min(RawScore, 65).
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 15+ (or 4+ for C6). Otherwise set score to 85.
+            **EVALUATION CRITERIA:**
+            1. Did they suggest "Questions in Advance"?
+            2. Did they offer alternative formats (Written vs Verbal)?
+            3. Did they mention sensory considerations (Quiet room)?
+            4. Did they tie accommodations to better evaluation of actual job skills (QA/testing work samples)?
+            5. Did they avoid stereotypes (no "superpowers" clichés)?
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps (or 0 if stereotype).
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1240,60 +1081,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'ats' as const,
         exampleSolution: 'The bottleneck is at the top of the funnel - 120 candidates sitting in "New" status suggests inadequate screening capacity or unclear qualification criteria. The conversion rate from Phone Screen (45) to Onsite (20) is healthy at 44%, and Onsite to Offer (15 to 15) needs monitoring. Actions: 1) Implement knockout questions in the application to auto-screen unqualified candidates, reducing the "New" pile. 2) Schedule a calibration session with the hiring manager to tighten screening criteria and create a scorecard. 3) Dedicate 2 hours daily for the next week to batch-process "New" candidates - aim to clear 30-40 per day. 4) Set up automated rejection emails for clearly unqualified candidates to improve candidate experience. 5) Track time-in-stage metrics weekly to prevent future buildup. Goal: Get "New" down to <30 within one week.',
-        promptGenerator: (submission) => `
-            You are a Recruiting Ops Analyst evaluating pipeline diagnostics. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Recruiting Ops Analyst evaluating a pipeline bottleneck diagnosis. A participant has diagnosed a pipeline bottleneck.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 50.
-               - If 40 <= W < 60, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Identify the bottleneck and propose actions to improve pipeline velocity for a role with 120 candidates in "New" stage.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. BOTTLENECK IDENTIFICATION (0-30)
-                 0: No bottleneck or wrong stage.
-                 15: Identifies an issue but vague.
-                 25: Correctly identifies top-of-funnel/New as main bottleneck.
-                 30: Identifies top-of-funnel with rationale tied to counts/ratios.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. DATA INTERPRETATION (0-20)
-                 0: No use of data.
-                 10: Mentions numbers but no conversion insight.
-                 15: Basic conversion insights (Phone->Onsite, Onsite->Offer).
-                 20: Clear conversion read with implication (top heavy, mid healthy).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ACTIONS & SPECIFICITY (0-25)
-                 0: No actions.
-                 10: Generic actions.
-                 18: 3+ actions with some specificity.
-                 25: 3-4 concrete, actionable steps (knockouts, calibration, batching, automation) tied to bottleneck.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. PRIORITIZATION/OWNERS/METRICS (0-15)
-                 0: None.
-                 8: Mentions priority vaguely.
-                 12: Adds owners or time-bound plan.
-                 15: Prioritized actions with owners/timeframe and success metric (e.g., reduce New to <30 in a week).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. URGENCY & FEASIBILITY (0-10)
-                 0: Ignored.
-                 5: Mild sense of urgency.
-                 8: Urgency plus feasible short-term steps.
-                 10: Clear urgency with realistic, near-term execution.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If bottleneck is misidentified (not the New stage), set RawScore = min(RawScore, 50).
-               - If fewer than 3 actions, set RawScore = min(RawScore, 60).
-               - If no metrics/owners/timeframe, set RawScore = min(RawScore, 70).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they identify the bottleneck at the top ("New" stage)?
+            2. Did they suggest a "Screening Blitz" or "Knockout Questions"?
+            3. Did they analyze the conversion rates (Phone->Onsite is good)?
+            4. Did they propose time-bound actions (clear "by when")?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1305,59 +1132,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: 'Issue 1: "Rockstar" and "ninja" are tech-bro jargon that may discourage women and underrepresented groups from applying. Replace with "skilled engineer" or "experienced developer". Issue 2: "Recent grad" can be interpreted as age discrimination, potentially excluding career-changers and older candidates. Use "early career" or remove time-based language. Issue 3: "Top university" requirement creates socioeconomic and geographic bias, excluding talented developers from non-elite schools, bootcamps, or self-taught backgrounds. Change to "CS degree or equivalent experience". Issue 4: Sourcing only from MIT/Stanford/CMU perpetuates lack of diversity. Expand to HBCUs (Howard, Spelman), HSIs (UT Austin, UC System), regional state schools, and coding bootcamps (Hack Reactor, App Academy). Issue 5: Add diversity job boards (PowerToFly, Jopwell, Fairygodboss) and focus on skills-based assessments over pedigree.',
-        promptGenerator: (submission) => `
-            You are a Compliance & DE&I Talent Partner auditing EEOC risks in sourcing language. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Compliance & DE&I Talent Partner evaluating a bias identification in sourcing. A participant has identified bias in sourcing.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 60, cap FINAL SCORE at 65.
-               - If 60 <= W < 80, cap FINAL SCORE at 80.
+            **CHALLENGE GOAL:**
+            Identify compliance issues and propose corrected sourcing language and strategy for Software Engineer searches.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ROCKSTAR/NINJA LANGUAGE (0-20)
-                 0: Not mentioned.
-                 10: Identified but weak alternative.
-                 16: Notes exclusionary tech-bro jargon with alternative.
-                 20: Clear bias rationale + inclusive alternatives.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. RECENT GRAD AGE RISK (0-25)
-                 0: Not addressed.
-                 12: Mentions age bias vaguely.
-                 20: Explicitly flags age discrimination risk/ADEA.
-                 25: Flags legal risk + offers neutral alternatives (early career/remove time-bound wording).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. TOP UNIVERSITY BIAS (0-25)
-                 0: Not addressed.
-                 12: Mentions elitism vaguely.
-                 20: Explains socioeconomic/geographic/racial bias.
-                 25: Provides inclusive replacement (degree or equivalent experience, skills focus).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. SCHOOL/SOURCE EXPANSION (0-20)
-                 0: None.
-                 10: Generic expansion.
-                 15: Mentions at least 2 alternatives (HBCUs, HSIs, state schools, bootcamps).
-                 20: Multiple specific alternatives and diversity job boards/partners.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. SKILLS-BASED SHIFT (0-10)
-                 0: None.
-                 5: Mentions skills focus generally.
-                 8: Suggests skills-based assessments.
-                 10: Clear shift from pedigree to skills with examples.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If age discrimination risk from "recent grad" not mentioned, set RawScore = min(RawScore, 60).
-               - If no alternative schools or sources are listed, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they flag "Recent Grad" as age discrimination?
+            2. Did they flag "Top University" as socioeconomic bias?
+            3. Did they suggest expanding the school list (e.g., State schools, HBCUs)?
+            4. Did they propose skill-based sourcing (diversity boards, non-elite schools, career changers)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1369,59 +1183,46 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("District Manager" OR "Regional Manager" OR "Area Manager" OR "Multi-Unit Manager") AND (retail OR "brick and mortar" OR stores) AND ("P&L" OR "profit and loss" OR "P&L responsibility" OR revenue) AND ("store performance" OR "sales improvement" OR "comp sales" OR "same-store sales") AND (Target OR Walmart OR "Best Buy" OR Nordstrom OR Macy\'s OR Gap OR "Home Depot" OR Lowe\'s OR CVS OR Walgreens)',
-        promptGenerator: (submission) => `
-            You are a Retail Recruiter evaluating a Boolean search for District Managers. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        promptGenerator: (submission, rubric) => `
+            You are a Retail Recruiter evaluating a Boolean search string submission. A participant has written a Boolean search.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 12, cap FINAL SCORE at 50.
-               - If 12 <= W < 18, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find District Managers with multi-unit management experience, P&L responsibility, and store performance improvement track record.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. TITLE VARIATIONS (0-25)
-                 0: Single/incorrect title.
-                 12: Two titles.
-                 20: Three+ titles but weak grouping.
-                 25: Strong OR group (District/Regional/Area/Multi-Unit Manager).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. P&L/FINANCIAL (0-20)
-                 0: None.
-                 10: Mentions P&L vaguely.
-                 15: P&L or profit and loss terms present.
-                 20: Strong P&L/financial ownership terms grouped.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. PERFORMANCE INDICATORS (0-20)
-                 0: None.
-                 10: Generic performance mention.
-                 15: Store performance/sales improvement/comp sales.
-                 20: Multiple performance metrics/phrases grouped.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. COMPETITOR TARGETING (0-25)
-                 0: None.
-                 10: Mentions retail competitors generically.
-                 18: Lists 2 competitors.
-                 25: Lists 3+ named competitors.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. MULTI-UNIT SIGNAL (0-10)
-                 0: None.
-                 5: Implied only.
-                 8: Mentions multi-unit/multi-store once.
-                 10: Clear multi-unit keyword use.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no competitor names, set RawScore = min(RawScore, 55).
-               - If no P&L terms, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they use "District Manager" OR "Area Manager"?
+            2. Did they include "P&L" or "Profit and Loss"?
+            3. Did they list specific competitors (Target, Walmart, etc.)?
+            4. Did they mention "multi-unit" or "multi-store" management?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1433,60 +1234,47 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '("Manufacturing Engineer" OR "Process Engineer" OR "Production Engineer" OR "Industrial Engineer") AND ("Lean Six Sigma" OR "Six Sigma" OR "Green Belt" OR "Black Belt" OR LSS) AND (automotive OR aerospace OR aviation OR "auto industry") AND (CAD OR AutoCAD OR SolidWorks OR "3D modeling" OR "CAD software") AND (Detroit OR Michigan OR Seattle OR Washington OR "Puget Sound")',
-        promptGenerator: (submission) => `
-            You are an Engineering Sourcer evaluating a manufacturing Boolean search. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are an Engineering Sourcer evaluating a Boolean search string submission. A participant has written a Boolean search.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 12, cap FINAL SCORE at 50.
-               - If 12 <= W < 18, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find Manufacturing Engineers with Lean Six Sigma certification, automotive/aerospace experience, and CAD proficiency in Detroit or Seattle.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ROLE VARIATIONS (0-20)
-                 0: Incorrect/missing titles.
-                 10: One role only.
-                 15: Multiple roles but weak grouping.
-                 20: Strong OR group (Manufacturing/Process/Production/Industrial Engineer).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. LEAN SIX SIGMA (0-25)
-                 0: Missing LSS.
-                 12: Single mention.
-                 20: Multiple LSS variants (Six Sigma, LSS, Green/Black Belt).
-                 25: Comprehensive certification variants grouped.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. CAD SOFTWARE (0-20)
-                 0: Missing CAD.
-                 10: Mentions CAD generically.
-                 15: Names AutoCAD or SolidWorks.
-                 20: Multiple CAD terms grouped (CAD, AutoCAD, SolidWorks, 3D modeling).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. INDUSTRY TARGETING (0-20)
-                 0: None.
-                 10: Generic industry.
-                 15: Automotive or Aerospace present.
-                 20: Automotive + Aerospace/variants grouped.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. LOCATION (0-15)
-                 0: None.
-                 8: Detroit or Seattle only.
-                 12: Detroit + Seattle or state variants.
-                 15: Multiple variants (Detroit, Michigan/MI, Seattle, Washington/WA, Puget Sound).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If LSS absent, set RawScore = min(RawScore, 45).
-               - If CAD absent, set RawScore = min(RawScore, 50).
-               - If neither Detroit nor Seattle, set RawScore = min(RawScore, 55).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they include "Lean Six Sigma" OR "Green Belt" OR "Black Belt"?
+            2. Did they include CAD software (AutoCAD OR SolidWorks)?
+            3. Did they target the locations (Detroit OR Seattle)?
+            4. Did they target "Automotive OR aerospace" explicitly?
+            5. Would this reasonably fill a shortlist without being too narrow?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1498,64 +1286,47 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Current Title: ("Sales Director" OR "Director of Sales" OR "VP Sales" OR "Head of Sales")\nKeywords: (SaaS OR "Software as a Service" OR "B2B software") AND (enterprise OR "Fortune 500" OR "enterprise sales" OR "strategic accounts")\nCompany Revenue: $10M-$50M, $50M-$100M\nIndustry: Computer Software, Information Technology & Services, Internet\nYears in Current Position: 0-1 years, 1-2 years\nFunction: Sales\nSeniority Level: Director, VP\nBoolean in Keywords field: (enterprise OR "Fortune 500") AND (SaaS OR "B2B software")',
-        promptGenerator: (submission) => `
-            You are a SaaS Recruiter evaluating advanced LinkedIn Recruiter filters for Sales Directors. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a SaaS Recruiter evaluating a LinkedIn Recruiter search. A participant has written a LinkedIn Recruiter search.
 
-            1) WORD/FILTER COUNT CHECK
-               - Let F = number of distinct filters/settings listed.
-               - If F < 6, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Find Sales Directors at SaaS companies ($10M-$100M revenue) with enterprise sales experience and less than 2 years in current role.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. TITLE VARIATIONS (0-15)
-                 0: Missing/incorrect titles.
-                 8: One title only.
-                 12: Multiple titles but weak grouping.
-                 15: Strong OR group (Sales Director/Director of Sales/VP Sales/Head of Sales).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. REVENUE TARGETING (0-25)
-                 0: None.
-                 12: Vague stage only.
-                 20: Uses revenue ranges or size proxies.
-                 25: Uses $10M-$100M revenue filters explicitly.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ENTERPRISE SALES KEYWORDS (0-25)
-                 0: None.
-                 12: Vague enterprise mention.
-                 20: Includes enterprise/Fortune 500/strategic accounts keywords.
-                 25: Strong grouping of enterprise terms.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. TENURE FILTER (0-20)
-                 0: None.
-                 10: Mentions tenure vaguely.
-                 15: Uses <2 years/0-2 years filters.
-                 20: Explicit Years in Current Position 0-1, 1-2 to flag flight risk.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. INDUSTRY/SAAS TARGETING (0-10)
-                 0: None.
-                 5: SaaS keywords or industry filter only.
-                 8: Industry + SaaS terms combined.
-                 10: Clear SaaS targeting plus appropriate industries.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-               C6. FUNCTION & SENIORITY (0-5)
-                 0: Missing.
-                 3: One specified.
-                 5: Function: Sales and Seniority: Director/VP included.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            3) CRITICAL CAPS
-               - If no revenue targeting, set RawScore = min(RawScore, 55).
-               - If no tenure filter, set RawScore = min(RawScore, 60).
-               - If no enterprise keywords, set RawScore = min(RawScore, 60).
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5/C6). Otherwise set score to 85.
+            **EVALUATION CRITERIA:**
+            1. Did they use "Company Revenue" or keywords for size?
+            2. Did they use "Years in Current Position" (0-2 years)?
+            3. Did they include "Enterprise" or "Fortune 500" keywords?
+            4. Did they include title variations (Director/Head/VP)?
+            5. Did they combine Function: Sales + Seniority: Director/VP?
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1567,60 +1338,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Army Logistics Officers (88A/92A MOS) and Navy Supply Corps Officers have direct operational and supply chain experience. 2) Marine Corps Operations Officers and Air Force Mission Support Officers bring coordination and team leadership skills. 3) Senior NCOs (E-7 to E-9) across all branches with logistics or operations backgrounds. Sourcing approach: Partner with veteran organizations (Hire Heroes USA, Veterati, FourBlock), attend veteran job fairs, use LinkedIn\'s Military Occupational Specialty feature, search for keywords like "veteran", "transitioning service member", "military leadership", "clearance holder". Create veteran-friendly JDs that translate requirements (avoid corporate jargon, highlight leadership and problem-solving). Offer MOS-to-civilian role translation guides and mentorship programs for smooth transition.',
-        promptGenerator: (submission) => `
-            You are a Veteran Talent Acquisition Specialist evaluating a sourcing strategy for Ops/Logistics roles. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Veteran Talent Acquisition Specialist evaluating a sourcing strategy. A participant has created a sourcing strategy.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 55.
-               - If 40 <= W < 60, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Identify military occupational specialties (MOS) that translate to Operations Manager and Logistics Coordinator roles and create a targeted sourcing strategy.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SPECIFIC MOS CODES (0-25)
-                 0: None.
-                 10: Generic military roles only.
-                 18: One or two MOS/branch equivalents.
-                 25: Multiple MOS codes/branches (e.g., 88A/92A, Supply Corps, Ops Officers).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. RANK TARGETING (0-20)
-                 0: None.
-                 8: Mentions officers/NCOs vaguely.
-                 15: States appropriate ranks (E-7 to E-9, O-1 to O-4).
-                 20: Clear rationale for rank/level fit.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. VETERAN ORGANIZATIONS (0-25)
-                 0: None.
-                 10: One generic org.
-                 18: Two named orgs/resources.
-                 25: Multiple specific orgs/boards/features (Hire Heroes USA, Veterati, FourBlock, LinkedIn MOS feature).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. SKILLS TRANSLATION (0-20)
-                 0: Not addressed.
-                 10: Mentions translation need.
-                 15: Suggests veteran-friendly JDs or MOS-to-civilian guides.
-                 20: Clear translation plan with examples.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. SUPPORT STRATEGY (0-10)
-                 0: None.
-                 5: Mentions mentorship or transition help.
-                 8: Addresses jargon avoidance/support resources.
-                 10: Comprehensive support/mentorship/transition plan.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no MOS codes, set RawScore = min(RawScore, 50).
-               - If no veteran organizations named, set RawScore = min(RawScore, 55).
-               - If no skills translation plan, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they mention specific MOS codes (e.g., 92A, 88N)?
+            2. Did they mention specific ranks (NCOs, Officers)?
+            3. Did they suggest veteran-specific job boards (Hire Heroes, etc.)?
+            4. Did they mention translation of military skills to civilian roles (Ops/Logistics)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1632,60 +1389,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'ats' as const,
         exampleSolution: 'Step 1: Segment by role similarity - use ATS tags to match candidates to the 5 new openings by skills and level. Prioritize those who interviewed within the last 6 months (warmer leads). Step 2: Check candidate status - scrub LinkedIn to see who might have changed jobs (remove those recently promoted or moved). Step 3: Personalized outreach sequence - Email 1 (Day 0): "We\'re reaching out because we were impressed by you during your [role] interview. We have new opportunities that might be a better fit." Include specific role links. Email 2 (Day 5): Follow-up for non-responders with additional context about team/company updates. Step 4: Fast-track process - Offer expedited interviews (skip phone screen) since they\'re already vetted. Step 5: Track metrics - monitor response rate, conversion to interview, and time-to-hire vs. new candidates. Silver medalists should convert 20-30% to interviews.',
-        promptGenerator: (submission) => `
-            You are a Candidate Marketing Manager evaluating a silver-medalist re-engagement campaign. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Candidate Marketing Manager evaluating a re-engagement campaign design. A participant has designed a re-engagement campaign.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 55.
-               - If 40 <= W < 60, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Design a re-engagement campaign strategy for 500 Silver Medalist candidates for 5 new openings.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SEGMENTATION STRATEGY (0-25)
-                 0: None.
-                 10: Generic segmentation.
-                 18: Segments by role/skills or recency.
-                 25: Clear segmentation by role fit and recency (last 6 vs 12 months).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. RELATIONSHIP ACKNOWLEDGMENT (0-20)
-                 0: None.
-                 10: Vague reference.
-                 15: Acknowledges prior interview respectfully.
-                 20: References past interaction and reason for renewed contact.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. FAST-TRACK PROCESS (0-20)
-                 0: None.
-                 10: Generic faster process mention.
-                 15: Offers expedited steps (skip phone screen).
-                 20: Clear fast-track with specifics.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. CAMPAIGN SEQUENCE (0-20)
-                 0: Single email.
-                 10: Two touches without timing.
-                 15: 2-3 touchpoints with some timing.
-                 20: Defined sequence with days (e.g., Day 0, Day 5-7).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. SUCCESS METRICS (0-15)
-                 0: None.
-                 8: Mentions tracking vaguely.
-                 12: Names response/conversion metrics.
-                 15: Clear metrics (response, conversion to interview, time-to-hire).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no segmentation, set RawScore = min(RawScore, 55).
-               - If fewer than 2 touchpoints, set RawScore = min(RawScore, 60).
-               - If no fast-track mention, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they segment the list (e.g., by role or recency)?
+            2. Did they acknowledge the past relationship ("We met last year")?
+            3. Did they offer a "Fast Track" (skip phone screen)?
+            4. Did they define a basic sequence (touchpoints / timing)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1697,64 +1440,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1) Obtain explicit consent before adding candidates to your ATS - you cannot store personal data without their permission. Use LinkedIn InMail or email to request consent first. 2) Provide clear privacy notice - inform candidates how their data will be used, stored, and for how long (typically 6-12 months for recruiting purposes). 3) Right to erasure - candidates can request deletion of their data at any time. Build ATS workflows to honor these requests within 30 days. 4) Data minimization - only collect necessary information (no sensitive data like race, religion, health unless legally required for diversity monitoring with consent). 5) Lawful basis - ensure you have legitimate interest or consent for processing. Don\'t share candidate data with third parties without explicit consent. 6) Cross-border transfer - if transferring data from EU to US, ensure your company has Standard Contractual Clauses or Privacy Shield equivalent. 7) Document compliance - maintain records of consent and data processing activities.',
-        promptGenerator: (submission) => `
-            You are a Data Privacy Officer evaluating GDPR compliance steps for EU recruiting. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Data Privacy Officer evaluating GDPR compliance steps. A participant has outlined GDPR steps.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 50, cap FINAL SCORE at 60.
-               - If 50 <= W < 70, cap FINAL SCORE at 75.
+            **CHALLENGE GOAL:**
+            List GDPR requirements for compliant candidate sourcing and data handling when sourcing candidates in the EU.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. CONSENT/LEGAL BASIS (0-25)
-                 0: No legal basis.
-                 12: Mentions consent or legitimate interest vaguely.
-                 20: States consent/legitimate interest before storing in ATS.
-                 25: Clear lawful basis and sequence (ask before storing).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. PRIVACY NOTICE (0-20)
-                 0: Not mentioned.
-                 10: Mentions informing candidates.
-                 15: Mentions notice content (usage, storage, duration).
-                 20: Clear privacy notice with timeframe (e.g., 6-12 months).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. RIGHT TO ERASURE (0-20)
-                 0: Not mentioned.
-                 10: Mentions deletion on request.
-                 15: Mentions 30-day/"timely" deletion.
-                 20: Explicit 30-day right to be forgotten handling.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. DATA MINIMIZATION (0-15)
-                 0: Not mentioned.
-                 8: Mentions minimal data.
-                 12: Avoids sensitive data unless required.
-                 15: Clear minimization principle + no sensitive data without consent/legal need.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. CROSS-BORDER TRANSFERS (0-10)
-                 0: Not mentioned.
-                 5: Mentions transfer safeguards vaguely.
-                 10: Specifies SCCs/appropriate safeguards for EU->non-EU transfers.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-               C6. DOCUMENTATION (0-10)
-                 0: Not mentioned.
-                 5: Mentions logs.
-                 10: Consent logs/processing records/workflows noted.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            3) CRITICAL CAPS
-               - If no consent/legal basis, set RawScore = min(RawScore, 40).
-               - If right to be forgotten not mentioned, set RawScore = min(RawScore, 55).
-               - If privacy notice not mentioned, set RawScore = min(RawScore, 60).
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5/C6). Otherwise set score to 85.
+            **EVALUATION CRITERIA:**
+            1. Did they mention "Legitimate Interest" or "Consent"?
+            2. Did they mention the "Right to be Forgotten" (Deletion)?
+            3. Did they mention "Data Minimization" (Only what's needed)?
+            4. Did they mention informing candidates within a certain timeframe / privacy notice?
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1766,65 +1491,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'GitHub X-ray: site:github.com ("Developer Advocate" OR "DevRel" OR "Developer Relations") AND (speaker OR conference OR "open source" OR contributor) -site:github.com/topics\n\nTwitter/X X-ray: site:twitter.com ("Developer Advocate" OR "DevRel") AND (backend OR "backend developer" OR API) AND (speaking OR conference OR "just spoke")\n\nLinkedIn Boolean: ("Developer Advocate" OR "DevRel Engineer" OR "Developer Relations") AND (speaker OR "conference speaker" OR "technical blog" OR blogger) AND (backend OR "backend development" OR Python OR Node OR Go)\n\nDev.to X-ray: site:dev.to (author OR "@") AND ("Developer Advocate" OR DevRel) AND (backend OR API OR "backend development")\n\nMedium X-ray: site:medium.com ("Developer Advocate" OR DevRel) AND (backend OR API OR microservices) AND (@)\n\nConference sites: site:sessionize.com ("Developer Advocate" OR DevRel) AND (backend OR API)',
-        promptGenerator: (submission) => `
-            You are a DevRel Sourcer evaluating a multi-platform strategy for Developer Advocates. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a DevRel Sourcer evaluating a cross-platform sourcing strategy. A participant has written a cross-platform strategy.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 60, cap FINAL SCORE at 65.
-               - If 60 <= W < 80, cap FINAL SCORE at 80.
+            **CHALLENGE GOAL:**
+            Find Developer Advocates who are active on Twitter/X, speak at conferences, contribute to GitHub open source, write technical blogs, and have backend development experience.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. GITHUB X-RAY (0-20)
-                 0: Missing site:github.com.
-                 10: site:github.com only.
-                 15: GitHub with DevRel keywords and some exclusions.
-                 20: GitHub with DevRel terms + profile bias/exclusions (-topics).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. TWITTER/X X-RAY (0-20)
-                 0: Missing.
-                 10: site:twitter.com/x.com present.
-                 15: DevRel + speaking indicators.
-                 20: Strong X-ray with DevRel + speaker terms.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. SPEAKER INDICATORS (0-25)
-                 0: None.
-                 12: One mention.
-                 18: Multiple speaker terms.
-                 25: Robust speaker focus across platforms.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. BACKEND TECH (0-15)
-                 0: None.
-                 8: Mentions backend vaguely.
-                 12: Backend/API or one language (Python/Node/Go).
-                 15: Multiple backend terms grouped.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. ADDITIONAL PLATFORMS (0-15)
-                 0: None.
-                 8: One extra platform (Dev.to/Medium/Sessionize).
-                 12: Two platforms.
-                 15: Three+ platforms noted.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-               C6. OPTIMIZATION (0-5)
-                 0: None.
-                 3: Some exclusions or cross-referencing noted.
-                 5: Clear optimization (exclusions, cross-platform validation).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            3) CRITICAL CAPS
-               - If only one platform, set RawScore = min(RawScore, 50).
-               - If no speaker terms, set RawScore = min(RawScore, 60).
-               - If no backend skills, set RawScore = min(RawScore, 60).
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C4/C5 and 5 for C6). Otherwise set score to 85.
+            **EVALUATION CRITERIA:**
+            1. Did they use "site:twitter.com" or "site:x.com"?
+            2. Did they look for "Speaker" or "Conference" keywords?
+            3. Did they combine platforms (e.g., GitHub AND Twitter)?
+            4. Did they use platform-specific logic (GitHub vs Twitter vs Dev.to)?
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1836,60 +1542,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Act as an expert technical sourcer. Write a Boolean search string for LinkedIn Recruiter to find Senior Site Reliability Engineers in London. Required skills: Terraform AND AWS. Exclude candidates currently working at consulting firms (like Accenture, Deloitte, KPMG, etc.). Please use standard Boolean operators (AND, OR, NOT) and group terms correctly with parentheses. Include common job title variations for SRE.',
-        promptGenerator: (submission) => `
-            You are a Prompt Engineering Coach evaluating a prompt that asks Gemini to generate a Boolean string for Senior SREs in London (Terraform + AWS, exclude consulting). Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Prompt Engineering Coach evaluating an AI prompt submission. A participant has written a prompt for AI.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 25, cap FINAL SCORE at 55.
-               - If 25 <= W < 40, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Write a prompt for Gemini to generate a Boolean search string for Senior SREs in London with Terraform/AWS, excluding consulting firms.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. PERSONA/ROLE (0-20)
-                 0: None.
-                 10: Basic persona only.
-                 15: Persona plus sourcing context.
-                 20: Clear expert sourcer persona with context.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. REQUIREMENTS (0-30)
-                 0: Missing key elements.
-                 15: Mentions role and one skill/location.
-                 25: Mentions SRE, London, Terraform, AWS.
-                 30: All requirements clearly specified.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. CONSTRAINTS (0-25)
-                 0: None.
-                 10: Mentions excluding consulting vaguely.
-                 18: Exclude consulting firms explicitly.
-                 25: Names consulting firms (Accenture, Deloitte, KPMG, etc.) and exclusion.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. OUTPUT FORMAT (0-15)
-                 0: Not specified.
-                 8: Asks for Boolean string.
-                 12: Requests AND/OR/NOT with parentheses.
-                 15: Explicit format expectations (Boolean, grouped, possibly code block/platform).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. QUALITY DIRECTIVES (0-10)
-                 0: None.
-                 5: Asks for title variations/synonyms.
-                 8: Mentions platform (LinkedIn Recruiter) or logic explanation.
-                 10: Multiple quality cues (variations, platform, concise, high quality).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If consulting exclusions absent, set RawScore = min(RawScore, 60).
-               - If any of SRE/London/Terraform/AWS missing, set RawScore = min(RawScore, 65).
-               - If no output format guidance, set RawScore = min(RawScore, 70).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they specify the Persona ("Act as a Sourcer")?
+            2. Did they provide the Context (London, SRE, Tech Stack)?
+            3. Did they include the Constraint ("Exclude consulting firms")?
+            4. Did they specify output format (Boolean in code block)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     // PHASE 1: Advanced Engagement & AI (Games 30-37)
@@ -1902,59 +1594,46 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Act as a Senior Technical Recruiter. I will paste a resume below. Please extract the 3 most significant achievements related to "Cloud Migration" or "Digital Transformation". Format them as punchy bullet points that quantify the impact (cost savings, speed, scale). Ignore general responsibilities; focus on outcomes. Output ONLY the 3 bullets.',
-        promptGenerator: (submission) => `
-            You are an AI Prompting Coach for Recruiters evaluating a prompt to summarize Cloud Migration achievements from a 5-page Principal Architect resume. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        promptGenerator: (submission, rubric) => `
+            You are an AI Co-pilot Coach for Recruiters evaluating an AI prompt submission. A participant has used AI to summarize a resume.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 25, cap FINAL SCORE at 50.
-               - If 25 <= W < 40, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Write a prompt for AI to extract and summarize key Cloud Migration achievements from a 5-page resume.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. PERSONA/CONTEXT (0-20)
-                 0: No persona/context.
-                 10: Basic persona only.
-                 15: Persona plus role/resume context.
-                 20: Clear recruiter persona + 5-page resume context.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. TASK CLARITY (0-25)
-                 0: Vague task.
-                 12: Mentions summarize.
-                 20: States extract Cloud Migration achievements.
-                 25: Precise task focus on Cloud Migration/Digital Transformation.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. OUTPUT FORMAT (0-20)
-                 0: Not specified.
-                 10: Mentions bullets.
-                 15: Specifies 3 bullets.
-                 20: 3 bullets only, no fluff.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. QUALITY GUIDELINES (0-20)
-                 0: None.
-                 10: Mentions impact or quantification.
-                 15: Asks for outcomes/metrics.
-                 20: Emphasizes impact (cost/speed/scale) and ignoring fluff.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. BREVITY/FOCUS INSTRUCTIONS (0-15)
-                 0: None.
-                 8: Asks for concise output.
-                 12: Avoids general responsibilities and fluff.
-                 15: Explicitly focus only on relevant achievements and brevity.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If Cloud Migration/Digital Transformation not mentioned, set RawScore = min(RawScore, 50).
-               - If bullet format not specified, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they ask for a "Summary" vs "Rewrite"?
+            2. Did they focus on the "Cloud Migration" project (the key relevance)?
+            3. Did they ask for a specific format (Bullet points)?
+            4. Did they tell AI to ignore generic responsibilities and focus on results?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -1966,61 +1645,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Subject: Permission to close your file?\n\nHi Alex, I haven\'t heard back, so I assume you\'re not interested in the Head of Engineering role right now. I\'m going to close your file for this search so I don\'t keep bothering you. If things change, let me know. Best, [Name]',
-        promptGenerator: (submission) => `
-            You are a Sales Psychology Expert evaluating a final take-away (break-up) email. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Sales Psychology Expert evaluating a "break-up" email submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count for the body (subject excluded).
-               - If W < 25, cap FINAL SCORE at 50.
-               - If 25 <= W <= 50, no cap from length.
-               - If W > 75, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Write a polite break-up email that uses the "take-away" technique to potentially trigger a response.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. TRUE TAKE-AWAY (0-30)
-                 0: No take-away; still selling.
-                 15: Soft take-away.
-                 25: Clear close/withdrawal.
-                 30: Explicit close with respectful framing.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. BREVITY (0-20)
-                 0: >120 words.
-                 10: 75-120 words.
-                 15: 51-75 words.
-                 20: 25-50 words.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. TONE (0-25)
-                 0: Passive-aggressive or guilt-inducing.
-                 12: Neutral but stiff.
-                 20: Polite and professional.
-                 25: Warm, respectful, zero guilt.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. DOOR AJAR (0-15)
-                 0: Burns bridge.
-                 8: Implicit opening.
-                 12: Clear optional re-engage.
-                 15: Re-open invite with zero pressure.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. SUBJECT LINE (0-10)
-                 0: Missing subject.
-                 5: Basic subject.
-                 8: Effective pattern-interrupt subject.
-                 10: Strong take-away subject (e.g., permission to close file).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no subject line, set RawScore = min(RawScore, 60).
-               - If tone is guilt-tripping or aggressive, set RawScore = min(RawScore, 50).
-               - If no take-away at all, set RawScore = min(RawScore, 45).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Is it truly a "take-away" (removing the offer)?
+            2. Is it polite but firm?
+            3. Is it short (under 50 words)?
+            4. Is there a clear next-step hook ("If things change...")?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2032,61 +1696,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'negotiation' as const,
         exampleSolution: 'I completely understand where you\'re coming from, and I appreciate you being open about your expectations. We arrived at $120k based on our internal equity and current market benchmarks for this specific level. However, I don\'t want money to be the only blocker if this is the right career move for you. Can we hop on a call to look at the total package (equity, benefits, bonus) and see if we can bridge the gap in other ways?',
-        promptGenerator: (submission) => `
-            You are a Negotiation Coach evaluating a compensation objection response ($120k offer vs $140k ask; market $125k). Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Negotiation Coach evaluating a salary objection response.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 60.
-               - If 40 <= W <= 130, no cap from length.
-               - If W > 130, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Handle a salary objection where the candidate wants $140k but was offered $120k (market is $125k).
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. EMPATHY & VALIDATION (0-25)
-                 0: No empathy.
-                 12: Basic acknowledgment.
-                 20: Clear validation of feelings.
-                 25: Strong, sincere empathy without overpromising.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. DATA ANCHORING (0-25)
-                 0: No data.
-                 12: Vague data reference.
-                 20: Mentions market/internal equity clearly.
-                 25: Precise, non-defensive benchmark framing.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. TOTAL COMP PIVOT (0-25)
-                 0: Stays on base only.
-                 12: Mentions total comp briefly.
-                 20: Invites discussion of equity/benefits/bonus.
-                 25: Strong pivot to total comp and career value.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. CONVERSATION REQUEST (0-15)
-                 0: Negotiates via email only.
-                 8: Suggests discussion vaguely.
-                 12: Asks for call to discuss.
-                 15: Clear invite to call/live discussion.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. NON-DEFENSIVENESS (0-10)
-                 0: Defensive/blame language.
-                 5: Neutral but rigid.
-                 8: Collaborative tone.
-                 10: Highly collaborative and solution-focused.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If defensive/blame language present, set RawScore = min(RawScore, 55).
-               - If immediately agrees to $140k without discussion, set RawScore = min(RawScore, 60).
-               - If no empathy shown, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they validate the candidate's feelings (Empathy)?
+            2. Did they anchor to data (Market/Internal Equity)?
+            3. Did they pivot to "Total Compensation" or a conversation?
+            4. Did they avoid defensiveness or blame ("budget is the problem")?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2098,60 +1747,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'Create a structured interview guide for a Growth Marketing Manager. I need 5 behavioral questions focusing on "Experimentation" (A/B testing) and "Data Analysis". For each question, provide a "Good Answer" vs. "Bad Answer" rubric to help me evaluate candidates. Tone: Professional and rigorous.',
-        promptGenerator: (submission) => `
-            You are an Interview Design Expert evaluating an AI prompt for Growth Marketing Manager interview questions. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are an Interview Design Expert evaluating an AI prompt for interview question generation.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 25, cap FINAL SCORE at 55.
-               - If 25 <= W < 40, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Write an AI prompt to generate 5 behavioral interview questions for Growth Marketing Manager (Experimentation + Data Analysis).
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. QUESTION TYPE (0-25)
-                 0: No question type specified.
-                 12: Requests questions but generic.
-                 20: States behavioral/situational.
-                 25: Explicit behavioral focus with intent.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. RUBRIC REQUEST (0-30)
-                 0: No rubric/evaluation.
-                 12: Mentions rubric vaguely.
-                 22: Requests scoring/Good vs Bad examples.
-                 30: Explicit Good vs Bad answers or scoring guide per question.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. SKILL SPECIFICATION (0-20)
-                 0: Missing skills.
-                 10: One skill only.
-                 15: Both Experimentation/A-B testing and Data Analysis mentioned.
-                 20: Both highlighted as focus areas.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. QUANTITY & FORMAT (0-15)
-                 0: No quantity.
-                 8: Number implied.
-                 12: Requests 5 questions.
-                 15: Requests 5 questions with structured format.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. PROBING/FOLLOW-UPS (0-10)
-                 0: None.
-                 5: Mentions probing.
-                 8: Requests follow-ups per question.
-                 10: Clear request for probes to deepen answers.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no rubric requested, set RawScore = min(RawScore, 55).
-               - If behavioral/situational type not specified, set RawScore = min(RawScore, 60).
-               - If either skill focus missing, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they ask for behavioral questions?
+            2. Did they request a rubric/evaluation guide (Crucial for structured interviewing)?
+            3. Did they specify the skills (Experimentation/Data)?
+            4. Did they ask for follow-up or probing questions?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2163,54 +1798,46 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'outreach' as const,
         exampleSolution: 'Hey [Name], I know your inbox is probably exploding with recruiter spam, so I wanted to send a voice note to show there\'s a real human behind this profile. I saw your work on the [Project Name] repo and was genuinely impressed by your approach to concurrency. We\'re building something similar at [Company] and I\'d love to just geek out about it for 5 mins. No pitch, just engineering talk. Let me know.',
-        promptGenerator: (submission) => `
-            You are a Personal Branding Expert evaluating a LinkedIn voice note script to a Senior Java Engineer. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        promptGenerator: (submission, rubric) => `
+            You are a Personal Branding Expert evaluating a LinkedIn voice note script.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 50, cap FINAL SCORE at 60.
-               - If 50 <= W <= 90, no cap from length.
-               - If W > 100, cap FINAL SCORE at 65.
+            **CHALLENGE GOAL:**
+            Write a natural, conversational 30-second voice note script to engage a Senior Java Engineer who ignores text messages.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. CONVERSATIONAL TONE (0-25)
-                 0: Stiff/corporate.
-                 12: Somewhat conversational.
-                 20: Natural voice-like tone.
-                 25: Highly natural, human, with contractions.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. PATTERN INTERRUPT (0-25)
-                 0: Generic outreach.
-                 12: Mildly aware of spam.
-                 20: Acknowledges recruiter noise/self-awareness.
-                 25: Creative pattern interrupt while respectful.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. PERSONALIZATION (0-30)
-                 0: None.
-                 12: Generic role mention.
-                 20: Mentions Java/role-specific item.
-                 30: Specific project/repo/talk referenced.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. LOW-PRESSURE CTA (0-20)
-                 0: Hard sell.
-                 10: Basic ask to talk.
-                 15: Casual invite (geek out/5-min chat).
-                 20: Low-pressure CTA with clear optionality.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-            3) CRITICAL CAPS
-               - If no personalization, set RawScore = min(RawScore, 55).
-               - If tone is pushy/salesy, set RawScore = min(RawScore, 50).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 12+ for C4). Otherwise set score to 85.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
+
+            **EVALUATION CRITERIA:**
+            1. Does it sound conversational (not like a script)?
+            2. Is there a "pattern interrupt" (acknowledging the spam)?
+            3. Is the call to action low pressure?
+            4. Did they mention something specific about the candidate (project, repo, talk)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2222,59 +1849,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'persona' as const,
         exampleSolution: 'Rewrite the following resume summary into a compelling, narrative-style executive bio suitable for presenting to a CEO. Highlight their leadership scale (team size), strategic impact (revenue growth), and technical vision. Tone: Impressive, confident, and executive. Keep it under 200 words.',
-        promptGenerator: (submission) => `
-            You are an Executive Search Researcher evaluating an AI prompt to create an executive bio. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are an Executive Search Researcher evaluating an AI prompt for executive bio generation.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 20, cap FINAL SCORE at 55.
-               - If 20 <= W < 35, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Write an AI prompt to transform a dry resume into a compelling executive bio for a VP of Engineering.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. NARRATIVE STYLE (0-25)
-                 0: No style guidance.
-                 12: Mentions rewrite.
-                 20: Requests narrative/compelling style.
-                 25: Explicit narrative executive bio request (no bullets).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. STRATEGIC IMPACT FOCUS (0-30)
-                 0: Task-focused only.
-                 15: Mentions impact broadly.
-                 25: Directs to highlight leadership scale/strategy/revenue.
-                 30: Clear emphasis on strategic impact and outcomes.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. AUDIENCE SPECIFICATION (0-20)
-                 0: No audience.
-                 10: Implied leadership audience.
-                 15: States executive/CEO audience.
-                 20: Explicit CEO/executive audience shaping tone.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. LENGTH CONSTRAINT (0-15)
-                 0: No limit.
-                 8: General brevity mention.
-                 12: Sets paragraph/word limit.
-                 15: Clear one-paragraph and word cap (e.g., <200 words).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. TONE GUIDANCE (0-10)
-                 0: None.
-                 5: Some tone hints.
-                 8: Specifies impressive/confident tone.
-                 10: Clear executive/confident/compelling tone guidance.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no narrative style guidance, set RawScore = min(RawScore, 60).
-               - If no strategic impact focus, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they ask for a "narrative" style?
+            2. Did they focus on "Strategic Impact" over tasks?
+            3. Is the audience defined (CEO)?
+            4. Did they limit length (e.g., under 200 words) so a CEO actually reads it?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2286,59 +1900,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:kaggle.com/ (users OR "competitions") ("Computer Vision" OR CV OR "Image Processing") AND ("Grandmaster" OR "Master" OR "Expert" OR ranking) -site:kaggle.com/c -site:kaggle.com/code',
-        promptGenerator: (submission) => `
-            You are a Technical Sourcing Expert evaluating a Kaggle X-ray search for top-tier Computer Vision talent. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Technical Sourcing Guru evaluating an X-Ray search string submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 10, cap FINAL SCORE at 45.
-               - If 10 <= W < 16, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find top-tier Machine Learning Engineers with Computer Vision expertise on Kaggle using Google X-Ray search.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SITE TARGETING (0-20)
-                 0: No site:kaggle.com.
-                 10: site:kaggle.com present.
-                 15: site:kaggle.com with profile intent (/users).
-                 20: Strong profile targeting/bias for users.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. RANK/EXPERTISE INDICATORS (0-30)
-                 0: None.
-                 15: One rank term.
-                 25: Multiple rank terms (Grandmaster/Master/Expert).
-                 30: Comprehensive rank signals grouped.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. COMPUTER VISION KEYWORDS (0-25)
-                 0: None.
-                 12: One CV term.
-                 20: Multiple CV terms grouped.
-                 25: Broad CV coverage (CV/Image Processing/Image Recognition).
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. EXCLUSIONS (0-20)
-                 0: None.
-                 10: One exclusion.
-                 15: Two exclusions (competitions/code).
-                 20: Multiple exclusions (-/c, -/code, -/datasets) to bias profiles.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. OPTIMIZATION (0-5)
-                 0: None.
-                 3: Some activity indicators/competition mentions.
-                 5: Clear optimization for top-tier results.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no rank keywords, set RawScore = min(RawScore, 50).
-               - If no CV keywords, set RawScore = min(RawScore, 50).
-               - If no exclusions, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 4+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they target the right site (kaggle.com)?
+            2. Did they look for ranking keywords (Master, Grandmaster)?
+            3. Did they try to filter out competition pages?
+            4. Did they use Computer Vision synonyms (CV, image, etc.)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2350,59 +1951,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'xray' as const,
         exampleSolution: 'site:dribbble.com (minimalist OR clean OR "minimalism") AND ("UI Designer" OR "Product Designer") AND (location OR "hiring" OR "available") -site:dribbble.com/shots -site:dribbble.com/stories',
-        promptGenerator: (submission) => `
-            You are a Design Recruiting Specialist evaluating a Dribbble X-ray search for minimalist/clean Senior UI Designers. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Design Recruiting Specialist evaluating an X-Ray search string submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 10, cap FINAL SCORE at 45.
-               - If 10 <= W < 16, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Find Senior UI Designers with minimalist and clean design aesthetics on Dribbble using Google X-Ray search.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. SITE TARGETING (0-20)
-                 0: No site:dribbble.com.
-                 10: site:dribbble.com present.
-                 15: Targeting profiles implied.
-                 20: Strong profile bias (avoids shots/stories).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. AESTHETIC KEYWORDS (0-30)
-                 0: None.
-                 15: One aesthetic term (minimalist/clean).
-                 22: Multiple aesthetic terms grouped.
-                 30: Comprehensive minimalist/clean/minimalism coverage.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ROLE KEYWORDS (0-20)
-                 0: None.
-                 10: One design title.
-                 15: Multiple UI/Product Designer titles grouped.
-                 20: Strong role targeting.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. EXCLUSIONS (0-20)
-                 0: None.
-                 10: One exclusion (shots or stories).
-                 15: Two exclusions.
-                 20: Multiple exclusions to bias profiles ( -shots, -stories, etc.).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. AVAILABILITY INDICATORS (0-10)
-                 0: None.
-                 5: One availability/location term.
-                 8: Multiple availability terms.
-                 10: Clear availability/location signals included.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no aesthetic keywords, set RawScore = min(RawScore, 50).
-               - If no exclusions, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they target dribbble.com?
+            2. Did they include the aesthetic keywords (Minimalist/Clean)?
+            3. Did they exclude "shots" (individual images) to find profiles?
+            4. Did they consider availability indicators (Hire Me, available)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     // PHASE 2: Talent Intelligence & Strategy (Games 38-45)
@@ -2415,59 +2003,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'talent-intelligence' as const,
         exampleSolution: '1. Stripe (Best-in-class payments infra). 2. Adyen (Direct competitor, strong engineering culture). 3. Block/Square (Mature payments stack). 4. PayPal/Venmo (Deep talent pool in NYC). 5. Brex (Modern fintech stack). Strategy: Target these because their engineers solve similar high-scale transaction challenges.',
-        promptGenerator: (submission) => `
-            You are a Market Mapping Expert evaluating competitor targets for NYC payments engineers. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Market Mapping Expert evaluating a competitor company list submission.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 60.
-               - If 40 <= W < 60, cap FINAL SCORE at 75.
+            **CHALLENGE GOAL:**
+            Identify 5 competitor companies with strong payments engineering teams in NYC for targeting Payments Engineers.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. COMPANY RELEVANCE (0-30)
-                 0: Non-payments companies.
-                 15: Some fintech but off-target.
-                 25: Payments/fintech companies mostly relevant.
-                 30: All five are strong payments competitors.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. NYC PRESENCE (0-20)
-                 0: No NYC presence considered.
-                 10: Implied NYC.
-                 15: Mentions NYC presence for several.
-                 20: Clear NYC engineering presence noted.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. TECH STACK ALIGNMENT (0-25)
-                 0: No tech rationale.
-                 12: Generic fintech mention.
-                 20: References payments infra/high-scale transactions.
-                 25: Strong alignment to payments engineering challenges.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. STRATEGIC RATIONALE (0-15)
-                 0: No reasoning.
-                 8: Generic reasoning.
-                 12: Specific why for most companies.
-                 15: Clear why for each target.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. DIVERSITY OF TARGETS (0-10)
-                 0: Same type only.
-                 5: Some variety.
-                 8: Mix of stages/sizes.
-                 10: Well-balanced mix.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If fewer than 5 companies listed, set RawScore = min(RawScore, 55).
-               - If no NYC consideration, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Are the companies relevant to Fintech/Payments?
+            2. Are they likely to have teams in NYC?
+            3. Is the reasoning sound (tech stack match)?
+            4. Did they think about level of engineers (payments infra vs consumer fintech)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2479,60 +2054,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'talent-intelligence' as const,
         exampleSolution: 'Hi Sarah, I\'ve analyzed the current market for Staff AI Engineers in SF. Our $150k budget is in the 10th percentile; the median is closer to $220k for this level of experience. At $150k, we will likely only attract junior candidates or those requiring visa sponsorship. To hire a true Staff-level engineer who can lead the team, I recommend we either adjust the budget to $210k+ or re-scope the role to "Senior" level. Which path do you prefer?',
-        promptGenerator: (submission) => `
-            You are a Compensation Analyst evaluating a budget persuasion email for a Staff AI Engineer in SF ($150k vs $220k market). Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Compensation Analyst evaluating a budget negotiation email.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 50, cap FINAL SCORE at 60.
-               - If 50 <= W <= 100, no cap from length.
-               - If W > 120, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Persuade a Hiring Manager to adjust expectations when their $150k budget for Staff AI Engineer is far below market ($220k+).
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. DATA & PERCENTILES (0-30)
-                 0: No data.
-                 12: Vague data.
-                 22: Mentions market/percentile gap.
-                 30: Specific percentiles/gap ($150k vs $220k+).
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. OPTION FRAMEWORK (0-30)
-                 0: No options.
-                 12: One option only.
-                 22: Two options but vague.
-                 30: Clear double-bind: raise budget OR lower level/scope.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ADVISORY TONE (0-20)
-                 0: Complaining/negative.
-                 10: Neutral.
-                 15: Helpful/advisory.
-                 20: Strong consultative partnership tone.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. BREVITY (0-15)
-                 0: >150 words.
-                 8: 121-150 words.
-                 12: 101-120 words.
-                 15: <=100 words.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. MARKET CONSEQUENCE (0-5)
-                 0: Not mentioned.
-                 3: Generic consequence.
-                 5: Clear impact (will attract junior/visa-only at $150k).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no market data, set RawScore = min(RawScore, 55).
-               - If no options presented, set RawScore = min(RawScore, 60).
-               - If tone is negative/complaining, set RawScore = min(RawScore, 55).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 5 for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they use data/percentiles to make the case?
+            2. Did they offer options (Raise budget OR Lower requirements)?
+            3. Was the tone advisory, not complaining?
+            4. Did they keep it under 100 words (as requested)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2544,59 +2105,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'diversity' as const,
         exampleSolution: '1. Send the interview agenda and core questions 24 hours in advance to reduce anxiety. 2. Offer a "camera-off" option for the initial screen to lower sensory load. 3. Replace one abstract "behavioral" interview with a practical, take-home work sample test that mimics the actual job.',
-        promptGenerator: (submission) => `
-            You are a DE&I Consultant evaluating neurodiversity accommodations for a QA Tester interview process. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a DE&I Consultant evaluating interview accommodation suggestions.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 30, cap FINAL SCORE at 55.
-               - If 30 <= W < 50, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Design 3 specific accommodations to make a QA Tester interview process inclusive for neurodiverse candidates (Autism/ADHD).
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ANXIETY REDUCTION (0-30)
-                 0: Not addressed.
-                 15: Mentions predictability.
-                 25: Agenda/questions in advance.
-                 30: Clear, structured, anxiety-reducing steps.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. PRACTICAL IMPLEMENTATION (0-25)
-                 0: Vague.
-                 12: Actionable but light detail.
-                 20: Specific steps feasible in process.
-                 25: Highly actionable, step-by-step.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. SENSORY CONSIDERATIONS (0-20)
-                 0: None.
-                 10: Mentions sensory comfort.
-                 15: Camera-off/quiet environment/breaks.
-                 20: Comprehensive sensory adjustments.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. SKILLS-BASED FOCUS (0-15)
-                 0: Not mentioned.
-                 8: Mentions work sample.
-                 12: Swaps abstract behavioral for work samples.
-                 15: Strong skills-first evaluation tied to QA tasks.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. QUALITY MAINTENANCE (0-10)
-                 0: Lowers bar.
-                 5: Implies fairness.
-                 8: States maintaining standards.
-                 10: Explicit equitable, not lower bar.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If fewer than 3 specific accommodations, set RawScore = min(RawScore, 60).
-               - If anxiety/processing not addressed, set RawScore = min(RawScore, 55).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Are the accommodations practical?
+            2. Do they specifically help with anxiety/processing (common in neurodivergence)?
+            3. Do they maintain the bar for quality?
+            4. Did they consider interviewer training or expectations?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2608,59 +2156,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'screening' as const,
         exampleSolution: '1. "You\'ve had incredible impact in short stints. What specifically prompted your transition from Company A to Company B after only 9 months?" (Probes job hopping). 2. "Regarding the 500% growth - what was the starting revenue number, and what specific contribution was directly yours vs. the market trend?" (Probes attribution).',
-        promptGenerator: (submission) => `
-            You are an Executive Recruiter evaluating probing questions for a red-flag resume. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are an Executive Recruiter evaluating probing questions for a resume screening.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 20, cap FINAL SCORE at 55.
-               - If 20 <= W < 35, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Write 2 probing questions to validate impressive claims and investigate job hopping for a VP of Sales candidate.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. JOB HOPPING PROBE (0-30)
-                 0: No question about short stints.
-                 15: Generic tenure question.
-                 25: Asks about reasons for rapid moves.
-                 30: Specific probe into each transition in 4 jobs/3 years.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. METRIC BASELINE (0-30)
-                 0: Ignores 500% claim.
-                 15: Asks about results vaguely.
-                 25: Requests starting revenue/timeframe.
-                 30: Asks baseline, timeframe, and validation of the 500% growth.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ATTRIBUTION CLARITY (0-20)
-                 0: None.
-                 10: Generic contribution question.
-                 15: Separates individual vs team/market impact.
-                 20: Explicitly probes personal role vs macro factors.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. TONE (0-15)
-                 0: Accusatory.
-                 8: Neutral/stiff.
-                 12: Curious and respectful.
-                 15: Highly professional, open-minded.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. SPECIFICITY (0-5)
-                 0: Vague.
-                 3: Some specificity.
-                 5: Clear, verifiable questioning.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If job hopping not probed, set RawScore = min(RawScore, 60).
-               - If metric baseline not probed, set RawScore = min(RawScore, 60).
-               - If tone is accusatory, set RawScore = min(RawScore, 50).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 4+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they ask about the transitions (Job hopping)?
+            2. Did they ask for the "Baseline" of the metrics (500% of what?)?
+            3. Is the tone curious, not accusatory?
+            4. Did they probe "We vs I" (individual contribution)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2672,59 +2207,46 @@ export const games: Game[] = [
         difficulty: 'easy' as const,
         skillCategory: 'job-description' as const,
         exampleSolution: 'Stop scrolling! 🛑 Do you spend more time on TikTok than you sleep? We need a Social Media Manager for [Brand] who actually gets it. You\'ll own our entire content calendar, work with top creators, and yes - you can work from your couch. 🛋️ No degree required, just show us your best viral video. Link in bio to apply! 🚀',
-        promptGenerator: (submission) => `
-            You are a Social Media Recruiter evaluating a Gen Z video JD script for a 30-second TikTok/Reels. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.easy,
+        promptGenerator: (submission, rubric) => `
+            You are a Social Media Recruiter evaluating a video job advertisement script.
 
-            1) WORD COUNT/LENGTH CHECK
-               - Estimate spoken length ~130 wpm.
-               - If text > 65 words, cap FINAL SCORE at 70.
-               - If text > 90 words, cap FINAL SCORE at 55.
+            **CHALLENGE GOAL:**
+            Write a high-energy, authentic 30-second video script for TikTok/Reels to hire Gen Z Social Media Managers.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. HOOK STRENGTH (0-30)
-                 0: No hook.
-                 15: Mild hook.
-                 25: Strong pattern-interrupt.
-                 30: Immediate attention grabber in first line.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. GEN Z TONE (0-25)
-                 0: Corporate.
-                 12: Mixed tone.
-                 20: Conversational and direct.
-                 25: Authentic friend-to-friend tone.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. CALL TO ACTION (0-20)
-                 0: No CTA.
-                 10: Weak CTA.
-                 15: Clear CTA (link in bio/swipe/apply).
-                 20: Strong CTA aligned to platform.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. VALUE PROP (0-15)
-                 0: None.
-                 8: Mentions perk vaguely.
-                 12: Highlights appealing aspects (creative freedom/remote/creator collabs).
-                 15: Multiple appealing points tailored to Gen Z.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. BREVITY/PACE (0-10)
-                 0: Rambling.
-                 5: Some trimming needed.
-                 10: Concise, fits <30s.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no hook, set RawScore = min(RawScore, 60).
-               - If no CTA, set RawScore = min(RawScore, 60).
-               - If tone is corporate, set RawScore = min(RawScore, 55).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Is the hook strong (first 3 seconds)?
+            2. Is the tone right for Gen Z (Authentic, not corporate)?
+            3. Is there a clear Call to Action (Link in bio)?
+            4. Does it focus on the vibe and perks rather than corporate language?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2736,59 +2258,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: '(filetype:pdf OR filetype:doc OR filetype:docx) "Data Scientist" AND (Python OR R) AND ("machine learning" OR ML) AND (resume OR cv OR vitae) -job -sample -template',
-        promptGenerator: (submission) => `
-            You are a Google Search Expert evaluating a file-type Boolean for Data Scientist resumes on university sites. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Google Search Hacker evaluating a Boolean search string for finding resumes.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 12, cap FINAL SCORE at 50.
+            **CHALLENGE GOAL:**
+            Find publicly hosted Data Scientist resumes on university websites using Google Boolean search with file type operators.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. FILETYPE OPERATORS (0-25)
-                 0: None.
-                 12: One filetype.
-                 20: Two filetypes.
-                 25: PDF + DOC/DOCX grouped.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. ROLE & SKILLS (0-20)
-                 0: Missing DS terms.
-                 10: Data Scientist only.
-                 15: DS + one skill (Python/R/ML).
-                 20: DS + multiple skills grouped.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. RESUME INDICATORS (0-20)
-                 0: None.
-                 10: Resume/CV once.
-                 15: Multiple resume variants.
-                 20: Strong resume/CV signaling.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. EXCLUSIONS (0-25)
-                 0: None.
-                 12: One exclusion.
-                 20: Two exclusions (job/template).
-                 25: Three+ exclusions to filter jobs/templates/samples.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. DOMAIN TARGETING (0-10)
-                 0: None.
-                 5: Generic.
-                 8: site:.edu or similar.
-                 10: Smart domain use (edu + personal hosts like github.io).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no filetype operator, set RawScore = min(RawScore, 40).
-               - If no resume/CV keywords, set RawScore = min(RawScore, 50).
-               - If no exclusions, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they use the filetype: operator?
+            2. Did they include keywords for "Resume" (CV, Vitae)?
+            3. Did they exclude templates/samples (-sample)?
+            4. Did they target specific domains (e.g., site:edu or site:github.io)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2800,57 +2309,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'linkedin' as const,
         exampleSolution: 'Past Company: Airbnb\nCurrent Company: NOT Airbnb\nYears of Experience: 5+ (Targeting seniors)\nKeywords: "Software Engineer" OR "Product Manager"\nInMail Strategy: "Miss you!"',
-        promptGenerator: (submission) => `
-            You are a LinkedIn Power User evaluating boomerang filters. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a LinkedIn Power User evaluating LinkedIn Recruiter filter settings.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 20, cap FINAL SCORE at 55.
+            **CHALLENGE GOAL:**
+            Set up LinkedIn Recruiter filters to find "Boomerang" employees who previously worked at Airbnb but might want to return.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. PAST COMPANY FILTER (0-30)
-                 0: Missing.
-                 15: Mentioned but vague.
-                 25: Uses Past Company: Airbnb.
-                 30: Past Company with clarity.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. CURRENT COMPANY EXCLUSION (0-30)
-                 0: Missing.
-                 15: Implied.
-                 25: Excludes current Airbnb.
-                 30: Clear NOT Airbnb current company.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ROLE TARGETING (0-20)
-                 0: None.
-                 10: Generic roles.
-                 15: Specific functions (eng/PM/etc.).
-                 20: Well-defined role/keywords.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. TENURE STRATEGY (0-15)
-                 0: None.
-                 8: Mentions experience/time since leaving.
-                 12: Uses years exp or time-since-leaving thoughtfully.
-                 15: Strategic tenure/vesting consideration.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. LOGIC SOUNDNESS (0-5)
-                 0: Broken filters.
-                 3: Minor issues.
-                 5: Sound, actionable filter set.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no past company filter, set RawScore = min(RawScore, 40).
-               - If no exclusion of current employees, set RawScore = min(RawScore, 45).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 4+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they set Past Company correctly?
+            2. Did they EXCLUDE the Current Company (Crucial!)?
+            3. Is the logic sound?
+            4. Did they add a role constraint (e.g., Engineering) to avoid non-relevant alumni?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2862,58 +2360,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'ats' as const,
         exampleSolution: '1. Match by Email Address (Unique Identifier): Run a script to group profiles with the exact same email. 2. Match by Name + Phone: For those with different emails, look for exact name AND phone matches. 3. Merge Rule: Always keep the "Most Recently Updated" profile as the master, but append notes/attachments from the older profile. Archive the old one.',
-        promptGenerator: (submission) => `
-            You are a Recruiting Ops Manager evaluating a duplicate-merge strategy for 3,000 ATS records. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are an Ops Manager evaluating a data deduplication strategy.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Design a 3-step process to safely identify and merge 3,000 duplicate profiles in an ATS without losing data.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. PRIMARY IDENTIFIER (0-25)
-                 0: None.
-                 10: Weak ID.
-                 18: Uses email as primary.
-                 25: Email primary with clarity.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. SECONDARY MATCHING (0-25)
-                 0: None.
-                 10: Vague secondary match.
-                 18: Name + phone/location.
-                 25: Clear secondary rules for non-email matches.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. MASTER RECORD RULE (0-25)
-                 0: None.
-                 12: Basic keep latest.
-                 20: Defined master (recent/complete) with detail.
-                 25: Clear rule + preserves notes/attachments.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. SAFE APPROACH (0-15)
-                 0: No testing.
-                 8: Mentions small pilot.
-                 12: Pilot + rollback plan.
-                 15: Robust safety (pilot, rollback, backup).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. AUDIT/LOGGING (0-10)
-                 0: None.
-                 5: Mentions logging.
-                 10: Explicit audit trail/undo tracking.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If suggests deleting records, set RawScore = min(RawScore, 40).
-               - If no unique identifier, set RawScore = min(RawScore, 50).
-               - If no master rule, set RawScore = min(RawScore, 55).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they identify a Unique Identifier (Email)?
+            2. Did they have a secondary check (Phone/Name)?
+            3. Did they define a "Master" record rule (Recency)?
+            4. Did they suggest testing on a small sample first?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     // PHASE 3: The Closer & Strategy (Games 46-52)
@@ -2926,59 +2412,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'negotiation' as const,
         exampleSolution: 'It\'s completely normal to feel torn—that counter-offer is a sign they value you. But let\'s go back to our first conversation. You mentioned you were feeling stagnant and wanted to move into AI-driven products, which your current role can\'t offer. Does a $20k raise solve that stagnation? Or does it just make the golden handcuffs tighter? I want you to make the best decision for your *career*, not just your wallet.',
-        promptGenerator: (submission) => `
-            You are a Career Coach evaluating a counter-offer handling script. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Career Coach evaluating a counter-offer handling script. A participant has submitted their approach to helping a candidate who received a counter-offer.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 60.
-               - If W > 180, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Help a wavering candidate remember why they wanted to leave after receiving a $20k counter-offer.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ACKNOWLEDGMENT (0-20)
-                 0: Dismissive.
-                 10: Basic acknowledgment.
-                 16: Validates counter-offer as flattering/normal.
-                 20: Warm validation before pivot.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. PAIN PIVOT (0-30)
-                 0: No pivot to why they wanted to leave.
-                 15: Mentions motivations vaguely.
-                 25: References specific reasons discussed.
-                 30: Sharp link to original pain (growth, culture, learning).
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. CRITICAL QUESTION (0-25)
-                 0: None.
-                 12: Generic question.
-                 20: Asks if $20k solves root issue.
-                 25: Strong reflective question tying money to pain.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. NON-PUSHY TONE (0-20)
-                 0: Pushy/salesy.
-                 10: Neutral.
-                 16: Consultative.
-                 20: Supportive, willing to let them decide.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. GOLDEN HANDCUFFS (0-5)
-                 0: Not mentioned.
-                 3: Implied.
-                 5: Explicitly notes staying may tighten constraints later.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If pushy tone, set RawScore = min(RawScore, 50).
-               - If no acknowledgment of counter-offer, set RawScore = min(RawScore, 55).
-               - If no reference to original motivation, set RawScore = min(RawScore, 55).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 4+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they acknowledge the compliment (The raise)?
+            2. Did they pivot back to the "Pain" (Why they looked)?
+            3. Did they avoid being pushy/salesy?
+            4. Did they invite reflection ("Why did you accept the interview?")?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -2990,58 +2463,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'negotiation' as const,
         exampleSolution: 'Think of the cash ($160k) as your rent and bills money—it\'s guaranteed. But the equity is your wealth-building money. If we hit our growth targets and the stock price doubles over 4 years, that equity grant isn\'t just a bonus; it could be worth more than your salary. You\'re not just an employee here; you\'re an owner. You get to benefit from the value you help create.',
-        promptGenerator: (submission) => `
-            You are a Startup Compensation Advisor evaluating an equity explanation for a cash-focused candidate. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Startup Advisor evaluating an equity explanation. A participant has submitted their approach to explaining equity value to a non-tech candidate.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 35, cap FINAL SCORE at 55.
-               - If W > 140, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Explain the value of equity (RSUs) in simple terms to excite a candidate who only cares about monthly paycheck.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ANALOGY (0-25)
-                 0: None.
-                 12: Weak analogy.
-                 20: Clear simple analogy (rent vs wealth).
-                 25: Strong, relatable analogy for non-tech audience.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. UPSIDE POTENTIAL (0-30)
-                 0: None.
-                 15: Mentions upside vaguely.
-                 25: Gives realistic upside scenario.
-                 30: Concrete example with potential value.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. OWNERSHIP LANGUAGE (0-20)
-                 0: None.
-                 10: Mentions equity.
-                 15: Uses owner/ownership framing.
-                 20: Strong owner mindset conveyed.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. HONESTY ABOUT RISK (0-15)
-                 0: Overpromises.
-                 8: Hints at risk.
-                 12: Mentions vesting/uncertainty.
-                 15: Clear about potential not guaranteed.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. SIMPLE NUMBERS (0-10)
-                 0: None.
-                 5: Vague numbers.
-                 10: Simple math example to illustrate value.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If no analogy, set RawScore = min(RawScore, 60).
-               - If overpromises/guarantees, set RawScore = min(RawScore, 50).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they use an analogy (Rent vs Wealth)?
+            2. Did they explain the "Upside" potential?
+            3. Did they use the word "Owner"?
+            4. Did they be honest about vesting/risk (not just upside)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -3053,53 +2514,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'screening' as const,
         exampleSolution: 'I noticed the feedback on "culture fit," but I want to challenge us to look for "Culture Add" instead. "Fit" often just means "more of the same," which leads to groupthink. This candidate brings a rigorous, thoughtful approach that balances our team\'s high-energy, rapid-fire style. We need that diversity of thought to avoid blind spots. If they can do the job and share our values, their different personality is an asset, not a risk.',
-        promptGenerator: (submission) => `
-            You are a DE&I Leader evaluating a Culture Add note. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a DE&I Leader evaluating a culture add advocacy note. A participant has submitted their explanation of why "Culture Fit" is dangerous and why a different candidate adds value.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 30, cap FINAL SCORE at 40.
-               - If 30 <= W < 50, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Write a note to the Hiring Manager explaining why "Culture Fit" is dangerous and why this candidate adds value as a "Culture Add."
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. DISTINCTION (0-25)
-                 0: No distinction.
-                 12: Mentions fit vs add vaguely.
-                 20: Explains sameness vs diversity of thought.
-                 25: Clear, explicit distinction with reasoning.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. BUSINESS RISK (0-25)
-                 0: None.
-                 12: Mentions risk vaguely.
-                 20: Names groupthink/blind spots.
-                 25: Strong business risk articulation.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. SPECIFIC STRENGTH (0-25)
-                 0: Generic.
-                 12: Some strength mentioned.
-                 20: Specific trait/value this candidate brings.
-                 25: Concrete example of their strength.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. BUSINESS BENEFIT (0-25)
-                 0: None.
-                 12: Generic benefit.
-                 20: Links difference to business outcome.
-                 25: Clear outcome (innovation/risk assessment/customer reach).
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-            3) CRITICAL CAPS
-               - If no specific example/strength, set RawScore = min(RawScore, 60).
-               - If no business risk mention, set RawScore = min(RawScore, 60).
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 20+ (or 20+ for all four). Otherwise set score to 85.
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
+
+            **EVALUATION CRITERIA:**
+            1. Did they distinguish "Fit" (Sameness) vs "Add" (New perspective)?
+            2. Did they mention the business risk of "Groupthink"?
+            3. Did they advocate for the candidate's specific strength?
+            4. Did they tie the "add" to a business benefit (e.g., "better at risk assessment")?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -3111,59 +2565,46 @@ export const games: Game[] = [
         difficulty: 'medium' as const,
         skillCategory: 'talent-intelligence' as const,
         exampleSolution: 'While SF and London have top talent, they are the most competitive and expensive markets in the world. I recommend looking at Poland or Brazil. Both have massive supplies of high-quality Data Engineers (strong STEM education) at 40-60% of the cost. Plus, retention rates in these emerging hubs are significantly higher because we can be a top-tier employer there, rather than just another startup in SF.',
-        promptGenerator: (submission) => `
-            You are a Global Talent Strategist evaluating a location pitch (Poland/Brazil vs SF/London) for Data Engineers. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.medium,
+        promptGenerator: (submission, rubric) => `
+            You are a Global Talent Strategist evaluating a location strategy pitch. A participant has submitted their proposal for an alternative remote hub location.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 30, cap FINAL SCORE at 55.
-               - If W > 120, cap FINAL SCORE at 70.
+            **CHALLENGE GOAL:**
+            Write a brief pitch proposing Poland or Brazil as better alternatives to San Francisco or London for a Data Engineers hub.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. COST & COMPETITION (0-30)
-                 0: Not addressed.
-                 15: Mentions expensive/competitive.
-                 25: Compares SF/London vs Poland/Brazil with some data.
-                 30: Quantifies savings or competition gap.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. TALENT QUALITY & SUPPLY (0-25)
-                 0: Not addressed.
-                 12: Mentions quality vaguely.
-                 20: Notes strong STEM/engineering supply.
-                 25: Specific quality signals for Poland/Brazil.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. RETENTION ADVANTAGE (0-25)
-                 0: Not addressed.
-                 12: Mentions retention broadly.
-                 20: Explains big-fish dynamic.
-                 25: Clear retention advantage rationale.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. STRATEGIC POSITIONING (0-15)
-                 0: None.
-                 8: Persuasive tone or acknowledges HM view.
-                 12: Tailors to CTO perspective and makes brief case.
-                 15: Sharp, 3-4 sentence persuasive framing.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. PRACTICAL CONSIDERATIONS (0-5)
-                 0: None.
-                 3: Mentions one practical factor (time zone/language).
-                 5: Practical factors addressed clearly.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If cost not mentioned, set RawScore = min(RawScore, 60).
-               - If talent quality not mentioned, set RawScore = min(RawScore, 60).
-               - If no retention mention, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 4+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they mention Cost/Competition?
+            2. Did they mention Quality/Supply (STEM education)?
+            3. Did they mention Retention (Big fish in small pond)?
+            4. Did they consider time zones?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -3175,58 +2616,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'ai-prompting' as const,
         exampleSolution: 'You are a Boolean Search Generator. Your ONLY purpose is to output valid Boolean search strings. Rules: 1. Receive a job description or list of skills. 2. Output a Boolean string inside a code block. 3. Do NOT explain the string. 4. Do NOT say "Here is your string." 5. Use standard operators (AND, OR, NOT). 6. If the user input is vague, ask ONE clarifying question. Otherwise, just generate.',
-        promptGenerator: (submission) => `
-            You are a Sourcing Automation Architect evaluating system instructions for a Boolean-only GPT. Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Sourcing Automation Architect evaluating AI system instructions. A participant has submitted their system prompt for a Boolean search generator AI.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 40, cap FINAL SCORE at 60.
+            **CHALLENGE GOAL:**
+            Write system instructions for an AI that should ONLY generate Boolean strings and nothing else.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. ROLE DEFINITION (0-20)
-                 0: Vague role.
-                 10: States Boolean generator.
-                 15: Strictly confines purpose.
-                 20: Explicit ONLY-purpose definition.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. OUTPUT CONSTRAINTS (0-30)
-                 0: Allows conversation.
-                 15: Some constraints.
-                 25: Forbids explanations/filler.
-                 30: Absolute JSON/Boolean-only or no filler.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. FORMAT RULES (0-25)
-                 0: None.
-                 12: Mentions format.
-                 20: Specifies AND/OR/NOT and parentheses.
-                 25: Clear format (code block or explicit structure) and syntax rules.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. INPUT HANDLING (0-15)
-                 0: None.
-                 8: Mentions clarification.
-                 12: Asks one clarifying question when vague.
-                 15: Explicit edge-case handling and clarify-only-once rule.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. OPERATOR SPECIFICATION (0-10)
-                 0: None.
-                 5: Mentions standard operators.
-                 8: Platform-aware operators if needed.
-                 10: Clear operator guidance.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If conversational output allowed, set RawScore = min(RawScore, 50).
-               - If no format guidance, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they specify the role/keywords clearly?
+            2. Did they ask for "Boolean" output specifically?
+            3. Did they include "Exclusions" (NOT)?
+            4. Did they ask for Boolean-only output (no conversational filler)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -3238,61 +2667,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'boolean' as const,
         exampleSolution: 'Boolean: (Rust OR RustLang) AND (Cryptography OR Crypto OR "Zero Knowledge" OR ZK) AND (Japanese OR "JLPT" OR "Japanese speaker"). Platform: GitHub (search for Rust crypto repos), LinkedIn (filter by Language: Japanese), and Rust Community Discords. Outreach Angle: "Your unique blend of Rust + Crypto + Japanese is exactly what we need for our Tokyo-Zurich bridge team. We offer full relocation support to Switzerland."',
-        promptGenerator: (submission) => `
-            You are a Niche Sourcing Specialist evaluating a purple squirrel strategy (Rust + Crypto + Japanese + Switzerland). Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a Niche Sourcing Specialist evaluating a multi-part sourcing strategy. A participant has submitted their approach to finding a rare "Purple Squirrel" candidate.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 60, cap FINAL SCORE at 65.
-               - If W > 200, cap FINAL SCORE at 75.
+            **CHALLENGE GOAL:**
+            Write a multi-part sourcing strategy (Boolean + Platform + Outreach) for a Rust Engineer with Cryptography background, who speaks Japanese, willing to relocate to Switzerland.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. BOOLEAN STRING (0-25)
-                 0: Missing.
-                 12: Partial requirements.
-                 20: Covers Rust + Crypto + Japanese.
-                 25: Covers all with variations (RustLang, ZK, JLPT) and proper logic.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. PLATFORM DIVERSITY (0-25)
-                 0: One platform.
-                 12: Two platforms.
-                 20: Three platforms.
-                 25: Three+ platforms including niche communities.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. ADJACENT SKILLS (0-20)
-                 0: None.
-                 10: One adjacent skill.
-                 15: Multiple adjacents (systems, blockchain).
-                 20: Thoughtful broadening without losing focus.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. COMMUNITY TARGETING (0-20)
-                 0: None.
-                 10: Generic community mention.
-                 15: Specific communities (RustConf, crypto meetups, Japanese tech groups).
-                 20: Multiple specific niche communities.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. OUTREACH ANGLE (0-10)
-                 0: None.
-                 5: Generic pitch.
-                 8: Mentions uniqueness/relocation.
-                 10: Compelling unique + relocation support hook.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If Boolean missing, set RawScore = min(RawScore, 50).
-               - If only one platform, set RawScore = min(RawScore, 55).
-               - If community targeting absent, set RawScore = min(RawScore, 60).
-               - If any core requirement (Rust/Crypto/Japanese/Swiss) absent, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 8+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they look for "adjacent" skills (e.g., C++ for Rust)?
+            2. Did they target specific communities (RustConf, Discord)?
+            3. Did they use "Project" keywords (e.g., "Servo", "Tokio")?
+            4. Did they look for language cues (e.g., "Rust" often appears with "Systems Programming")?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     },
     {
@@ -3304,59 +2718,46 @@ export const games: Game[] = [
         difficulty: 'hard' as const,
         skillCategory: 'talent-intelligence' as const,
         exampleSolution: 'Tools: Use free LinkedIn (optimize network), GitHub X-Ray (free), and a simple Trello/Notion board as an ATS. Process: Implement "Founder Sourcing" blocks (Founder sends 10 emails/week). Set up a generous Employee Referral Program (cash bonus). Brand: Write 1 high-quality engineering blog post per month to drive inbound. Focus on "High Touch" candidate experience to win against big tech.',
-        promptGenerator: (submission) => `
-            You are a CEO evaluating a Head of Talent's guerrilla recruiting strategy (Series A, $0 budget, 20 engineers/6 months). Apply this strict scoring procedure to the submission: "${submission}"
+        rubric: rubricByDifficulty.hard,
+        promptGenerator: (submission, rubric) => `
+            You are a VP of Talent evaluating a guerrilla recruiting strategy. A participant has submitted their approach to hiring 20 engineers in 6 months with $0 budget.
 
-            1) WORD COUNT CHECK
-               - Let W = word count.
-               - If W < 60, cap FINAL SCORE at 65.
-               - If W > 220, cap FINAL SCORE at 75.
+            **CHALLENGE GOAL:**
+            Outline a "Guerrilla Recruiting" strategy (Tools, Process, Brand) to hire 20 engineers in 6 months with no budget.
 
-            2) CRITERIA SCORING (RawScore out of 100)
-               C1. FREE TOOLS STRATEGY (0-25)
-                 0: Suggests paid tools.
-                 12: Some free tools.
-                 20: Clear free stack (LinkedIn basic, GitHub X-ray, Trello/Notion).
-                 25: Comprehensive free toolset aligned to recruiting.
+            **USER SUBMISSION:**
+            "${submission}"
 
-               C2. PROCESS & EFFICIENCY (0-30)
-                 0: No process.
-                 15: Basic steps.
-                 25: Structured process (founder sourcing blocks, referrals, sprints).
-                 30: Scalable process tailored to 20 hires/6 months.
+            **SCORING RUBRIC (Total 100 points):**
+            ${rubric?.map(r => `- ${r.criteria} (${r.points} pts): ${r.description}`).join('\n            ') || ''}
 
-               C3. BRAND & INBOUND (0-25)
-                 0: None.
-                 12: Mentions brand vaguely.
-                 20: Specific brand tactics (blog, meetups, social content).
-                 25: Clear cadence/content plan for inbound.
+            **YOUR TASK:**
+            Evaluate the submission against each rubric criterion. Assign points for each criterion and provide specific feedback.
 
-               C4. CANDIDATE EXPERIENCE (0-15)
-                 0: None.
-                 8: Mentions high-touch.
-                 12: Specific CX steps (fast SLAs, founder touchpoints).
-                 15: CX as differentiator vs big tech.
+            **REQUIRED OUTPUT FORMAT:**
+            SCORE: [total out of 100]
 
-               C5. METRICS & ACCOUNTABILITY (0-5)
-                 0: None.
-                 3: Mentions tracking.
-                 5: Clear metrics even with spreadsheets.
+            BREAKDOWN:
+            - ${rubric?.[0]?.criteria}: X/${rubric?.[0]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[1]?.criteria}: Y/${rubric?.[1]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[2]?.criteria}: Z/${rubric?.[2]?.points} pts - [One sentence explaining why]
+            - ${rubric?.[3]?.criteria}: W/${rubric?.[3]?.points} pts - [One sentence explaining why]
 
-            3) CRITICAL CAPS
-               - If paid tools suggested, set RawScore = min(RawScore, 40).
-               - If any of Tools/Process/Brand missing, set RawScore = min(RawScore, 60).
-               - If process unrealistic for 20 hires/6 months, set RawScore = min(RawScore, 60).
+            WHAT WORKED (2-3 specific strengths):
+            - ...
+            - ...
 
-            4) CALIBRATION FOR HIGH SCORES
-               - If RawScore > 90, only keep >90 when each criterion is 18+ (or 4+ for C5). Otherwise set score to 85.
+            IMPROVEMENT AREAS (2-3 specific suggestions):
+            - ...
+            - ...
 
-            5) OUTPUT FORMAT
-               - FinalScore = RawScore after caps.
-               - Return ONLY JSON with this exact structure and no extra text:
-               {
-                 "score": <integer 0-100>,
-                 "feedback": "<2-4 sentences of coaching that reference the criteria by name>"
-               }
+            **EVALUATION CRITERIA:**
+            1. Did they include "Time to Fill"?
+            2. Did they include "Quality of Hire" (Retention/Performance)?
+            3. Did they include "Pipeline Health" (Conversion rates)?
+            4. Did they mention a tracking system (ATS/Spreadsheet)?
+
+            Be specific, constructive, and actionable in your feedback.
         `
     }
 ];

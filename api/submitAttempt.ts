@@ -231,7 +231,9 @@ Example Response:
 
 Do not include any text outside the JSON object. Do not use markdown code blocks. Respond with valid JSON only.`;
 
-    const promptBase = override?.prompt_template || game.promptGenerator(submission, validation);
+    const promptBase =
+      override?.prompt_template ||
+      game.promptGenerator(submission, rubricByDifficulty[game.difficulty], validation);
 
     // Append validation context if available
     let validationContext = '';

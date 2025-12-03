@@ -22,6 +22,12 @@ export interface ChatMessage {
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+export interface RubricItem {
+  criteria: string;
+  points: number;
+  description: string;
+}
+
 
 export interface ValidationResult {
   score: number;
@@ -37,10 +43,16 @@ export interface Game {
   task: string;
   context?: string;
   placeholder: string;
-  promptGenerator: (submission: string, validation?: ValidationResult) => string;
+  promptGenerator: (
+    submission: string,
+    rubric?: RubricItem[],
+    validation?: ValidationResult
+  ) => string;
   exampleSolution?: string;
   difficulty: Difficulty;
   skillCategory: SkillCategory;
+  rubric?: RubricItem[];
+  validation?: Record<string, unknown>;
   featured?: boolean;
 }
 

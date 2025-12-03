@@ -12,7 +12,7 @@ const getNextFriday = (): Date => {
     const daysUntilFriday = (5 - dayOfWeek + 7) % 7;
     const nextFriday = new Date(today);
     nextFriday.setDate(today.getDate() + (daysUntilFriday === 0 ? 7 : daysUntilFriday));
-    nextFriday.setUTCHours(13, 0, 0, 0); // 13:00 UTC = 9 AM ET / 3 PM CET (examples)
+    nextFriday.setUTCHours(0, 0, 0, 0); // 00:00 UTC = Midnight UTC (Thursday evening in US, Friday morning in EU)
     return nextFriday;
 };
 
