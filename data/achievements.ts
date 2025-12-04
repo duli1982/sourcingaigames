@@ -15,17 +15,14 @@ const gameIcons = [
     '🌷', '🌹'
 ];
 
-export const achievementDefinitions: AchievementDefinition[] = [];
+// Helper function to create achievement with proper closure
+const createGameAchievement = (gameNumber: number, icon: string): AchievementDefinition => {
+    const gameId = `game${gameNumber}`;
 
-// Generate 52 achievements (one per game)
-for (let i = 1; i <= 52; i++) {
-    const gameId = `game${i}`;
-    const icon = gameIcons[i - 1];
-
-    achievementDefinitions.push({
+    return {
         id: `completed_${gameId}`,
-        name: `Game ${i} Master`,
-        description: `Complete Game ${i} with a passing score (60+)`,
+        name: `Game ${gameNumber} Master`,
+        description: `Complete Game ${gameNumber} with a passing score (60+)`,
         icon: icon,
         category: 'games',
         checkUnlock: (player: Player) => {
@@ -35,8 +32,14 @@ for (let i = 1; i <= 52; i++) {
             const gameAttempts = player.attempts.filter(a => a.gameId === gameId && a.score >= 60);
             return gameAttempts.length > 0;
         }
-    });
-}
+    };
+};
+
+// Generate 52 achievements (one per game)
+export const achievementDefinitions: AchievementDefinition[] = Array.from(
+    { length: 52 },
+    (_, i) => createGameAchievement(i + 1, gameIcons[i])
+);
 
 /**
  * Check which new achievements a player has unlocked
