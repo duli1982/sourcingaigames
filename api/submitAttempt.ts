@@ -419,14 +419,8 @@ Keep feedback concise, structured, and in HTML (no markdown fences).
             }
           }
 
-          let strengthsBlock = '';
-          if (Array.isArray(validation.strengths) && validation.strengths.length > 0) {
-            const strengthsList = validation.strengths.map((s: string) => `<li>${normalizeFeedbackHtml(s)}</li>`).join('');
-            strengthsBlock = `<div style="background:#064e3b;padding:10px;border-radius:8px;border:1px solid #10b981;margin-bottom:10px;">
-    <p><strong>✓ What You Did Well</strong></p>
-    <ul>${strengthsList}</ul>
-  </div>`;
-          }
+          // Automated strengths are NOT displayed (AI-only for positive feedback)
+          // Strengths are still collected in validation data and passed to AI for context
 
           const actionSteps = [
             'Address the items above (e.g., 2+ sentences covering risk and value).',
@@ -439,7 +433,6 @@ Keep feedback concise, structured, and in HTML (no markdown fences).
           const actionList = actionSteps.map(step => `<li>${normalizeFeedbackHtml(step)}</li>`).join('');
 
           feedbackText = `
-  ${strengthsBlock}
 <div style="background:#0f172a;padding:12px;border-radius:8px;border:1px solid #1d4ed8;margin-bottom:8px;">
   <p><strong>Automated evaluation (AI coach unavailable)</strong></p>
   <p><strong>Score:</strong> ${validation.score}/100 (automated)</p>
@@ -459,6 +452,9 @@ Keep feedback concise, structured, and in HTML (no markdown fences).
     }
     // Enhance feedback for high scores (85%+)
     const enhancedFeedback = enhanceFeedbackForHighScores(feedbackText, score, game.title);
+
+    // Map current player data early (needed for historical delta calculation)
+    const currentPlayer = mapPlayer(playerRow);
 
     let feedbackWithPeer = enhancedFeedback;
     try {
@@ -498,8 +494,6 @@ Keep feedback concise, structured, and in HTML (no markdown fences).
         : `Same score as last attempt (${score}/100)`;
       feedbackWithPeer = `<p style="color:#a78bfa;"><strong>${msg}</strong></p>` + feedbackWithPeer;
     }
-
-    const currentPlayer = mapPlayer(playerRow);
     const attempt: Attempt = {
       gameId: game.id,
       gameTitle: override?.title || game.title,
