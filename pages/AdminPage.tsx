@@ -144,6 +144,13 @@ const AdminPage: React.FC = () => {
 
   const renderOverview = () => (
     <div className="space-y-4">
+      {!isAuthorized && (
+        <div className="bg-yellow-900 bg-opacity-40 border border-yellow-600 text-yellow-100 p-4 rounded">
+          Enter an admin token and click "Load" to view analytics. This tab is locked until you authenticate.
+        </div>
+      )}
+      {isAuthorized && (
+        <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard label="Total Players" value={analytics?.totalPlayers ?? 0} />
         <StatCard label="Active (7d)" value={analytics?.active7d ?? 0} />
@@ -214,11 +221,20 @@ const AdminPage: React.FC = () => {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 
   const renderPlayers = () => (
     <div className="bg-gray-800 rounded-lg p-4">
+      {!isAuthorized && (
+        <div className="bg-yellow-900 bg-opacity-40 border border-yellow-600 text-yellow-100 p-4 rounded">
+          Enter an admin token and click "Load" to view players. This tab is locked until you authenticate.
+        </div>
+      )}
+      {isAuthorized && (
+        <>
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         <h4 className="text-lg font-bold text-white">Players</h4>
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -268,11 +284,20 @@ const AdminPage: React.FC = () => {
           ))}
         {players.length === 0 && <p className="text-gray-400 text-sm">No players yet.</p>}
       </div>
+      </>
+      )}
     </div>
   );
 
   const renderAttempts = () => (
     <div className="bg-gray-800 rounded-lg p-4">
+      {!isAuthorized && (
+        <div className="bg-yellow-900 bg-opacity-40 border border-yellow-600 text-yellow-100 p-4 rounded">
+          Enter an admin token and click "Load" to view submissions. This tab is locked until you authenticate.
+        </div>
+      )}
+      {isAuthorized && (
+        <>
       <div className="flex justify-between items-center mb-3">
         <h4 className="text-lg font-bold text-white">Recent Attempts</h4>
         <button className="text-sm text-cyan-400" onClick={fetchAll}>Refresh</button>
@@ -295,6 +320,8 @@ const AdminPage: React.FC = () => {
         ))}
         {attempts.length === 0 && <p className="text-gray-400 text-sm">No attempts yet.</p>}
       </div>
+      </>
+      )}
     </div>
   );
 
@@ -416,9 +443,9 @@ const AdminPage: React.FC = () => {
       </div>
 
       <div className="flex gap-2">
-        <TabButton label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
-        <TabButton label="Players" active={activeTab === 'players'} onClick={() => setActiveTab('players')} />
-        <TabButton label="Submissions" active={activeTab === 'attempts'} onClick={() => setActiveTab('attempts')} />
+        <TabButton label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} disabled={!isAuthorized} />
+        <TabButton label="Players" active={activeTab === 'players'} onClick={() => setActiveTab('players')} disabled={!isAuthorized} />
+        <TabButton label="Submissions" active={activeTab === 'attempts'} onClick={() => setActiveTab('attempts')} disabled={!isAuthorized} />
         <TabButton label="Games" active={activeTab === 'games'} onClick={() => setActiveTab('games')} disabled={!isAuthorized} />
       </div>
 
